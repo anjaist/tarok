@@ -1,0 +1,49 @@
+<!-- File: ./templates/index.html -->
+<!DOCTYPE html>
+{% extends "layout.html" %}
+{% block content %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="landing page for a game of tarok">
+        <meta name="author" content="Anja Istenic">
+        <title>TAROK</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+      </head>
+      <body>
+        <div id="app">
+          <form class="form-signin">
+            <div class="text-center mb-4">
+              <img class="mb-4" src="{{ url_for('static', filename='img/pagat.png') }}" alt="pagat" height="150">
+              <h1 class="h3 mb-3 font-weight-normal">TAROK</h1>
+              <p>PUT IN YOUR DETAILS TO PLAY</p>
+            </div>
+            <div class="form-label-group">
+                <input type="name" id="inputUsername" ref="username" class="form-control" placeholder="Username" required="" autofocus="">
+                  <label for="inputUsername">Username</label>
+            </div>
+            <div class="form-label-group">
+              <input type="email" id="inputEmail" ref="email" class="form-control" placeholder="Email address" autofocus="" required>
+                <label for="inputEmail">Email address</label>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit" @click.prevent="login">Connect</button>
+            <p class="mt-5 mb-3 text-muted text-center">© 2019</p>
+          </form>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+        var app = new Vue({
+          el: '#app',
+          methods: {
+            login: function () {
+              let username = this.$refs.username.value
+              let email = this.$refs.email.value
+              window.location.replace(`/play?username=${username}&email=${email}`);
+            }
+          }
+        })
+        </script>
+    </body>
+</html>
+{% endblock %}

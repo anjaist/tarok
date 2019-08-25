@@ -13,23 +13,28 @@
       </head>
       <body>
         <div id="app">
-          <form class="form-signin">
-            <div class="text-center mb-4">
-              <img class="mb-4" src="{{ url_for('static', filename='img/pagat.png') }}" alt="pagat" height="150">
-              <h1 class="h3 mb-3 font-weight-normal">TAROK</h1>
-              <p>PUT IN YOUR DETAILS TO PLAY</p>
+            <div class="signin-div">
+               <div>
+                   <img src="{{ url_for('static', filename='img/pagat.png') }}" alt="pagat" height="150">
+                   <h1 class="h3 mb-3 font-weight-normal">TAROK</h1>
+                   <h3>Prijavi se</h3>
+               </div>
+                <form>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Email naslov</label>
+                    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputPassword1">Geslo</label>
+                    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                    <label class="form-check-label" for="exampleCheck1">Anja je carica</label>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Igraj!</button>
+                </form>
             </div>
-            <div class="form-label-group">
-                <input type="name" id="inputUsername" ref="username" class="form-control" placeholder="Username" required="" autofocus="">
-                  <label for="inputUsername">Username</label>
-            </div>
-            <div class="form-label-group">
-              <input type="email" id="inputEmail" ref="email" class="form-control" placeholder="Email address" autofocus="" required>
-                <label for="inputEmail">Email address</label>
-            </div>
-            <button class="btn btn-lg btn-primary btn-block" type="submit" @click.prevent="login">Connect</button>
-            <p class="mt-5 mb-3 text-muted text-center">© 2019</p>
-          </form>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script>

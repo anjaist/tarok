@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, json
+from flask import Flask, render_template, request, json, redirect, url_for
 import pusher
 
 import config
@@ -13,14 +13,15 @@ pusher_client = pusher.Pusher(
 )
 
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-
-@app.route('/test')
-def index():
-    return render_template('index.html')
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] == config.USERNAME and request.form['password'] == config.PASSWORD:
+            return redirect(url_for('play'))
+        else:
+            error = 'Invalid credentials!'
+    return render_template('index.html', error=error)
 
 
 @app.route('/play')

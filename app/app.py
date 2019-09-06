@@ -1,16 +1,21 @@
-from flask import Flask, render_template, request, json, redirect, url_for
-import pusher
+from functools import wraps
+
+from flask import Flask, render_template, request, redirect, url_for, session
 
 import config
 
 app = Flask(__name__)
-pusher_client = pusher.Pusher(
-    app_id=config.PUSHER_APP_ID,
-    key=config.PUSHER_KEY,
-    secret=config.PUSHER_SECRET,
-    cluster=config.PUSHER_CLUSTER,
-    ssl=True
-)
+app.secret_key = config.SECRET_KEY
+
+
+def login_required(f):
+    @wraps(f)
+    def login_required_wrap(*args, **kwargs):
+        if session['logged_in']:
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('login'))
+    return login_required_wrap
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -19,6 +24,7 @@ def login():
     if request.method == 'POST':
         # TODO: db storage instead of hardcoded in config
         if request.form['username'] == config.USERNAME and request.form['password'] == config.PASSWORD:
+            session['logged_in'] = True
             return redirect(url_for('play'))
         else:
             error = 'Vnešeni podatki so napačni.'
@@ -33,22 +39,21 @@ def sign_up():
         if request.form['password'] != request.form['password2']:
             error = 'Gesla se ne ujemata.'
         else:
+            session['logged_in'] = True
             return redirect(url_for('play'))
     return render_template('sign-up.html', error=error)
 
 
+@app.route('/logout')
+def logout():
+    session['logged_in'] = False
+    return redirect(url_for('login'))
+
+
 @app.route('/play')
+@login_required
 def play():
     return render_template('play.html')
-
-
-@app.route('/pusher/auth', methods=['POST'])
-def pusher_auth():
-    auth = pusher_client.authenticate(
-        channel=request.form['channel_name'],
-        socket_id=request.form['socker_id']
-    )
-    return json.dumps(auth)
 
 
 if __name__ == '__main__':

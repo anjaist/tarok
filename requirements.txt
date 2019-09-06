@@ -1,2 +1,1 @@
-flask
-pusher
+flask==1.1.1

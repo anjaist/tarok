@@ -17,11 +17,24 @@ pusher_client = pusher.Pusher(
 def login():
     error = None
     if request.method == 'POST':
+        # TODO: db storage instead of hardcoded in config
         if request.form['username'] == config.USERNAME and request.form['password'] == config.PASSWORD:
             return redirect(url_for('play'))
         else:
-            error = 'Invalid credentials!'
+            error = 'Vnešeni podatki so napačni.'
     return render_template('index.html', error=error)
+
+
+@app.route('/sign-up', methods=['GET', 'POST'])
+def sign_up():
+    # TODO: implement check for uniqueness of username and email
+    error = None
+    if request.method == 'POST':
+        if request.form['password'] != request.form['password2']:
+            error = 'Gesla se ne ujemata.'
+        else:
+            return redirect(url_for('play'))
+    return render_template('sign-up.html', error=error)
 
 
 @app.route('/play')

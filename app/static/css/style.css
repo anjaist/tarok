@@ -23,6 +23,14 @@ h1 {
     margin-bottom: 20px;
 }
 
+a {
+    color: white;
+}
+
+a:hover {
+    color: white;
+}
+
 #trula {
     position: absolute;
     right: -80px;
@@ -53,4 +61,12 @@ label.form-label {
     font-size: 10px;
     text-align: center;
     text-decoration: underline;
+}
+
+p.error {
+    background-color: #ea7900;
+    border-radius: 5px;
+    padding: 3px;
+    z-index: 1;
+    position: relative;
 }

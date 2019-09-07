@@ -1,8 +1,11 @@
 from functools import wraps
 
-from flask import url_for, session, redirect, request, render_template
+from flask import url_for, session, redirect, request, render_template, Blueprint
 
-from run import app
+import config
+
+bp = Blueprint('routes', __name__)
+
 
 def login_required(f):
     @wraps(f)
@@ -14,7 +17,7 @@ def login_required(f):
     return login_required_wrap
 
 
-@app.route('/', methods=['GET', 'POST'])
+@bp.route('/', methods=['GET', 'POST'])
 def login():
     error = None
     if request.method == 'POST':
@@ -27,7 +30,7 @@ def login():
     return render_template('index.html', error=error)
 
 
-@app.route('/sign-up', methods=['GET', 'POST'])
+@bp.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     # TODO: implement check for uniqueness of username and email
     error = None
@@ -40,13 +43,13 @@ def sign_up():
     return render_template('sign-up.html', error=error)
 
 
-@app.route('/logout')
+@bp.route('/logout')
 def logout():
     session['logged_in'] = False
     return redirect(url_for('login'))
 
 
-@app.route('/play')
+@bp.route('/play')
 @login_required
 def play():
     return render_template('play.html')

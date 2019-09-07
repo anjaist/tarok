@@ -1,12 +1,8 @@
 from functools import wraps
 
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import url_for, session, redirect, request, render_template
 
-import config
-
-app = Flask(__name__)
-app.secret_key = config.SECRET_KEY
-
+from run import app
 
 def login_required(f):
     @wraps(f)
@@ -54,7 +50,3 @@ def logout():
 @login_required
 def play():
     return render_template('play.html')
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

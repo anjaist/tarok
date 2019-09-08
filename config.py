@@ -8,7 +8,7 @@ SECRET_KEY = secrets.token_hex(64)
 POSTGRES = {
     'user': 'anjaistenic',
     'pw': 'db-password',
-    'db': 'tarok-dev',
+    'db': 'tarok_dev',
     'host': 'localhost',
-    'port': '5432',
+    'port': '5432'
 }

@@ -7,7 +7,16 @@ db = SQLAlchemy()
 
 class BaseModel(db.Model):
     """base db model"""
-    ___abstract__ = True
+    __abstract__ = True
+
+    def __repr__(self):
+        """base way to print all models"""
+        model_dict = {}
+        for key, value in self._to_dict().items:
+            model_dict[key] = value
+
+        return f'{self.__class__.__name__}: {model_dict}'
+
 
     def json(self):
         """json-ifies model"""
@@ -39,9 +48,9 @@ class Game(BaseModel):
     __tablename__ = 'games'
 
     id = db.Column(db.Integer, primary_key=True)
-    player1 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    player2 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    player3 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    player4 = db.Column(db.Integer, db.ForeignKey('user.id'))
+    player1 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    player2 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    player3 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    player4 = db.Column(db.Integer, db.ForeignKey(User.id))
     active = db.Column(db.Boolean, default=True)
     deleted = db.Column(db.Boolean, default=False)

@@ -2,15 +2,17 @@ from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
 
-import config
-from app.models import User, db
+from app.db_utils import insert_user_into_db, password_valid
+from app.models import User
 
 bp = Blueprint('routes', __name__)
 
 
 def login_required(f):
+    """determines page requires logged in user"""
     @wraps(f)
     def login_required_wrap(*args, **kwargs):
+        """redirects to login page if user not currently logged in"""
         if session['logged_in']:
             return f(*args, **kwargs)
         else:
@@ -20,20 +22,27 @@ def login_required(f):
 
 @bp.route('/', methods=['GET', 'POST'])
 def login():
+    """handler for user log in. Checks data in form against entry in users table in db"""
     error = None
+
     if request.method == 'POST':
-        # TODO: db storage instead of hardcoded in config
-        if request.form['username'] == config.USERNAME and request.form['password'] == config.PASSWORD:
+        username = request.form['username']
+        user_in_db = User.query.filter_by(username=username).first()
+
+        if user_in_db and password_valid(user_in_db.password, request.form['password']):
             session['logged_in'] = True
-            return redirect(url_for('play'))
+            return redirect(url_for('routes.play'))
         else:
             error = 'Vnešeni podatki so napačni.'
+
     return render_template('index.html', error=error)
 
 
 @bp.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
+    """handler for user sign up. Verifies data in form and saves it in users table in db"""
     error = None
+
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
@@ -41,7 +50,7 @@ def sign_up():
         repeat_password = request.form['password2']
 
         if password != repeat_password:
-            error = 'Gesla se ne ujemata.'
+            error = 'Gesli se ne ujemata.'
         else:
             try:
                 insert_user_into_db(username, email, password)
@@ -55,6 +64,7 @@ def sign_up():
 
 @bp.route('/logout')
 def logout():
+    """handler for user log out"""
     session['logged_in'] = False
     return redirect(url_for('routes.login'))
 
@@ -62,14 +72,6 @@ def logout():
 @bp.route('/play')
 @login_required
 def play():
+    """handler for main page of game"""
     return render_template('play.html')
 
-
-def insert_user_into_db(username, email, password):
-    user = User(
-        username=username,
-        email=email,
-        password=password  # TODO: encrypt
-    )
-    db.session.add(user)
-    db.session.commit()

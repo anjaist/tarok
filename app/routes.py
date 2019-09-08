@@ -1,10 +1,77 @@
-from flask import Flask, render_template
+from functools import wraps
 
-app = Flask(__name__)
+from flask import url_for, session, redirect, request, render_template, Blueprint
 
-@app.route('/')
-def home():
-    return render_template('home.html')
+from app.db_utils import insert_user_into_db, password_valid
+from app.models import User
 
-if __name__ == '__main__':
-    app.run(debug=True)
+bp = Blueprint('routes', __name__)
+
+
+def login_required(f):
+    """determines page requires logged in user"""
+    @wraps(f)
+    def login_required_wrap(*args, **kwargs):
+        """redirects to login page if user not currently logged in"""
+        if session['logged_in']:
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('routes.login'))
+    return login_required_wrap
+
+
+@bp.route('/', methods=['GET', 'POST'])
+def login():
+    """handler for user log in. Checks data in form against entry in users table in db"""
+    error = None
+
+    if request.method == 'POST':
+        username = request.form['username']
+        user_in_db = User.query.filter_by(username=username).first()
+
+        if user_in_db and password_valid(user_in_db.password, request.form['password']):
+            session['logged_in'] = True
+            return redirect(url_for('routes.play'))
+        else:
+            error = 'Vnešeni podatki so napačni.'
+
+    return render_template('index.html', error=error)
+
+
+@bp.route('/sign-up', methods=['GET', 'POST'])
+def sign_up():
+    """handler for user sign up. Verifies data in form and saves it in users table in db"""
+    error = None
+
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        repeat_password = request.form['password2']
+
+        if password != repeat_password:
+            error = 'Gesli se ne ujemata.'
+        else:
+            try:
+                insert_user_into_db(username, email, password)
+                session['logged_in'] = True
+                return redirect(url_for('routes.play'))
+            except Exception as e:
+                return str(e)
+
+    return render_template('sign-up.html', error=error)
+
+
+@bp.route('/logout')
+def logout():
+    """handler for user log out"""
+    session['logged_in'] = False
+    return redirect(url_for('routes.login'))
+
+
+@bp.route('/play')
+@login_required
+def play():
+    """handler for main page of game"""
+    return render_template('play.html')
+

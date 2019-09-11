@@ -1,8 +1,8 @@
+import os
+
 from flask import Flask
 from flask_migrate import Migrate
 
-import config
-from config import POSTGRES
 from app.routes import bp
 from app.models import db
 
@@ -12,12 +12,7 @@ def create_app():
     app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
     app.register_blueprint(bp)
 
-    app.secret_key = config.SECRET_KEY
-    app.config['DEBUG'] = config.DEBUG
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql+psycopg2://{POSTGRES["user"]}:{POSTGRES["pw"]}@' \
-        f'{POSTGRES["host"]}/{POSTGRES["db"]}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
-    app.config['SQLALCHEMY_ECHO'] = True # set to True for debugging purposes
+    app.config.from_object(os.environ['APP_SETTINGS'])
 
     db.init_app(app)
 

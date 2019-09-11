@@ -1,4 +1,4 @@
-from app.db_utils import encrypt_password
+from app.db_utils import encrypt_password, UniqueUserDataError
 from app.models import User
 
 
@@ -35,4 +35,12 @@ def test_logout(client):
 
 def test_unique_user_violation(client, test_db, test_users):
     """tests message is displayed when user tries to sign up with a non unique username or email"""
-    # TODO -> test + implement this functionality
+    non_unique_user = test_users[2].copy()
+    non_unique_user['username'] = test_users[0]['username']
+    non_unique_user['password2'] = non_unique_user['password']
+
+    # try to sign up with the same username as user already in db
+    response = client.post('/sign-up', data=non_unique_user)
+    assert response.status_code == 200
+    error_msg = UniqueUserDataError().message
+    assert error_msg.encode() in response.data

@@ -1,17 +1,29 @@
 import hashlib
 
+from sqlalchemy.exc import IntegrityError
+
 from app.models import User, db
+
+
+class UniqueUserDataError(Exception):
+    """custom error class to be thrown when unique restraint in db is violated"""
+    def __init__(self, message='Račun s tem uporabniškim imenom ali emailom že obstaja'):
+        self.message = message
+        super().__init__(message)
 
 
 def insert_user_into_db(username: str, email: str, password: str):
     """inserts new entry into users table in db"""
-    user = User(
-        username=username,
-        email=email,
-        password=encrypt_password(password)
-    )
-    db.session.add(user)
-    db.session.commit()
+    try:
+        user = User(
+            username=username,
+            email=email,
+            password=encrypt_password(password)
+        )
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        raise UniqueUserDataError()
 
 
 def encrypt_password(password: str) -> str:

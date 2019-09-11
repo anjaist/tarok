@@ -2,7 +2,7 @@ from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
 
-from app.db_utils import insert_user_into_db, password_valid
+from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -56,8 +56,8 @@ def sign_up():
                 insert_user_into_db(username, email, password)
                 session['logged_in'] = True
                 return redirect(url_for('routes.play'))
-            except Exception as e:
-                return str(e)
+            except UniqueUserDataError as e:
+                error = e.message
 
     return render_template('sign-up.html', error=error)
 

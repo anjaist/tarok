@@ -1,1 +1,39 @@
 <!-- File: ./templates/play.html -->
+<!DOCTYPE html>
+{% extends "layout.html" %}
+{% block content %}
+<head>
+    <meta name="description" content="play page for tarok card game">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/play.css') }}">
+</head>
+<body>
+    <div id="co-player-info-wrapper">
+        <div>
+            <h4>Player 2</h4>
+            <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player2 image">
+        </div>
+        <div>
+            <h4>Player 1</h4>
+            <img class=player-image src="https://source.unsplash.com/500x500/?animal" alt="player1 image">
+        </div>
+    </div>
+    <div id="cards-wrapper">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/pagat.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/XXI.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/XXI.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/XXI.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/XXI.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/XXI.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
+        <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
+    </div>
+</body>
+{% endblock %}

@@ -15,28 +15,6 @@
     text-align: center;
 }
 
-#new-game-wrapper {
-    width: 100%;
-    max-width: 420px;
-    padding: 20px 30px;
-    margin: auto;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
-    box-shadow: 20px 20px 32px -18px rgba(0,0,0);
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-}
-
-#games-to-join {
-    display: flex;
-    justify-content: space-between;
-    align-itmes: center;
-    padding: 0 25px;
-    margin: 20px 0px;
-}
-
 .player-image {
     border-radius: 50%;
     width: 100px;

@@ -30,8 +30,9 @@ def login():
         user_in_db = User.query.filter_by(username=username).first()
 
         if user_in_db and password_valid(user_in_db.password, request.form['password']):
+            session['user_id'] = user_in_db.id
             session['logged_in'] = True
-            return redirect(url_for('routes.play'))
+            return redirect(url_for('routes.new_game'))
         else:
             error = 'Vnešeni podatki so napačni.'
 
@@ -53,13 +54,14 @@ def sign_up():
             error = 'Gesli se ne ujemata.'
         else:
             try:
-                insert_user_into_db(username, email, password)
+                user = insert_user_into_db(username, email, password)
+                session['user_id'] = user.id
                 session['logged_in'] = True
-                return redirect(url_for('routes.play'))
+                return redirect(url_for('routes.new_game'))
             except UniqueUserDataError as e:
                 error = e.message
 
-    return render_template('sign-up.html', error=error)
+    return render_template('sign_up.html', error=error)
 
 
 @bp.route('/logout')
@@ -75,3 +77,11 @@ def play():
     """handler for main page of game"""
     return render_template('play.html')
 
+
+@bp.route('/new-game')
+@login_required
+def new_game():
+    """handler for new game page"""
+    user = User.query.filter_by(id=session['user_id']).first()
+    game = user.current_game
+    return render_template('new_game.html', current_game=game)

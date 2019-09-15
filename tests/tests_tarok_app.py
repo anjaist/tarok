@@ -10,7 +10,7 @@ def test_login_page(client, test_db, test_users):
     test_data.pop('email')
     response = client.post('/', data=test_data)
     assert response.status_code == 302
-    assert response.location.endswith('/play')
+    assert response.location.endswith('/new-game')
 
 
 def test_signup_page(client, test_db, test_users):
@@ -19,7 +19,7 @@ def test_signup_page(client, test_db, test_users):
     test_data['password2'] = test_data['password']
     response = client.post('/sign-up', data=test_data)
     assert response.status_code == 302
-    assert response.location.endswith('/play')
+    assert response.location.endswith('/new-game')
     new_user_in_db = User.query.filter_by(username=test_users[0]['username']).first()
     assert new_user_in_db.email == test_users[0]['email']
     assert new_user_in_db.password != test_users[0]['password']

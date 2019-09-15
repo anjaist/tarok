@@ -22,6 +22,7 @@ def insert_user_into_db(username: str, email: str, password: str):
         )
         db.session.add(user)
         db.session.commit()
+        return user
     except IntegrityError:
         raise UniqueUserDataError()
 

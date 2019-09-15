@@ -1,0 +1,23 @@
+<!-- File: ./templates/new_game.html -->
+<!DOCTYPE html>
+{% extends "layout.html" %}
+{% block content %}
+<head>
+    <meta name="description" content="page to choose new game of tarok">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/new_game.css') }}">
+</head>
+<body>
+    <div id="new-game-wrapper">
+        <h3>Igraj tarok:</h3>
+        <div id="games-to-join">
+            {% if current_game %}
+                <button type=submit value=start-game class="btn btn-dark" disabled>Začni novo igro</button>
+                <button type=submit value=join-game class="btn btn-success">Pridruži se obstoječi igri</button>
+            {% else %}
+                <button type=submit value=start-game class="btn btn-success">Začni novo igro</button>
+                <button type=submit value=join-game class="btn btn-dark" disabled>Pridruži se obstoječi igri</button>
+            {% endif %}
+        </div>
+    </div>
+</body>
+{% endblock %}

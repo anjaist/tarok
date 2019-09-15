@@ -11,13 +11,17 @@
         <h3>Igraj tarok:</h3>
         <div id="games-to-join">
             {% if current_game %}
-                <button type=submit value=start-game class="btn btn-dark" disabled>Začni novo igro</button>
+                <button type=submit value=start-game class="btn btn-greyedout"
+                        onmouseleave="mouseLeave()">Začni novo igro</button>
                 <button type=submit value=join-game class="btn btn-success">Pridruži se obstoječi igri</button>
             {% else %}
                 <button type=submit value=start-game class="btn btn-success">Začni novo igro</button>
-                <button type=submit value=join-game class="btn btn-dark" disabled>Pridruži se obstoječi igri</button>
+                <button type=submit value=join-game class="btn btn-greyedout"
+                        onmouseleave="mouseLeave()">Pridruži se obstoječi igri</button>
             {% endif %}
         </div>
+        <p id="disabled-button-info"></p>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/new_game.js') }}"></script>
 </body>
 {% endblock %}

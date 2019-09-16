@@ -7,21 +7,25 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/new_game.css') }}">
 </head>
 <body>
-    <div id="new-game-wrapper">
+    <div class="game-options" id="game-options-new-join">
         <h3>Igraj tarok:</h3>
-        <div id="games-to-join">
-            {% if current_game %}
-                <button type=submit value=start-game class="btn btn-greyedout"
-                        onmouseleave="mouseLeave()">Začni novo igro</button>
-                <button type=submit value=join-game class="btn btn-success">Pridruži se obstoječi igri</button>
-            {% else %}
-                <button type=submit value=start-game class="btn btn-success">Začni novo igro</button>
-                <button type=submit value=join-game class="btn btn-greyedout"
-                        onmouseleave="mouseLeave()">Pridruži se obstoječi igri</button>
-            {% endif %}
-        </div>
-        <p id="disabled-button-info"></p>
+        {% if current_game %}
+            <button type=submit name="submit-button" value=start-game class="btn btn-greyedout"
+                    onmouseleave="mouseLeave()">Začni novo igro</button>
+            <button type=submit name="submit-button" value=join-game class="btn btn-dark">Pridruži se obstoječi igri</button>
+        {% else %}
+            <button type=submit name="submit-button" value=start-game class="btn btn-dark">Začni novo igro</button>
+            <button type=submit name="submit-button" value=join-game class="btn btn-greyedout"
+                    onmouseleave="mouseLeave()">Pridruži se obstoječi igri</button>
+        {% endif %}
     </div>
+    <div id="game-options-3-4" class="game-options game-options-flipped">
+        <h3>Izberi igro:</h3>
+        <button type=submit name="submit-button" value=3-game class="btn btn-dark">3 igralci</button>
+        <button type=submit name="submit-button" value=4-game class="btn btn-greyedout"
+                onmouseleave="mouseLeave()">4 igralci</button>
+    </div>
+    <p id="disabled-button-info"></p>
     <script type="text/javascript" src="{{ url_for('static', filename='js/new_game.js') }}"></script>
 </body>
 {% endblock %}

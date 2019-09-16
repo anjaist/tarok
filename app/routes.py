@@ -84,4 +84,9 @@ def new_game():
     """handler for new game page"""
     user = User.query.filter_by(id=session['user_id']).first()
     game = user.current_game
+
+    if request.method == 'POST':
+        if request.form['submit-button'] == 'join-game':
+            return redirect(url_for('routes.play'))
+
     return render_template('new_game.html', current_game=game)

@@ -25,6 +25,23 @@
         <button type=submit name="submit-button" value=4-game class="btn btn-greyedout"
                 onmouseleave="mouseLeave()">4 igralci</button>
     </div>
+    <div id="game-options-choose-players-3" class="game-options game-options-flipped">
+        <h3>Vnesi uporabniška imena soigralcev:</h3>
+        <form method=post>
+            <div class="form-group">
+                <label class="form-label">Prvi soigralec*</label>
+                <input type=text class="form-control" name=username1 autocomplete="off"
+                   value="{{ request.form.username1 }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Drugi soigralec*</label>
+                <input type=password class="form-control" name=username2 autocomplete="off"
+                   value="{{ request.form.username2 }}" required>
+            </div>
+            <button type=submit name="submit-button" value=co-players class="btn btn-dark"
+                    id="activate-btn">Aktiviraj igro</button>
+        </form>
+    </div>
     <p id="disabled-button-info"></p>
     <script type="text/javascript" src="{{ url_for('static', filename='js/new_game.js') }}"></script>
 </body>

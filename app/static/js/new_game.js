@@ -8,6 +8,7 @@ let button4Game = buttons[3];
 let infoText = document.getElementById('disabled-button-info');
 let gameCardNewJoin = document.getElementById('game-options-new-join');
 let gameCard34 = document.getElementById('game-options-3-4');
+let gameCard3Players = document.getElementById('game-options-choose-players-3');
 
 
 buttonNewGame.onmouseover = function(event) {
@@ -23,7 +24,7 @@ buttonJoinGame.onmouseover = function(event) {
 };
 
 button4Game.onmouseover = function(event) {
-    infoText.innerHTML = 'Coming soon :)'
+    infoText.innerHTML = 'Coming soon :)';
 };
 
 function mouseLeave() {
@@ -33,4 +34,10 @@ function mouseLeave() {
 buttonNewGame.addEventListener('click', function() {
     gameCardNewJoin.classList.toggle('game-options-flipped');
     gameCard34.classList.toggle('game-options-flipped');
+});
+
+
+button3Game.addEventListener('click', function() {
+    gameCard34.classList.toggle('game-options-flipped');
+    gameCard3Players.classList.toggle('game-options-flipped');
 });

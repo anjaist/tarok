@@ -40,11 +40,13 @@ def password_valid(password_in_db: str, password_to_check: str) -> bool:
 
 def create_new_game(player1: User, player2: User, player3: User, player4=None):
     """creates new entry in game table of db"""
+    player4_id = None if not player4 else player4.id
+
     game = Game(
-        player1=player1,
-        player2=player2,
-        player3=player3,
-        player4=player4
+        player1=player1.id,
+        player2=player2.id,
+        player3=player3.id,
+        player4=player4_id
     )
     db.session.add(game)
     db.session.commit()
@@ -61,5 +63,3 @@ def update_user_with_new_game_info(game_id: int, users: list):
         user.current_score = 0
         user.current_duplication_tokens = 0
         db.session.commit()
-
-    #TODO: to fix ^^

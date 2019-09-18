@@ -12,7 +12,8 @@
         {% if current_game %}
             <button type=submit name="submit-button" value=start-game class="btn btn-greyedout"
                     onmouseleave="mouseLeave()">Začni novo igro</button>
-            <button type=submit name="submit-button" value=join-game class="btn btn-dark">Pridruži se obstoječi igri</button>
+            <a href="{{ url_for('routes.play') }}"><button type=submit name="submit-button" value=join-game
+                                                           class="btn btn-dark">Pridruži se obstoječi igri</button></a>
         {% else %}
             <button type=submit name="submit-button" value=start-game class="btn btn-dark">Začni novo igro</button>
             <button type=submit name="submit-button" value=join-game class="btn btn-greyedout"
@@ -38,6 +39,9 @@
                 <input type=text class="form-control" name=username2 autocomplete="off"
                    value="{{ request.form.username2 }}" required>
             </div>
+            {% if error %}
+            <p class=error>{{ error }}</p>
+            {% endif %}
             <button type=submit name="submit-button" value=create-game class="btn btn-dark"
                     id="activate-btn">Aktiviraj igro</button>
         </form>

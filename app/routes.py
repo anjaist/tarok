@@ -87,9 +87,7 @@ def new_game():
     error = None
 
     if request.method == 'POST':
-        if request.form['submit-button'] == 'join-game':
-            return redirect(url_for('routes.play'))
-        elif request.form['submit-button'] == 'create-game':
+        if request.form['submit-button'] == 'create-game':
             username1 = request.form['username1']
             username2 = request.form['username2']
             co_player1 = User.query.filter_by(username=username1).first()

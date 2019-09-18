@@ -2,12 +2,21 @@
 <!DOCTYPE html>
 {% extends "layout.html" %}
 {% block content %}
+
+{% set flipped_new_game = "" %}
+{% set flipped_choose_players = "game-options-flipped" %}
+
+{% if error %}
+    {% set flipped_new_game = "game-options-flipped" %}
+    {% set flipped_choose_players = "" %}
+{% endif %}
+
 <head>
     <meta name="description" content="page to choose new game of tarok">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/new_game.css') }}">
 </head>
 <body>
-    <div class="game-options" id="game-options-new-join">
+    <div class="game-options {{ flipped_new_game }}" id="game-options-new-join">
         <h3>Igraj tarok:</h3>
         {% if current_game %}
             <button type=submit name="submit-button" value=start-game class="btn btn-greyedout"
@@ -26,7 +35,7 @@
         <button type=submit name="submit-button" value=4-game class="btn btn-greyedout"
                 onmouseleave="mouseLeave()">4 igralci</button>
     </div>
-    <div id="game-options-choose-players-3" class="game-options game-options-flipped">
+    <div id="game-options-choose-players-3" class="game-options {{ flipped_choose_players }}">
         <h3>Vnesi uporabniška imena soigralcev:</h3>
         <form method=post>
             <div class="form-group">
@@ -40,7 +49,7 @@
                    value="{{ request.form.username2 }}" required>
             </div>
             {% if error %}
-            <p class=error>{{ error }}</p>
+                <p id="username-error">{{ error }}</p>
             {% endif %}
             <button type=submit name="submit-button" value=create-game class="btn btn-dark"
                     id="activate-btn">Aktiviraj igro</button>

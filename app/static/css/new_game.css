@@ -55,3 +55,9 @@
 #activate-btn {
     margin-top: 20px;
 }
+
+#username-error {
+    background-color: #ea7900;
+    border-radius: 5px;
+    padding: 3px 10px;
+}

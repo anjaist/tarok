@@ -103,5 +103,4 @@ def new_game():
                 elif not co_player2:
                     error = f'Igralec {username2} ne obstaja.'
 
-    # TODO: if error in co-payers, don't render template again but just popup error - JS?
     return render_template('new_game.html', current_game=game, error=error)

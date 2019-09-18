@@ -38,7 +38,6 @@ buttonNewGame.addEventListener('click', function() {
     }
 })
 
-
 button3Game.addEventListener('click', function() {
     gameCard34.classList.toggle('game-options-flipped');
     gameCard3Players.classList.toggle('game-options-flipped');

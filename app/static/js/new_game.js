@@ -24,7 +24,7 @@ buttonJoinGame.onmouseover = function(event) {
 };
 
 button4Game.onmouseover = function(event) {
-    infoText.innerHTML = 'Coming soon :)';
+    infoText.innerHTML = 'Coming soon...ish :)';
 };
 
 function mouseLeave() {

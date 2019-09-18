@@ -12,7 +12,7 @@ class BaseModel(db.Model):
     def __repr__(self):
         """base way to print all models"""
         model_dict = {}
-        for key, value in self._to_dict().items:
+        for key, value in self.__dict__.items():
             model_dict[key] = value
 
         return f'{self.__class__.__name__}: {model_dict}'
@@ -21,7 +21,7 @@ class BaseModel(db.Model):
     def json(self):
         """json-ifies model"""
         result = {}
-        for key, value in self._to_dict().items():
+        for key, value in self.__dict__.items():
             if isinstance(value, datetime.date):
                 result[key] = value.strftime('%Y-%m-%d')
             else:

@@ -2,7 +2,7 @@ from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
 
-from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError
+from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -78,15 +78,32 @@ def play():
     return render_template('play.html')
 
 
-@bp.route('/new-game')
+@bp.route('/new-game', methods=['GET', 'POST'])
 @login_required
 def new_game():
     """handler for new game page"""
     user = User.query.filter_by(id=session['user_id']).first()
     game = user.current_game
+    error = None
 
     if request.method == 'POST':
         if request.form['submit-button'] == 'join-game':
             return redirect(url_for('routes.play'))
+        elif request.form['submit-button'] == 'create-game':
+            username1 = request.form['username1']
+            username2 = request.form['username2']
+            co_player1 = User.query.filter_by(username=username1).first()
+            co_player2 = User.query.filter_by(username=username2).first()
 
-    return render_template('new_game.html', current_game=game)
+            if co_player1 and co_player2:
+                create_new_game(co_player1, co_player2, user)
+                return redirect(url_for('routes.play'))
+
+            else:
+                if not co_player1:
+                    error = f'Igralec {username1} ne obstaja.'
+                elif not co_player2:
+                    error = f'Igralec {username2} ne obstaja.'
+
+    # TODO: if error in co-payers, don't render template again but just popup error - JS?
+    return render_template('new_game.html', current_game=game, error=error)

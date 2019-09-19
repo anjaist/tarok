@@ -63,3 +63,26 @@ def update_user_with_new_game_info(game_id: int, users: list):
         user.current_score = 0
         user.current_duplication_tokens = 0
         db.session.commit()
+
+
+def update_user_in_game(user_id: int, in_game_value: bool):
+    """updates in_game column for user"""
+    user = User.query.filter_by(id=user_id).first()
+    user.in_game = in_game_value
+    db.session.commit()
+
+
+def check_if_inactive_co_players(game_id: int) -> list:
+    """checks db and finds inactive players for game provided. Returns list of inactive players' usernames"""
+    game = Game.query.filter_by(id=game_id).first()
+    players_of_game = [game.player1, game.player2, game.player3, game.player4]
+    if players_of_game[-1] is None:
+        players_of_game.pop()
+
+    inactive_players = []
+    for player_id in players_of_game:
+        player = User.query.filter_by(id=player_id).first()
+        if not player.in_game:
+            inactive_players.append(player.username)
+
+    return inactive_players

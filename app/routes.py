@@ -2,7 +2,8 @@ from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
 
-from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game
+from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game, update_user_in_game, \
+    check_if_inactive_co_players
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -75,7 +76,13 @@ def logout():
 @login_required
 def play():
     """handler for main page of game"""
-    return render_template('play.html')
+    update_user_in_game(session['user_id'], True)
+    user = User.query.filter_by(id=session['user_id']).first()
+    game_id = user.current_game
+    inactive_players = check_if_inactive_co_players(game_id)
+
+    # TODO: frontend side for waiting on inactive players
+    return render_template('play.html', inactive_players=inactive_players)
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])
@@ -83,7 +90,7 @@ def play():
 def new_game():
     """handler for new game page"""
     user = User.query.filter_by(id=session['user_id']).first()
-    game = user.current_game
+    game_id = user.current_game
     error = None
 
     if request.method == 'POST':
@@ -103,4 +110,4 @@ def new_game():
                 elif not co_player2:
                     error = f'Igralec {username2} ne obstaja.'
 
-    return render_template('new_game.html', current_game=game, error=error)
+    return render_template('new_game.html', current_game=game_id, error=error)

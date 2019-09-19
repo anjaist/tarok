@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -54,4 +54,5 @@ class User(BaseModel):
     current_score = db.Column(db.Integer, nullable=True)
     current_duplication_tokens = db.Column(db.Integer, nullable=True)
     current_game = db.Column(db.Integer, db.ForeignKey(Game.id), nullable=True)
+    in_game = db.Column(db.Boolean, default=False)
     deleted = db.Column(db.Boolean, default=False)

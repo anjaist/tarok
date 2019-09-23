@@ -2,11 +2,23 @@
 <!DOCTYPE html>
 {% extends "layout.html" %}
 {% block content %}
+
+{% if inactive_players %}
+    {% set inactive_style = "" %}
+{% else %}
+    {% set inactive_style = "display:none;" %}
+{% endif %}
+
 <head>
     <meta name="description" content="play page for tarok card game">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/play.css') }}">
 </head>
 <body>
+    <div id="inactive-players" style="{{ inactive_style }}">
+        {% for player in inactive_players %}
+            <p>Čakamo na igralca: {{ player }}</p>
+        {% endfor %}
+    </div>
     <div id="co-player-info-wrapper">
         <div>
             <h4>Player 2</h4>
@@ -66,6 +78,6 @@
         <div class="card-cont">
             <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
         </div>
-    </div>
+</div>
 </body>
 {% endblock %}

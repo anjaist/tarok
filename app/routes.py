@@ -81,7 +81,7 @@ def play():
     game_id = user.current_game
     inactive_players = check_if_inactive_co_players(game_id)
 
-    # TODO: frontend side for waiting on inactive players
+    # TODO: frontend - autorefresh / JS?
     return render_template('play.html', inactive_players=inactive_players)
 
 

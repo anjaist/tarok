@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -12,7 +12,7 @@ class BaseModel(db.Model):
     def __repr__(self):
         """base way to print all models"""
         model_dict = {}
-        for key, value in self._to_dict().items:
+        for key, value in self.__dict__.items():
             model_dict[key] = value
 
         return f'{self.__class__.__name__}: {model_dict}'
@@ -21,13 +21,26 @@ class BaseModel(db.Model):
     def json(self):
         """json-ifies model"""
         result = {}
-        for key, value in self._to_dict().items():
+        for key, value in self.__dict__.items():
             if isinstance(value, datetime.date):
                 result[key] = value.strftime('%Y-%m-%d')
             else:
                 result[key] = value
 
         return result
+
+
+class Game(BaseModel):
+    """model for the games table"""
+    __tablename__ = 'games'
+
+    id = db.Column(db.Integer, primary_key=True)
+    player1 = db.Column(db.Integer, nullable=False)
+    player2 = db.Column(db.Integer, nullable=False)
+    player3 = db.Column(db.Integer, nullable=False)
+    player4 = db.Column(db.Integer)
+    active = db.Column(db.Boolean, default=True)
+    deleted = db.Column(db.Boolean, default=False)
 
 
 class User(BaseModel):
@@ -38,19 +51,8 @@ class User(BaseModel):
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     username = db.Column(db.String, unique=True, nullable=False)
-    current_score = db.Column(db.Integer)
-    current_duplication_tokens = db.Column(db.Integer)
-    deleted = db.Column(db.Boolean, default=False)
-
-
-class Game(BaseModel):
-    """model for the games table"""
-    __tablename__ = 'games'
-
-    id = db.Column(db.Integer, primary_key=True)
-    player1 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    player2 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    player3 = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    player4 = db.Column(db.Integer, db.ForeignKey(User.id))
-    active = db.Column(db.Boolean, default=True)
+    current_score = db.Column(db.Integer, nullable=True)
+    current_duplication_tokens = db.Column(db.Integer, nullable=True)
+    current_game = db.Column(db.Integer, db.ForeignKey(Game.id), nullable=True)
+    in_game = db.Column(db.Boolean, default=False)
     deleted = db.Column(db.Boolean, default=False)

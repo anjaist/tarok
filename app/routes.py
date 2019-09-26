@@ -89,11 +89,13 @@ def play():
 
 @socketio.on('connect')
 def connect_handler():
+    """handler for establishing connection via websocket"""
     emit('connected response', {'data': 'Connected'})
 
 
 @socketio.on('Active players changed')
 def active_players_changed(message):
+    """handler for websocket message for changing active player status"""
     thread = Thread(target=background_thread)
     thread.start()
     emit('active players changed response', message['data'])

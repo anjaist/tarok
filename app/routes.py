@@ -1,12 +1,15 @@
 from functools import wraps
+from threading import Thread
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
+from flask_socketio import SocketIO, emit
 
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game, update_user_in_game, \
     check_if_inactive_co_players
 from app.models import User
 
 bp = Blueprint('routes', __name__)
+socketio = SocketIO()
 
 
 def login_required(f):
@@ -81,8 +84,35 @@ def play():
     game_id = user.current_game
     inactive_players = check_if_inactive_co_players(game_id)
 
-    # TODO: frontend - autorefresh / JS?
     return render_template('play.html', inactive_players=inactive_players)
+
+
+@socketio.on('connect')
+def connect_handler():
+    emit('connected response', {'data': 'Connected'})
+
+
+@socketio.on('Active players changed')
+def active_players_changed(message):
+    thread = Thread(target=background_thread)
+    thread.start()
+    emit('active players changed response', message['data'])
+
+
+def background_thread():
+    """Enables sending server generated events to clients"""
+    while True:
+        socketio.sleep(2)
+        socketio.emit('my_response', generate_response())
+
+
+def generate_response():
+    """prepares response message to be sent via websocket"""
+    update_user_in_game(session['user_id'], True)
+    user = User.query.filter_by(id=session['user_id']).first()
+    game_id = user.current_game
+    inactive_players = check_if_inactive_co_players(game_id)
+    return inactive_players
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])

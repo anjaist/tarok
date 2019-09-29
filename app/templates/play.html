@@ -12,9 +12,9 @@
         {% for username, active in co_players.items() %}
             <div>
                 {% if active %}
-                    <h4>{{ username }}</h4>
+                    <h4 id="{{ username }}">{{ username }}</h4>
                 {% else %}
-                    <h4 class="inactive-username">Čakamo na {{ username }}</h4>
+                    <h4 id="{{ username }}" class="inactive-username">Čakamo na {{ username }}</h4>
                 {% endif %}
             <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player image">
             </div>

@@ -6,10 +6,13 @@ socket.on('connect', function() {
 
 socket.on('message', function(data) {
     console.log(data);
-    if (data) {
-
+    for (let username in data){
+      if (data[username]) {
+        document.getElementById(username).innerText = username
+        document.getElementById(username).className = ""
+      } else {
+        document.getElementById(username).innerText = "Čakamo na " + username
+        document.getElementById(username).className = "inactive-username"
+      }
     }
 });
-
-
-// todo: finish this if statement - delete/add <p> if names

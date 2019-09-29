@@ -97,6 +97,7 @@ def connect_handler():
 def active_players_changed():
     """handler for websocket message for changing active player status"""
     emit('message', generate_response())
+    # todo: send this message every x seconds
 
 
 def generate_response():

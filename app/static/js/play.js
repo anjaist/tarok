@@ -1,9 +1,15 @@
 let socket = io.connect('http://' + document.domain + ':' + location.port);
 
 socket.on('connect', function() {
-    console.log('Websocket connected!')
+    console.log('Websocket connected!');
 });
 
-socket.on('Active players changed', function(data) {
-    console.log(data)
+socket.on('message', function(data) {
+    console.log(data);
+    if (data) {
+
+    }
 });
+
+
+// todo: finish this if statement - delete/add <p> if names

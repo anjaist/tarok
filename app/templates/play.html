@@ -3,31 +3,22 @@
 {% extends "layout.html" %}
 {% block content %}
 
-{% if inactive_players %}
-    {% set inactive_style = "" %}
-{% else %}
-    {% set inactive_style = "display:none;" %}
-{% endif %}
-
 <head>
     <meta name="description" content="play page for tarok card game">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/play.css') }}">
 </head>
 <body>
-    <div id="inactive-players" style="{{ inactive_style }}">
-        {% for player in inactive_players %}
-            <p>Čakamo na igralca: {{ player }}</p>
-        {% endfor %}
-    </div>
     <div id="co-player-info-wrapper">
-        <div>
-            <h4>Player 2</h4>
-            <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player2 image">
-        </div>
-        <div>
-            <h4>Player 1</h4>
-            <img class=player-image src="https://source.unsplash.com/500x500/?animal" alt="player1 image">
-        </div>
+        {% for username, active in co_players.items() %}
+            <div>
+                {% if active %}
+                    <h4>{{ username }}</h4>
+                {% else %}
+                    <h4 class="inactive-username">Čakamo na {{ username }}</h4>
+                {% endif %}
+            <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player image">
+            </div>
+        {% endfor %}
     </div>
     <div id="cards-wrapper">
         <div class="card-cont">

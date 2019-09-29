@@ -2,20 +2,23 @@
 <!DOCTYPE html>
 {% extends "layout.html" %}
 {% block content %}
+
 <head>
     <meta name="description" content="play page for tarok card game">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/play.css') }}">
 </head>
 <body>
     <div id="co-player-info-wrapper">
-        <div>
-            <h4>Player 2</h4>
-            <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player2 image">
-        </div>
-        <div>
-            <h4>Player 1</h4>
-            <img class=player-image src="https://source.unsplash.com/500x500/?animal" alt="player1 image">
-        </div>
+        {% for username, active in co_players.items() %}
+            <div>
+                {% if active %}
+                    <h4 id="{{ username }}">{{ username }}</h4>
+                {% else %}
+                    <h4 id="{{ username }}" class="inactive-username">Čakamo na {{ username }}</h4>
+                {% endif %}
+            <img class=player-image src="https://source.unsplash.com/500x500/?animals" alt="player image">
+            </div>
+        {% endfor %}
     </div>
     <div id="cards-wrapper">
         <div class="card-cont">
@@ -66,6 +69,8 @@
         <div class="card-cont">
             <img class="tarok-card" src="{{ url_for('static', filename='img/skis.png') }}" alt="tarok card">
         </div>
-    </div>
+</div>
+    <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/play.js') }}"></script>
 </body>
 {% endblock %}

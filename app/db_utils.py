@@ -72,17 +72,18 @@ def update_user_in_game(user_id: int, in_game_value: bool):
     db.session.commit()
 
 
-def check_if_inactive_co_players(game_id: int) -> list:
-    """checks db and finds inactive players for game provided. Returns list of inactive players' usernames"""
+def get_co_players(game_id: int, current_player_id: int) -> dict:
+    """returns dictionary of all co-players in game and their active status"""
     game = Game.query.filter_by(id=game_id).first()
     players_of_game = [game.player1, game.player2, game.player3, game.player4]
     if players_of_game[-1] is None:
         players_of_game.pop()
 
-    inactive_players = []
+    co_players = {}
     for player_id in players_of_game:
         player = User.query.filter_by(id=player_id).first()
-        if not player.in_game:
-            inactive_players.append(player.username)
+        if player.id == current_player_id:
+            continue
+        co_players[player.username] = player.in_game
 
-    return inactive_players
+    return co_players

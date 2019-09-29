@@ -1,12 +1,15 @@
 from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
+from flask_socketio import SocketIO, emit
 
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game, update_user_in_game, \
-    check_if_inactive_co_players
+    get_co_players
 from app.models import User
 
 bp = Blueprint('routes', __name__)
+socketio = SocketIO()
+thread = None
 
 
 def login_required(f):
@@ -79,10 +82,31 @@ def play():
     update_user_in_game(session['user_id'], True)
     user = User.query.filter_by(id=session['user_id']).first()
     game_id = user.current_game
-    inactive_players = check_if_inactive_co_players(game_id)
+    co_players = get_co_players(game_id, session['user_id'])
 
-    # TODO: frontend side for waiting on inactive players
-    return render_template('play.html', inactive_players=inactive_players)
+    return render_template('play.html', co_players=co_players)
+
+
+@socketio.on('connect')
+def connect_handler():
+    """handler for establishing connection via websocket"""
+    emit('connected response', {'data': 'Connected'})
+
+
+@socketio.on('connect')
+def active_players_changed():
+    """handler for websocket message for changing active player status"""
+    emit('message', generate_response())
+    # todo: send this message every x seconds
+
+
+def generate_response():
+    """prepares response message to be sent via websocket"""
+    update_user_in_game(session['user_id'], True)
+    user = User.query.filter_by(id=session['user_id']).first()
+    game_id = user.current_game
+    co_players = get_co_players(game_id, session['user_id'])
+    return co_players
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])

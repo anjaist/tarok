@@ -1,3 +1,9 @@
+.inactive-username {
+    background-color: #ea7900;
+    padding: 4px 20px;
+    border-radius: 5px;
+}
+
 #co-player-info-wrapper {
     display: flex;
     justify-content: space-between;

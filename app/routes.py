@@ -1,10 +1,10 @@
 from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
-from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game, update_user_in_game, \
-    get_co_players
+from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game,\
+    update_user_in_game, get_co_players
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -93,11 +93,22 @@ def connect_handler():
     emit('connected response', {'data': 'Connected'})
 
 
-@socketio.on('connect')
-def active_players_changed():
-    """handler for websocket message for changing active player status"""
-    emit('message', generate_response())
-    # todo: send this message every x seconds
+@socketio.on('joined', namespace='playroom')
+def joined(message):
+    """status message is sent by client that has joined the room. Sent to all participants in room"""
+    room = session.get('room')
+    join_room(room)
+    user = User.query.filter_by(id=session['user_id']).first()
+    emit('status message', {'message': f'{user.name} has joined playroom!'}, room=room)
+
+
+@socketio.on('left', namespace='playroom')
+def left(message):
+    """status message is sent by client when they leave the room. Sent to all participants in room"""
+    room = session.get('room')
+    leave_room(room)
+    user = User.query.filter_by(id=session['user_id']).first()
+    emit('status message', {'message': f'{user.name} has left playroom!'}, room=room)
 
 
 def generate_response():

@@ -4,15 +4,10 @@ socket.on('connect', function() {
     console.log('Websocket connected!');
 });
 
-socket.on('message', function(data) {
-    console.log(data);
-    for (let username in data){
-      if (data[username]) {
-        document.getElementById(username).innerText = username
-        document.getElementById(username).className = ""
-      } else {
-        document.getElementById(username).innerText = "Čakamo na " + username
-        document.getElementById(username).className = "inactive-username"
-      }
-    }
+socket.on('joined', function(message) {
+    console.log(message['message'])
+});
+
+socket.on('left', function(message) {
+    console.log(message['message'])
 });

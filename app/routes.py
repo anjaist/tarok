@@ -84,40 +84,22 @@ def play():
     game_id = user.current_game
     co_players = get_co_players(game_id, session['user_id'])
 
+    connect_handler()
     return render_template('play.html', co_players=co_players)
 
 
-@socketio.on('connect')
+@socketio.on('connect to playroom')
 def connect_handler():
-    """handler for establishing connection via websocket"""
-    emit('connected response', {'data': 'Connected'})
-
-
-@socketio.on('joined', namespace='playroom')
-def joined(message):
-    """status message is sent by client that has joined the room. Sent to all participants in room"""
-    room = session.get('room')
-    join_room(room)
+    """handler for connecting user to playroom via websocket"""
     user = User.query.filter_by(id=session['user_id']).first()
-    emit('status message', {'message': f'{user.name} has joined playroom!'}, room=room)
+    socketio.emit('a user connected', (user.username))
 
 
-@socketio.on('left', namespace='playroom')
-def left(message):
-    """status message is sent by client when they leave the room. Sent to all participants in room"""
-    room = session.get('room')
-    leave_room(room)
+@socketio.on('disconnect')
+def disconnect():
+    """handler for disconnecting user from playroom via websocket"""
     user = User.query.filter_by(id=session['user_id']).first()
-    emit('status message', {'message': f'{user.name} has left playroom!'}, room=room)
-
-
-def generate_response():
-    """prepares response message to be sent via websocket"""
-    update_user_in_game(session['user_id'], True)
-    user = User.query.filter_by(id=session['user_id']).first()
-    game_id = user.current_game
-    co_players = get_co_players(game_id, session['user_id'])
-    return co_players
+    socketio.emit('a user disconnected', (user.username))
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])
@@ -136,8 +118,12 @@ def new_game():
             co_player2 = User.query.filter_by(username=username2).first()
 
             if co_player1 and co_player2:
-                create_new_game(co_player1, co_player2, user)
-                return redirect(url_for('routes.play'))
+                for player in [co_player1, co_player2]:
+                    if player.current_game:
+                        error = f'Igralec {player.username} že ima aktivno igro.'
+                if not error:
+                    create_new_game(co_player1, co_player2, user)
+                    return redirect(url_for('routes.play'))
 
             else:
                 if not co_player1:

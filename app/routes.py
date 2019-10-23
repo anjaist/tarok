@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO
 
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game,\
     update_user_in_game, get_co_players

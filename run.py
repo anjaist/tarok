@@ -1,10 +1,9 @@
 import os
 
 from flask import Flask
-from flask_migrate import Migrate
 
 from app.routes import bp, socketio
-from app.models import db
+from app.models import db, migrate
 
 
 def create_app():
@@ -15,13 +14,13 @@ def create_app():
     app.config.from_object(os.environ['APP_SETTINGS'])
 
     db.init_app(app)
+    migrate.init_app(app, db)
     socketio.init_app(app)
 
     return app
 
 
 app = create_app()
-migrate = Migrate(app, db)
 with app.app_context():
     db.create_all()
 

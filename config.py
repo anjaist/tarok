@@ -1,9 +1,8 @@
 import os
-import secrets
 
 
 class BaseConfig():
-    SECRET_KEY = secrets.token_hex(64)
+    SECRET_KEY = os.environ('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # silence the deprecation warning
 

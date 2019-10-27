@@ -29,7 +29,7 @@
     box-shadow: 20px 20px 32px -18px rgba(0,0,0,0.75);
 }
 
-#cards-wrapper {
+#cards-wrapper-bottom {
     display: flex;
     height: 30vh;
     width: 100vw;
@@ -49,4 +49,36 @@
 
 .tarok-card {
     width: 10vw;
+}
+
+.cards-wrapper-sides {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 60vh;
+    width: 20vw;
+    padding: 50px 0px;
+}
+
+#cards-wrapper-right {
+    right: 0px;
+}
+
+#cards-wrapper-left {
+    left: 0px;
+}
+
+.card-cont-rot90 {
+    flex: 1 0 0;
+    overflow-x: hidden;
+}
+
+.card-cont-rot90:last-child {
+    flex: 0 0 auto;
+}
+
+.tarok-card-rot90 {
+    height: 10vw;
 }

@@ -1,5 +1,4 @@
-let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port,
-                        {transports: ['websocket']});
+let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
 
 socket.on('connect', function() {
     console.log('=> Websocket connected! <=');

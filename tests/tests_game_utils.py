@@ -1,4 +1,4 @@
-from app.game_utils import deal_new_round
+from app.game_utils import deal_new_round, sort_player_cards
 
 def test_deal_new_round():
     """tests that all cards are dealt between players and talon and no one card is dealt twice"""
@@ -14,6 +14,11 @@ def test_deal_new_round():
     assert len(players) == 3
     for player in players:
         assert len(dealt[player]) == 16
+
+    # check that the player's cards are sorted but talon is left unsorted
+    for player in players:
+        assert dealt[player] == sort_player_cards(dealt[player])
+    assert dealt['talon'] != sort_player_cards(dealt['talon'])
 
     # check dealing for 4 players
     all_players.append('d')

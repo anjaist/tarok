@@ -7,17 +7,14 @@
 #co-player-info-wrapper {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding-left: 100px;
-    padding-right: 100px;
-    height: 100vh;
-    padding-bottom: 100px;
-    position: relative;
+    padding-left: calc(20vw - 55px);
+    padding-right: calc(20vw - 55px);
+    padding-top: 50px;
 }
 
 #co-player-info-wrapper h4 {
     color: white;
-    margin-bottom: 18px;
+    margin-top: 18px;
     text-align: center;
 }
 
@@ -63,11 +60,11 @@
 }
 
 #cards-wrapper-right {
-    right: 0px;
+    right: -60px;
 }
 
 #cards-wrapper-left {
-    left: 0px;
+    left: -55px;
 }
 
 .card-cont-rot90 {

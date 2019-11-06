@@ -8,17 +8,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/play.css') }}">
 </head>
 <body>
-    <div id="co-player-info-wrapper">
-        {% for username, active in co_players.items() %}
+<div id="co-player-info-wrapper">
+    {% for username, active in co_players.items() %}
+        <div>
+            <img class=player-image src="https://source.unsplash.com/300x300/?animals" alt="player image">
             <div>
                 {% if active %}
-                    <h4 id="{{ username }}">{{ username }}</h4>
+                <h4 id="{{ username }}">{{ username }}</h4>
                 {% else %}
-                    <h4 id="{{ username }}" class="inactive-username">Čakamo na {{ username }}</h4>
+                <h4 id="{{ username }}" class="inactive-username">Čakamo na {{ username }}</h4>
                 {% endif %}
-            <img class=player-image src="https://source.unsplash.com/300x300/?animals" alt="player image">
             </div>
-        {% endfor %}
+        </div>
+    {% endfor %}
     </div>
     <div id="cards-wrapper-bottom">
         {% for card_name in round_state[player] %}

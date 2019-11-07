@@ -1,6 +1,6 @@
 from random import shuffle
 
-SUITS = ['hearts', 'spades', 'clubs', 'diamonds']
+SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
 TAROK_CARDS = [str(i) for i in range(1, 23)]
 
@@ -25,9 +25,6 @@ def deal_new_round(usernames: list) -> dict:
         player_cards = []
         for _ in range(cards_per_player):
             player_cards.append(deck.pop())
-        print('------')
-        print(f'player cards: {player_cards}')
-        print(f'sorted: {sort_player_cards(player_cards)}')
         dealt[player] = sort_player_cards(player_cards)
 
     dealt['talon'] = [deck.pop() for _ in range(6)]

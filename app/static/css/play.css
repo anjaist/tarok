@@ -79,3 +79,12 @@
 .tarok-card-rot90 {
     height: 10vw;
 }
+
+#cards-wrapper-talon {
+    display: flex;
+    height: 30vh;
+    width: 30vw;
+    position: absolute;
+    left: 35vw;
+    top: 30vh;
+}

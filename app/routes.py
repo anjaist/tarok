@@ -3,14 +3,13 @@ from functools import wraps
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
 
-from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, create_new_game,\
-    update_user_in_game, get_co_players
+from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
+get_co_players, check_validity_of_chosen_players
+from app.game_utils import deal_new_round
 from app.models import User
 
 bp = Blueprint('routes', __name__)
 socketio = SocketIO()
-thread = None
-
 
 def login_required(f):
     """determines page requires logged in user"""
@@ -83,9 +82,12 @@ def play():
     user = User.query.filter_by(id=session['user_id']).first()
     game_id = user.current_game
     co_players = get_co_players(game_id, session['user_id'])
+    all_players = list(co_players.keys()) + [user.username]
+
+    new_round = deal_new_round(all_players)
 
     connect_handler()
-    return render_template('play.html', co_players=co_players)
+    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round)
 
 
 @socketio.on('connect to playroom')
@@ -114,21 +116,10 @@ def new_game():
         if request.form['submit-button'] == 'create-game':
             username1 = request.form['username1']
             username2 = request.form['username2']
-            co_player1 = User.query.filter_by(username=username1).first()
-            co_player2 = User.query.filter_by(username=username2).first()
 
-            if co_player1 and co_player2:
-                for player in [co_player1, co_player2]:
-                    if player.current_game:
-                        error = f'Igralec {player.username} že ima aktivno igro.'
-                if not error:
-                    create_new_game(co_player1, co_player2, user)
-                    return redirect(url_for('routes.play'))
+            error = check_validity_of_chosen_players(user, username1, username2)
 
-            else:
-                if not co_player1:
-                    error = f'Igralec {username1} ne obstaja.'
-                elif not co_player2:
-                    error = f'Igralec {username2} ne obstaja.'
+            if not error:
+                return redirect(url_for('routes.play'))
 
     return render_template('new_game.html', current_game=game_id, error=error)

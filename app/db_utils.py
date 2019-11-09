@@ -51,7 +51,6 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
     db.session.add(game)
     db.session.commit()
     update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
-    return game
 
 
 def update_user_with_new_game_info(game_id: int, users: list):
@@ -87,3 +86,28 @@ def get_co_players(game_id: int, current_player_id: int) -> dict:
         co_players[player.username] = player.in_game
 
     return co_players
+
+
+def check_validity_of_chosen_players(user: User, username1: str, username2: str):
+    """checks that chosen co_players exist in db"""
+    co_player1 = User.query.filter_by(username=username1).first()
+    co_player2 = User.query.filter_by(username=username2).first()
+    error = None
+
+    if co_player1 == user or co_player2 == user:
+        error = 'Ne moreš igrati sam s seboj!'
+
+    if co_player1 and co_player2:
+        for player in [co_player1, co_player2]:
+            if player.current_game:
+                error = f'Igralec {player.username} že ima aktivno igro.'
+    else:
+        if not co_player1:
+            error = f'Igralec {username1} ne obstaja.'
+        elif not co_player2:
+            error = f'Igralec {username2} ne obstaja.'
+
+    if not error:
+        create_new_game(co_player1, co_player2, user)
+
+    return error

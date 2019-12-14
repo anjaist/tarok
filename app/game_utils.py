@@ -41,8 +41,10 @@ def sort_player_cards(unsorted_cards: list) -> list:
     for suit_name in suits:
         if suit_name == 'tarok':
             suit = [int(x) for x in unsorted_cards if x.isdigit()]
+            suit.sort(reverse=True)
         else:
             suit = [x for x in unsorted_cards if suit_name in x]
-        sorted_cards.extend(sorted(suit))
+            suit.sort()
+        sorted_cards.extend(suit)
 
     return sorted_cards

@@ -55,6 +55,20 @@
             </div>
         {% endfor %}
     </div>
+    <div id="round-options-popup" class="game-options">
+        <h3>Izberi igro:</h3>
+        <div>
+            <input type="radio" id="three" name="three">
+            <label for="three">tri</label>
+            <input type="radio" id="two" name="two">
+            <label for="two">dve</label>
+            <input type="radio" id="one" name="one">
+            <label for="one">ena</label>
+            <input type="radio" id="pass" name="pass">
+            <label for="pass">naprej</label>
+        </div>
+        <button type=submit name="submit-button" value=round-options class="btn btn-dark">Potrdi</button>
+    </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play.js') }}"></script>
 </body>

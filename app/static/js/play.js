@@ -22,3 +22,5 @@ socket.on('a user disconnected', function(username) {
         user.innnerText = `Čakamo na ${username}`
     }
 });
+
+// todo: connect to redis to see what other user has clicked

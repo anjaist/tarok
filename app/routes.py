@@ -3,6 +3,7 @@ from functools import wraps
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
 
+from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
 get_co_players, check_validity_of_chosen_players
 from app.game_utils import deal_new_round
@@ -10,6 +11,7 @@ from app.models import User
 
 bp = Blueprint('routes', __name__)
 socketio = SocketIO()
+
 
 def login_required(f):
     """determines page requires logged in user"""
@@ -84,6 +86,8 @@ def play():
     co_players = get_co_players(game_id, session['user_id'])
     all_players = list(co_players.keys()) + [user.username]
 
+    redis_db.hset(game_id, 'foo', 'bar')  #todo
+
     new_round = deal_new_round(all_players)
 
     connect_handler()
@@ -94,14 +98,14 @@ def play():
 def connect_handler():
     """handler for connecting user to playroom via websocket"""
     user = User.query.filter_by(id=session['user_id']).first()
-    socketio.emit('a user connected', (user.username))
+    socketio.emit('a user connected', user.username)
 
 
 @socketio.on('disconnect')
 def disconnect():
     """handler for disconnecting user from playroom via websocket"""
     user = User.query.filter_by(id=session['user_id']).first()
-    socketio.emit('a user disconnected', (user.username))
+    socketio.emit('a user disconnected', user.username)
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])

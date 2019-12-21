@@ -2,6 +2,7 @@ import hashlib
 
 from sqlalchemy.exc import IntegrityError
 
+from app import redis_db
 from app.models import User, db, Game
 
 
@@ -50,6 +51,12 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
     )
     db.session.add(game)
     db.session.commit()
+
+    # create new entry in redis db with empty game choice
+    redis_db.hset(f'{game.id}:game_choices', player1.username, None)
+    redis_db.hset(f'{game.id}:game_choices', player2.username, None)
+    redis_db.hset(f'{game.id}:game_choices', player3.username, None)
+
     update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
 
 

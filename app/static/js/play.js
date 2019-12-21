@@ -1,5 +1,7 @@
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
 
+
+// deal with connection and disconnection events
 socket.on('connect', function() {
     console.log('=> Websocket connected! <=');
     socket.emit('connect to playroom');
@@ -23,4 +25,21 @@ socket.on('a user disconnected', function(username) {
     }
 });
 
-// todo: connect to redis to see what other user has clicked
+
+// send options selected by each user for each round to server side
+let roundOptionsButton = document.getElementById('round-options-btn');
+
+roundOptionsButton.addEventListener('click', function() {
+        console.log('ya clicked!')
+
+        let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
+        let currentUser = document.getElementById('current-user').content;
+
+        console.log(`user: ${currentUser} choice: ${selectedOption}`);
+
+        // todo: fix send via socket
+        socket.on('roundOptions', function() {
+            console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
+            socket.emit(user, selectedOption)
+        });
+});

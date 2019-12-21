@@ -108,6 +108,14 @@ def disconnect():
     socketio.emit('a user disconnected', user.username)
 
 
+@socketio.on('user choice')
+def update_user_choice(user, choice):
+    """handles user's game choices"""
+    print('--------------')
+    print(f'[RECEIVED] user: {user} choice: {choice}')
+    print('--------------')
+
+
 @bp.route('/new-game', methods=['GET', 'POST'])
 @login_required
 def new_game():

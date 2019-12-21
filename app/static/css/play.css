@@ -97,10 +97,10 @@
     margin-bottom: 15px;
 }
 
-#round-options-popup div {
+#round-options-popup form {
     margin-bottom: 15px;
 }
 
-#round-options-popup div input {
+#round-options-popup form input {
     margin-left: 15px;
 }

@@ -86,12 +86,12 @@ def play():
     co_players = get_co_players(game_id, session['user_id'])
     all_players = list(co_players.keys()) + [user.username]
 
-    redis_db.hset(game_id, 'foo', 'bar')  #todo
-
     new_round = deal_new_round(all_players)
+    player_order = redis_db.hget(f'{game_id}:round_choices', 'order')
 
     connect_handler()
-    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round)
+    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
+                           player_order=player_order)
 
 
 @socketio.on('connect to playroom')
@@ -109,10 +109,14 @@ def disconnect():
 
 
 @socketio.on('user choice')
-def update_user_choice(user, choice):
-    """handles user's game choices"""
-    print(f'[RECEIVED] user: {user} choice: {choice}')
-    # TODO: update redis
+def update_user_choice(username: str, choice: str):
+    """updates redis db with game choice made by user for current round"""
+    print(f'[RECEIVED] user: {username} choice: {choice}')
+    user = User.query.filter_by(username=username).first()
+    game_id = user.current_game
+
+    # udate redis with user's choice
+    redis_db.hset(f'{game_id}:round_choices', username, choice)
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])

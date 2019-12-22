@@ -33,6 +33,11 @@ roundOptionsButton.addEventListener('click', function() {
         let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
         let currentUser = document.getElementById('current-user').content;
 
-        console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
-        socket.emit('user choice', currentUser, selectedOption)
+        if (selectedOption) {
+            console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
+            socket.emit('user choice', currentUser, selectedOption)
+        }
 });
+
+// todo: show who is currently choosing their round options
+// todo: get user order and grey out options that have been selected by previous user if applicable

@@ -1,4 +1,5 @@
 import hashlib
+import random
 
 from sqlalchemy.exc import IntegrityError
 
@@ -52,12 +53,19 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
     db.session.add(game)
     db.session.commit()
 
-    # create new entry in redis db with empty game choice
-    redis_db.hset(f'{game.id}:game_choices', player1.username, None)
-    redis_db.hset(f'{game.id}:game_choices', player2.username, None)
-    redis_db.hset(f'{game.id}:game_choices', player3.username, None)
-
+    create_redis_entry_for_round_choices(game.id, [player1, player2, player3])
     update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
+
+
+def create_redis_entry_for_round_choices(game_id: int, players: list):
+    """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
+    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]} """
+    random.shuffle(players)
+
+    for player in players:
+        redis_db.hset(f'{game_id}:round_choices', player.username, None)
+
+    redis_db.hset(f'{game_id}:round_choices', 'order', players)
 
 
 def update_user_with_new_game_info(game_id: int, users: list):

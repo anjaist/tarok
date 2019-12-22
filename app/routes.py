@@ -111,9 +111,8 @@ def disconnect():
 @socketio.on('user choice')
 def update_user_choice(user, choice):
     """handles user's game choices"""
-    print('--------------')
     print(f'[RECEIVED] user: {user} choice: {choice}')
-    print('--------------')
+    # TODO: update redis
 
 
 @bp.route('/new-game', methods=['GET', 'POST'])

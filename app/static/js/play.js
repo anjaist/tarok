@@ -30,16 +30,9 @@ socket.on('a user disconnected', function(username) {
 let roundOptionsButton = document.getElementById('round-options-btn');
 
 roundOptionsButton.addEventListener('click', function() {
-        console.log('ya clicked!')
-
         let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
         let currentUser = document.getElementById('current-user').content;
 
-        console.log(`user: ${currentUser} choice: ${selectedOption}`);
-
-        // todo: fix send via socket
-        socket.on('roundOptions', function() {
-            console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
-            socket.emit(user, selectedOption)
-        });
+        console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
+        socket.emit('user choice', currentUser, selectedOption)
 });

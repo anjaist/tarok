@@ -87,7 +87,7 @@ def play():
     all_players = list(co_players.keys()) + [user.username]
 
     new_round = deal_new_round(all_players)
-    player_order = redis_db.hget(f'{game_id}:round_choices', 'order')
+    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,

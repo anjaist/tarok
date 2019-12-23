@@ -1,4 +1,9 @@
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
+let currentUser = document.getElementById('current-user').content;
+let playerOrder = document.getElementById('player-order').content;
+playerOrder = playerOrder.split(',');
+chooseGamePlayerOrder = playerOrder.slice(0);
+let roundOptionsPopup = document.getElementById('round-options-popup');
 
 
 // deal with connection and disconnection events
@@ -26,18 +31,35 @@ socket.on('a user disconnected', function(username) {
 });
 
 
+let chooseGameDiv = document.getElementById('choose-game')
+let isChoosingGameDiv = document.getElementById('is-choosing-game')
+
+
+// show who is currently choosing their round options
+if (!chooseGamePlayerOrder) {
+    roundOptionsButton.style.display = 'none';
+} else if (chooseGamePlayerOrder[0] == currentUser) {
+    chooseGameDiv.style.display = 'block';
+    isChoosingGameDiv.style.display = 'none';
+} else {
+    chooseGameDiv.style.display = 'none';
+    isChoosingGameDiv.style.display = 'block';
+    isChoosingGameDiv.innerHTML = `<h3>${chooseGamePlayerOrder[0]} izbira igro</h3>`
+}
+
+
 // send options selected by each user for each round to server side
 let roundOptionsButton = document.getElementById('round-options-btn');
 
 roundOptionsButton.addEventListener('click', function() {
         let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
-        let currentUser = document.getElementById('current-user').content;
 
         if (selectedOption) {
             console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
             socket.emit('user choice', currentUser, selectedOption)
         }
+        chooseGamePlayerOrder.shift();
 });
 
-// todo: show who is currently choosing their round options
-// todo: get user order and grey out options that have been selected by previous user if applicable
+// todo: move chooseGamePlayerOrder as var in python to keep it updated with redis db and display correctly (updated) in JS
+// todo: grey out options that have been selected by previous user if applicable

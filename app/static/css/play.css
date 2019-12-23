@@ -91,6 +91,8 @@
 
 #round-options-popup {
     padding: 30px 0px;
+    height: 200px;
+    justify-content: center;
 }
 
 #round-options-popup h3 {
@@ -103,4 +105,12 @@
 
 #round-options-popup form input {
     margin-left: 15px;
+}
+
+#choose-game {
+    text-align: center;
+}
+
+#is-choosing-game {
+    display: none;
 }

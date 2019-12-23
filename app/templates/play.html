@@ -58,18 +58,23 @@
     <meta id="current-user" content="{{ player }}">
     <meta id="player-order" content="{{ player_order }}">
     <div id="round-options-popup" class="game-options">
-        <h3>Izberi igro:</h3>
-        <form id="round-options-form">
-            <input type="radio" id="three" name="game-opt" value="3">
-            <label for="three">tri</label>
-            <input type="radio" id="two" name="game-opt" value="2">
-            <label for="two">dve</label>
-            <input type="radio" id="one" name="game-opt" value="1">
-            <label for="one">ena</label>
-            <input type="radio" id="pass" name="game-opt" value="pass">
-            <label for="pass">naprej</label>
-        </form>
-        <button type=submit name="submit-button" id="round-options-btn" class="btn btn-dark">Potrdi</button>
+        <div id="choose-game">
+            <h3>Izberi igro:</h3>
+            <form id="round-options-form">
+                <input type="radio" id="three" name="game-opt" value="3">
+                <label for="three">tri</label>
+                <input type="radio" id="two" name="game-opt" value="2">
+                <label for="two">dve</label>
+                <input type="radio" id="one" name="game-opt" value="1">
+                <label for="one">ena</label>
+                <input type="radio" id="pass" name="game-opt" value="pass">
+                <label for="pass">naprej</label>
+            </form>
+            <button type=submit name="submit-button" id="round-options-btn" class="btn btn-dark">Potrdi</button>
+        </div>
+        <div id="is-choosing-game">
+            <h3>co-player is choosing game</h3>
+        </div>
     </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play.js') }}"></script>

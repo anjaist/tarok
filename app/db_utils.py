@@ -65,7 +65,7 @@ def create_redis_entry_for_round_choices(game_id: int, players: list):
     for player in players:
         redis_db.hset(f'{game_id}:round_choices', player.username, None)
 
-    redis_db.hset(f'{game_id}:round_choices', 'order', players)
+    redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
 
 
 def update_user_with_new_game_info(game_id: int, users: list):

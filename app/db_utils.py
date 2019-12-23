@@ -126,3 +126,16 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
         create_new_game(co_player1, co_player2, user)
 
     return error
+
+
+def get_players_that_need_to_choose_game(game_id: int) -> list:
+    """queries redis db and returns players that still need to make a choice of game for round"""
+    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
+    player_order = player_order.split(',')
+
+    for player in player_order.copy():
+        choice = redis_db.hget(f'{game_id}:round_choices', player)
+        if choice:
+            player_order.remove(player)
+
+    return player_order

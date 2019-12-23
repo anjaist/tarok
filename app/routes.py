@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-get_co_players, check_validity_of_chosen_players
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -76,49 +76,6 @@ def logout():
     return redirect(url_for('routes.login'))
 
 
-@bp.route('/play')
-@login_required
-def play():
-    """handler for main page of game"""
-    update_user_in_game(session['user_id'], True)
-    user = User.query.filter_by(id=session['user_id']).first()
-    game_id = user.current_game
-    co_players = get_co_players(game_id, session['user_id'])
-    all_players = list(co_players.keys()) + [user.username]
-
-    new_round = deal_new_round(all_players)
-    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
-
-    connect_handler()
-    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
-                           player_order=player_order)
-
-
-@socketio.on('connect to playroom')
-def connect_handler():
-    """handler for connecting user to playroom via websocket"""
-    user = User.query.filter_by(id=session['user_id']).first()
-    socketio.emit('a user connected', user.username)
-
-
-@socketio.on('disconnect')
-def disconnect():
-    """handler for disconnecting user from playroom via websocket"""
-    user = User.query.filter_by(id=session['user_id']).first()
-    socketio.emit('a user disconnected', user.username)
-
-
-@socketio.on('user choice')
-def update_user_choice(username: str, choice: str):
-    """updates redis db with game choice made by user for current round"""
-    print(f'[RECEIVED] user: {username} choice: {choice}')
-    user = User.query.filter_by(username=username).first()
-    game_id = user.current_game
-
-    # udate redis with user's choice
-    redis_db.hset(f'{game_id}:round_choices', username, choice)
-
-
 @bp.route('/new-game', methods=['GET', 'POST'])
 @login_required
 def new_game():
@@ -138,3 +95,59 @@ def new_game():
                 return redirect(url_for('routes.play'))
 
     return render_template('new_game.html', current_game=game_id, error=error)
+
+
+@bp.route('/play')
+@login_required
+def play():
+    """handler for main page of game"""
+    update_user_in_game(session['user_id'], True)
+    user = User.query.filter_by(id=session['user_id']).first()
+    game_id = user.current_game
+    co_players = get_co_players(game_id, session['user_id'])
+    all_players = list(co_players.keys()) + [user.username]
+
+    new_round = deal_new_round(all_players)
+    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
+    choose_order = (',').join(get_players_that_need_to_choose_game(game_id))
+
+    connect_handler()
+    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
+                           player_order=player_order, choose_game_player_order=choose_order)
+
+
+@socketio.on('connect to playroom')
+def connect_handler():
+    """handler for connecting user to playroom via websocket"""
+    user = User.query.filter_by(id=session['user_id']).first()
+    socketio.emit('a user connected', user.username)
+
+
+@socketio.on('disconnect')
+def disconnect():
+    """handler for disconnecting user from playroom via websocket"""
+    user = User.query.filter_by(id=session['user_id']).first()
+    socketio.emit('a user disconnected', user.username)
+
+
+@socketio.on('players waiting to choose')
+def update_choose_game_player_order():
+    """handler for sending information of which players have already chosen a game"""
+    user = User.query.filter_by(id=session['user_id']).first()
+    game_id = user.current_game
+    player_order = get_players_that_need_to_choose_game(game_id)
+
+    print(f'[SENDING] players waiting to choose: {player_order}')
+    socketio.emit('players waiting to choose', player_order)
+
+
+@socketio.on('user choice')
+def update_user_choice(username: str, choice: str):
+    """updates redis db with game choice made by user for current round"""
+    print(f'[RECEIVED] user: {username} choice: {choice}')
+    user = User.query.filter_by(username=username).first()
+    game_id = user.current_game
+
+    # udate redis with user's choice
+    redis_db.hset(f'{game_id}:round_choices', username, choice)
+    update_choose_game_player_order()

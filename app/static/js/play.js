@@ -2,8 +2,11 @@ let socket = io.connect(window.location.protocol + '//' + document.domain + ':' 
 let currentUser = document.getElementById('current-user').content;
 let playerOrder = document.getElementById('player-order').content;
 playerOrder = playerOrder.split(',');
-chooseGamePlayerOrder = playerOrder.slice(0);
+let chooseGamePlayerOrder = document.getElementById('choose-game-player-order').content;
+chooseGamePlayerOrder = chooseGamePlayerOrder.split(',');
 let roundOptionsPopup = document.getElementById('round-options-popup');
+let chooseGameDiv = document.getElementById('choose-game')
+let isChoosingGameDiv = document.getElementById('is-choosing-game')
 
 
 // deal with connection and disconnection events
@@ -31,21 +34,27 @@ socket.on('a user disconnected', function(username) {
 });
 
 
-let chooseGameDiv = document.getElementById('choose-game')
-let isChoosingGameDiv = document.getElementById('is-choosing-game')
+// get information on which player still needs to choose their game for current round
+socket.on('players waiting to choose', function(players) {
+    console.log(`[RECEIVED] players waiting to choose: ${players}`)
+    chooseGamePlayerOrder = players
+});
 
 
 // show who is currently choosing their round options
-if (!chooseGamePlayerOrder) {
-    roundOptionsButton.style.display = 'none';
-} else if (chooseGamePlayerOrder[0] == currentUser) {
-    chooseGameDiv.style.display = 'block';
-    isChoosingGameDiv.style.display = 'none';
-} else {
-    chooseGameDiv.style.display = 'none';
-    isChoosingGameDiv.style.display = 'block';
-    isChoosingGameDiv.innerHTML = `<h3>${chooseGamePlayerOrder[0]} izbira igro</h3>`
-}
+function showCurrentlyChoosing() {
+    if (chooseGamePlayerOrder == false) {
+        roundOptionsPopup.style.display = 'none';
+    } else if (chooseGamePlayerOrder[0] == currentUser) {
+        chooseGameDiv.style.display = 'block';
+        isChoosingGameDiv.style.display = 'none';
+    } else {
+        chooseGameDiv.style.display = 'none';
+        isChoosingGameDiv.style.display = 'block';
+        isChoosingGameDiv.innerHTML = `<h3>${chooseGamePlayerOrder[0]} izbira igro</h3>`
+    }
+};
+showCurrentlyChoosing()
 
 
 // send options selected by each user for each round to server side
@@ -59,7 +68,9 @@ roundOptionsButton.addEventListener('click', function() {
             socket.emit('user choice', currentUser, selectedOption)
         }
         chooseGamePlayerOrder.shift();
+        showCurrentlyChoosing()
 });
 
-// todo: move chooseGamePlayerOrder as var in python to keep it updated with redis db and display correctly (updated) in JS
+
+// TODO: debug "player waiting to choose" to show REAL TIME updates
 // todo: grey out options that have been selected by previous user if applicable

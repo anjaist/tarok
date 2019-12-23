@@ -10,7 +10,7 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
-    SQLALCHEMY_ECHO = True  # set to True for debugging db
+    SQLALCHEMY_ECHO = False  # set to True for debugging db
     REDIS_HOST = 'localhost'
     REDIS_PORT = 6379
 

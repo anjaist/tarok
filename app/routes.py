@@ -131,14 +131,15 @@ def disconnect():
 
 
 @socketio.on('players waiting to choose')
-def update_choose_game_player_order():
+def update_choose_game_player_order(last_choice: str):
     """handler for sending information of which players have already chosen a game"""
     user = User.query.filter_by(id=session['user_id']).first()
     game_id = user.current_game
     player_order = get_players_that_need_to_choose_game(game_id)
 
-    print(f'[SENDING] players waiting to choose: {player_order}')
-    socketio.emit('players waiting to choose', player_order)
+    data_to_send = {'players': player_order, 'last_choice': last_choice}
+    print(f'[SENDING] players waiting to choose: {data_to_send}')
+    socketio.emit('players waiting to choose', data_to_send)
 
 
 @socketio.on('user choice')
@@ -150,4 +151,4 @@ def update_user_choice(username: str, choice: str):
 
     # udate redis with user's choice
     redis_db.hset(f'{game_id}:round_choices', username, choice)
-    update_choose_game_player_order()
+    update_choose_game_player_order(last_choice=choice)

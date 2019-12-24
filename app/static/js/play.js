@@ -35,9 +35,15 @@ socket.on('a user disconnected', function(username) {
 
 
 // get information on which player still needs to choose their game for current round
-socket.on('players waiting to choose', function(players) {
-    console.log(`[RECEIVED] players waiting to choose: ${players}`)
-    chooseGamePlayerOrder = players
+socket.on('players waiting to choose', function(receivedData) {
+    console.log(`[RECEIVED] players waiting to choose: ${receivedData}`)
+    chooseGamePlayerOrder = receivedData.players
+    let lastChoice = receivedData.last_choice
+
+    // grey out if selected option is not "pass"
+    if (lastChoice != 'pass') {
+        document.getElementById(lastChoice).disabled = true;
+    };
     showCurrentlyChoosing()
 });
 
@@ -65,6 +71,7 @@ roundOptionsButton.addEventListener('click', function() {
         let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
 
         if (selectedOption) {
+            // send selected option to server side
             console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
             socket.emit('user choice', currentUser, selectedOption)
         }
@@ -74,4 +81,4 @@ roundOptionsButton.addEventListener('click', function() {
 });
 
 
-// todo: grey out options that have been selected by previous user if applicable
+// todo: implement game hierarchy logic: if user chose one, you can no longer choose anything worth less points than one etc.

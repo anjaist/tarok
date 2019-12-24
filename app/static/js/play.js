@@ -38,6 +38,7 @@ socket.on('a user disconnected', function(username) {
 socket.on('players waiting to choose', function(players) {
     console.log(`[RECEIVED] players waiting to choose: ${players}`)
     chooseGamePlayerOrder = players
+    showCurrentlyChoosing()
 });
 
 
@@ -68,9 +69,9 @@ roundOptionsButton.addEventListener('click', function() {
             socket.emit('user choice', currentUser, selectedOption)
         }
         chooseGamePlayerOrder.shift();
+
         showCurrentlyChoosing()
 });
 
 
-// TODO: debug "player waiting to choose" to show REAL TIME updates
 // todo: grey out options that have been selected by previous user if applicable

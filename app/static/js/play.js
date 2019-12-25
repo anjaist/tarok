@@ -1,13 +1,12 @@
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
 let currentUser = document.getElementById('current-user').content;
-let playerOrder = document.getElementById('player-order').content;
-playerOrder = playerOrder.split(',');
 let chooseGamePlayerOrder = document.getElementById('choose-game-player-order').content;
 chooseGamePlayerOrder = chooseGamePlayerOrder.split(',');
 let roundOptionsPopup = document.getElementById('round-options-popup');
-let chooseGameDiv = document.getElementById('choose-game')
-let isChoosingGameDiv = document.getElementById('is-choosing-game')
-
+let chooseGameDiv = document.getElementById('choose-game');
+let isChoosingGameDiv = document.getElementById('is-choosing-game');
+let alreadyChosen = document.getElementById('already-chosen').content;
+alreadyChosen = alreadyChosen.split(',');
 
 // deal with connection and disconnection events
 socket.on('connect', function() {
@@ -34,15 +33,11 @@ socket.on('a user disconnected', function(username) {
 });
 
 
-// get information on which player still needs to choose their game for current round
-socket.on('players waiting to choose', function(receivedData) {
-    console.log(`[RECEIVED] players waiting to choose: ${receivedData}`)
-    chooseGamePlayerOrder = receivedData.players
-    let lastChoice = receivedData.last_choice
-
-    // grey out if selected option is not "pass"
-    if (lastChoice != 'pass') {
-        document.getElementById(lastChoice).disabled = true;
+// grey out options no longer available to player
+function greyOutOptions(option) {
+    // grey out if selected option is 3, 2, or 1
+    if (option == 'three' || option == 'two' || option == 'one') {
+        document.getElementById(option).disabled = true;
     };
 
     // grey out options worth less than one already chosen, where: 1 > 2 > 3
@@ -55,8 +50,21 @@ socket.on('players waiting to choose', function(receivedData) {
     if (two.disabled === true) {
         three.disabled = true;
     };
+};
 
-    showCurrentlyChoosing()
+alreadyChosen.forEach(function(choice) {
+    greyOutOptions(choice);
+});
+
+
+// get information on which player still needs to choose their game for current round
+socket.on('players waiting to choose', function(receivedData) {
+    chooseGamePlayerOrder = receivedData.players;
+    let lastChoice = receivedData.last_choice;
+    console.log(`[RECEIVED] players waiting to choose: ${chooseGamePlayerOrder}, last choice: ${lastChoice}`);
+
+    greyOutOptions(lastChoice);
+    showCurrentlyChoosing();
 });
 
 
@@ -93,4 +101,3 @@ roundOptionsButton.addEventListener('click', function() {
 
 
 // todo: user before you can choose again: the same or higher game
-// todo: grey out options if user joins late (= info gathered and processed on /play page load)

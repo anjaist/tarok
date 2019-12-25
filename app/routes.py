@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_already_chosen_games
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -108,12 +108,12 @@ def play():
     all_players = list(co_players.keys()) + [user.username]
 
     new_round = deal_new_round(all_players)
-    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
-    choose_order = (',').join(get_players_that_need_to_choose_game(game_id))
+    choose_order = ','.join(get_players_that_need_to_choose_game(game_id))
+    already_chosen = ','.join(get_already_chosen_games(all_players, game_id))
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
-                           player_order=player_order, choose_game_player_order=choose_order)
+                           choose_game_player_order=choose_order, already_chosen=already_chosen)
 
 
 @socketio.on('connect to playroom')

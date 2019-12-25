@@ -139,3 +139,15 @@ def get_players_that_need_to_choose_game(game_id: int) -> list:
             player_order.remove(player)
 
     return player_order
+
+
+def get_already_chosen_games(all_players: list, game_id: int) -> list:
+    """queries redis db and returns games that have already been chosen by a player. Ignores 'pass' option"""
+    already_chosen = []
+
+    for player in all_players:
+        choice = redis_db.hget(f'{game_id}:round_choices', player)
+        if choice and choice != 'pass':
+            already_chosen.append(choice.decode('utf-8'))
+
+    return already_chosen

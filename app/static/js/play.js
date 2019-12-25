@@ -44,6 +44,18 @@ socket.on('players waiting to choose', function(receivedData) {
     if (lastChoice != 'pass') {
         document.getElementById(lastChoice).disabled = true;
     };
+
+    // grey out options worth less than one already chosen, where: 1 > 2 > 3
+    three = document.getElementById('three');
+    two = document.getElementById('two');
+    one = document.getElementById('one');
+    if (one.disabled === true) {
+        two.disabled = true;
+    };
+    if (two.disabled === true) {
+        three.disabled = true;
+    };
+
     showCurrentlyChoosing()
 });
 
@@ -69,16 +81,16 @@ let roundOptionsButton = document.getElementById('round-options-btn');
 
 roundOptionsButton.addEventListener('click', function() {
         let selectedOption = document.getElementById('round-options-form')['game-opt'].value;
-
         if (selectedOption) {
             // send selected option to server side
             console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
             socket.emit('user choice', currentUser, selectedOption)
-        }
-        chooseGamePlayerOrder.shift();
 
-        showCurrentlyChoosing()
+            chooseGamePlayerOrder.shift();
+            showCurrentlyChoosing()
+        }
 });
 
 
-// todo: implement game hierarchy logic: if user chose one, you can no longer choose anything worth less points than one etc.
+// todo: user before you can choose again: the same or higher game
+// todo: grey out options if user joins late (= info gathered and processed on /play page load)

@@ -4,6 +4,9 @@ SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
 TAROK_CARDS = [str(i) for i in range(1, 23)]
 
+POINTS_GAME_TYPE = {'one': 30, 'two': 20, 'three': 10, 'pass': 0}
+
+
 def get_deck() -> list:
     """creates a deck of cards"""
     deck = TAROK_CARDS.copy()

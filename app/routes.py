@@ -5,7 +5,8 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_already_chosen_games
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_already_chosen_games, \
+    get_players_to_choose_again
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -132,10 +133,11 @@ def disconnect():
 
 @socketio.on('players waiting to choose')
 def update_choose_game_player_order(last_choice: str):
-    """handler for sending information of which players have already chosen a game"""
+    """handler for sending information of which player can choose again and what choices
+    are available to them"""
     user = User.query.filter_by(id=session['user_id']).first()
     game_id = user.current_game
-    player_order = get_players_that_need_to_choose_game(game_id)
+    player_order = get_players_to_choose_again(game_id)
 
     data_to_send = {'players': player_order, 'last_choice': last_choice}
     print(f'[SENDING] players waiting to choose: {data_to_send}')

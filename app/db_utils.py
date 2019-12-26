@@ -155,18 +155,6 @@ def get_players_that_need_to_choose_game(game_id: int) -> list:
     return player_order
 
 
-def get_already_chosen_games(all_players: list, game_id: int) -> list:
-    """queries redis db and returns games that have already been chosen by a player. Ignores 'pass' option"""
-    already_chosen = []
-
-    for player in all_players:
-        choice = redis_db.hget(f'{game_id}:round_choices', player)
-        if choice and choice != 'pass':
-            already_chosen.append(choice.decode('utf-8'))
-
-    return already_chosen
-
-
 def update_player_options(game_id: int):
     """updates players' options based on current state of choices in redis db"""
 
@@ -175,9 +163,9 @@ def update_player_options(game_id: int):
     player_order = player_order.split(',')
 
     # get current choice of each player
-    player1_choice = (redis_db.hget(f'{game_id}:round_choices', player_order[0])).decode('utf-8')
-    player2_choice = (redis_db.hget(f'{game_id}:round_choices', player_order[1])).decode('utf-8')
-    player3_choice = (redis_db.hget(f'{game_id}:round_choices', player_order[2])).decode('utf-8')
+    player1_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[0]}_chosen')).decode('utf-8')
+    player2_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[1]}_chosen')).decode('utf-8')
+    player3_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[2]}_chosen')).decode('utf-8')
 
     # get minimum worh of game to be upped by next player choosing
     chosen_games = [player1_choice, player2_choice, player3_choice]
@@ -232,7 +220,3 @@ def update_player_options(game_id: int):
         if minimum_available_games:
             player3_options = ','.join(minimum_available_games)
             redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', player3_options)
-
-
-# todo: 1. update new_order while player_options != None
-# todo: 2. remove lastChoice logic in JS and get opts for each player from python via ws

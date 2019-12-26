@@ -1,12 +1,14 @@
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
+let allOptions = ['three', 'two', 'one', 'pass'];
+
 let currentUser = document.getElementById('current-user').content;
-let chooseGamePlayerOrder = document.getElementById('choose-game-player-order').content;
-chooseGamePlayerOrder = chooseGamePlayerOrder.split(',');
 let roundOptionsPopup = document.getElementById('round-options-popup');
 let chooseGameDiv = document.getElementById('choose-game');
 let isChoosingGameDiv = document.getElementById('is-choosing-game');
-let alreadyChosen = document.getElementById('already-chosen').content;
-alreadyChosen = alreadyChosen.split(',');
+let currentlyChoosingPlayer = document.getElementById('player-to-choose').content;
+let currentlyChoosingPlayerOptions = document.getElementById('player-to-choose-opts').content;
+currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
+
 
 // deal with connection and disconnection events
 socket.on('connect', function() {
@@ -34,51 +36,39 @@ socket.on('a user disconnected', function(username) {
 
 
 // grey out options no longer available to player
-function greyOutOptions(option) {
-    // grey out if selected option is 3, 2, or 1
-    if (option == 'three' || option == 'two' || option == 'one') {
-        document.getElementById(option).disabled = true;
-    };
-
-    // grey out options worth less than one already chosen, where: 1 > 2 > 3
-    three = document.getElementById('three');
-    two = document.getElementById('two');
-    one = document.getElementById('one');
-    if (one.disabled === true) {
-        two.disabled = true;
-    };
-    if (two.disabled === true) {
-        three.disabled = true;
-    };
+function greyOutOptions() {
+    allOptions.forEach(function(opt){
+        if !(currentlyChoosingPlayerOptions.includes(opt)) {
+            document.getElementById(opt).disabled = true;
+        };
+    });
 };
 
-alreadyChosen.forEach(function(choice) {
-    greyOutOptions(choice);
-});
+greyOutOptions();
 
 
 // get information on which player still needs to choose their game for current round
-socket.on('players waiting to choose', function(receivedData) {
-    chooseGamePlayerOrder = receivedData.players;
-    let lastChoice = receivedData.last_choice;
-    console.log(`[RECEIVED] players waiting to choose: ${chooseGamePlayerOrder}, last choice: ${lastChoice}`);
+socket.on('player game options', function(receivedData) {
+    currentlyChoosingPlayer = receivedData.player;
+    currentlyChoosingPlayerOptions = receivedData.player_options;
+    console.log(`[RECEIVED] player waiting to choose: ${currentlyChoosingPlayer}, options: ${currentlyChoosingPlayerOptions}`);
 
-    greyOutOptions(lastChoice);
+    greyOutOptions();
     showCurrentlyChoosing();
 });
 
 
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
-    if (chooseGamePlayerOrder == false) {
+    if (currentlyChoosingPlayer == false) {
         roundOptionsPopup.style.display = 'none';
-    } else if (chooseGamePlayerOrder[0] == currentUser) {
+    } else if (currentlyChoosingPlayer == currentUser) {
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';
     } else {
         chooseGameDiv.style.display = 'none';
         isChoosingGameDiv.style.display = 'block';
-        isChoosingGameDiv.innerHTML = `<h3>${chooseGamePlayerOrder[0]} izbira igro</h3>`
+        isChoosingGameDiv.innerHTML = `<h3>${currentlyChoosingPlayer} izbira igro</h3>`
     }
 };
 showCurrentlyChoosing()
@@ -94,10 +84,6 @@ roundOptionsButton.addEventListener('click', function() {
             console.log(`[SENDING] user: ${currentUser} choice: ${selectedOption}`);
             socket.emit('user choice', currentUser, selectedOption)
 
-            chooseGamePlayerOrder.shift();
             showCurrentlyChoosing()
         }
 });
-
-
-// todo: user before you can choose again: the same or higher game

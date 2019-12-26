@@ -110,11 +110,17 @@ def play():
 
     new_round = deal_new_round(all_players)
     choose_order = ','.join(get_players_that_need_to_choose_game(game_id))
-    already_chosen = ','.join(get_already_chosen_games(all_players, game_id))
+    player_to_choose = None
+    player_to_choose_opts = None
+    if choose_order:
+        player_to_choose = choose_order[0]
+        player_to_choose_opts = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose}_options')
+        player_to_choose_opts = player_to_choose_opts.decode('utf-8')
+
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
-                           choose_game_player_order=choose_order, already_chosen=already_chosen)
+                           player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts)
 
 
 @socketio.on('connect to playroom')
@@ -131,17 +137,24 @@ def disconnect():
     socketio.emit('a user disconnected', user.username)
 
 
-@socketio.on('players waiting to choose')
-def update_choose_game_player_order(last_choice: str):
+@socketio.on('player game options')
+def update_player_choosing():
     """handler for sending information of which player can choose again and what choices
     are available to them"""
     user = User.query.filter_by(id=session['user_id']).first()
     game_id = user.current_game
-    player_order = get_players_to_choose_again(game_id)
+    player_order = get_players_that_need_to_choose_game(game_id)
+    player_to_choose_game = None
+    player_options = None
+    if player_order:
+        player_to_choose_game = player_order[0]
+        player_options = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose_game}_options')
+        player_options = player_options.decode('utf-8')
 
-    data_to_send = {'players': player_order, 'last_choice': last_choice}
-    print(f'[SENDING] players waiting to choose: {data_to_send}')
-    socketio.emit('players waiting to choose', data_to_send)
+    data_to_send = {'player': player_to_choose_game, 'player_options': player_options}
+
+    print(f'[SENDING] player to choose: {data_to_send}')
+    socketio.emit('player game options', data_to_send)
 
 
 @socketio.on('user choice')
@@ -152,5 +165,5 @@ def update_user_choice(username: str, choice: str):
     game_id = user.current_game
 
     # udate redis with user's choice
-    redis_db.hset(f'{game_id}:round_choices', username, choice)
-    update_choose_game_player_order(last_choice=choice)
+    redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
+    update_player_choosing()

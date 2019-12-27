@@ -38,7 +38,7 @@ socket.on('a user disconnected', function(username) {
 // grey out options no longer available to player
 function greyOutOptions() {
     allOptions.forEach(function(opt){
-        if !(currentlyChoosingPlayerOptions.includes(opt)) {
+        if (currentlyChoosingPlayerOptions.includes(opt) === false) {
             document.getElementById(opt).disabled = true;
         };
     });

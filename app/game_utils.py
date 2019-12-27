@@ -22,7 +22,7 @@ def deal_new_round(usernames: list) -> dict:
     deck = get_deck()
     shuffle(deck)
 
-    dealt =  {}
+    dealt = {}
 
     for player in usernames:
         player_cards = []

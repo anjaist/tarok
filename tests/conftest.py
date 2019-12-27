@@ -24,6 +24,22 @@ def create_test_users():
     ]
 
 
+@pytest.fixture(scope='session', name='test_users_simple')
+def create_simple_test_users():
+    db.session.remove()
+    db.drop_all()
+    db.create_all()
+    users = [
+        {'username': 'anja', 'email': 'anja@anja.si', 'password': 'anja'},
+        {'username': 'igralec', 'email': 'igra@lec.si', 'password': 'anja'},
+        {'username': 'igralka', 'email': 'igra@lka.si', 'password': 'anja'}
+    ]
+    for user in users:
+        insert_user_into_db(user['username'], user['email'], user['password'])
+
+    yield db
+
+
 @pytest.fixture(scope='function', name='test_db')
 def init_test_db(test_users):
     db.create_all()

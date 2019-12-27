@@ -61,17 +61,19 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
 def create_redis_entry_for_round_choices(game_id: int, players: list):
     """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
     '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]} """
+    players = [player.username for player in players]
     random.shuffle(players)
 
     for player in players:
-        redis_db.hset(f'{game_id}:round_choices', f'{player.username}_chosen', None)
-        redis_db.hset(f'{game_id}:round_choices', f'{player.username}_options', 'three,two,one,pass')
+        redis_db.hset(f'{game_id}:round_choices', f'{player}_chosen', '')
+        redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one,pass')
 
         # player 1 initially shouldn't be able to choose 'pass'
         if player == players[0]:
-            redis_db.hset(f'{game_id}:round_choices', f'{player.username}_options', 'three,two,one')
+            redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one')
 
     redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
+    redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(players))
 
 
 def update_user_with_new_game_info(game_id: int, users: list):
@@ -136,23 +138,65 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
 
 def get_players_that_need_to_choose_game(game_id: int) -> list:
     """queries redis db and returns players that can still make a choice of game for round"""
-    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
+    update_player_options(game_id)
+
+    player_order = (redis_db.hget(f'{game_id}:round_choices', 'new_order')).decode('utf-8')
     player_order = player_order.split(',')
+    current_player = player_order[0]
 
     # remove player from first choosing position if they've already made a choice
-    choice_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{player_order[0]}_chosen')
+    choice_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{current_player}_chosen')
     if choice_of_current_player:
         player_order.pop(0)
 
     # add player to end of choosing queue if they still have options available
-    options_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{player_order[0]}_options')
+    options_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{current_player}_options')
     if options_of_current_player:
-        player_order.append(player_order[0])
+        player_order.append(current_player)
 
     # save new revised order in redis db
-    redis_db.hset(f'{game_id}:round_choices', 'new_order', player_order)
+    redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(player_order))
 
     return player_order
+
+
+def get_available_games(chosen_games: list) -> list:
+    """returns available games based on minimum worth of game"""
+    # get minimum worth of game to be upped by next player choosing
+    minimum_game_worth = 0
+    for ch in chosen_games:
+        if ch:
+            if POINTS_GAME_TYPE[ch] > minimum_game_worth:
+                minimum_game_worth = POINTS_GAME_TYPE[ch]
+
+    # determine available games
+    minimum_available_games = ['three', 'two', 'one']
+    if minimum_game_worth == 10:
+        minimum_available_games.remove('three')
+    elif minimum_game_worth == 20:
+        minimum_available_games.remove('three')
+        minimum_available_games.remove('two')
+
+    return minimum_available_games
+
+
+def calculate_player1_options(player1_choice: str, player2_choice: str, player3_choice: str,
+                              player1_options: list) -> list:
+    """calculates available game options for player 1 (first in order)"""
+    if POINTS_GAME_TYPE[player1_choice] < POINTS_GAME_TYPE[player2_choice]:
+        player1_options.append(player2_choice)
+    if POINTS_GAME_TYPE[player1_choice] < POINTS_GAME_TYPE[player3_choice]:
+        player1_options.append(player3_choice)
+
+    return player1_options
+
+
+def calculate_player2_options(player2_choice: str, player3_choice: str, player2_options: list) -> list:
+    """calculates available game options for player 2 (second in order)"""
+    if POINTS_GAME_TYPE[player2_choice] < POINTS_GAME_TYPE[player3_choice]:
+        player2_options.append(player3_choice)
+
+    return player2_options
 
 
 def update_player_options(game_id: int):
@@ -167,56 +211,37 @@ def update_player_options(game_id: int):
     player2_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[1]}_chosen')).decode('utf-8')
     player3_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[2]}_chosen')).decode('utf-8')
 
-    # get minimum worh of game to be upped by next player choosing
+    # get available games
     chosen_games = [player1_choice, player2_choice, player3_choice]
-    minimum_game_worth = 0
-    for ch in chosen_games:
-        if POINTS_GAME_TYPE[ch] > minimum_game_worth:
-            minimum_game_worth = POINTS_GAME_TYPE[ch]
+    available_games = get_available_games(chosen_games)
 
-    # determine available games based on minimum worth of game
-    minimum_available_games = []
-    if minimum_game_worth == 10:
-        minimum_available_games.append('two')
-        minimum_available_games.append('one')
-    elif minimum_game_worth == 20:
-        minimum_available_games.append('one')
+    player1_options = ['pass'] + available_games
+    if not player1_choice:
+        player1_options = available_games
+    player2_options = ['pass'] + available_games
+    player3_options = ['pass'] + available_games
 
+    # if all players have made first choice, compare choices and find available ones for each player
+    if player1_choice and player2_choice and player3_choice:
+        # if players 2 and 3 chose a game worth more than what player 1 chose, player 1 can choose again
+        if player1_choice == 'pass':
+            player1_options = []
+        else:
+            player1_options = calculate_player1_options(player1_choice, player2_choice, player3_choice, player1_options)
 
-    # if players 2 and 3 chose a game worth more than what player 1 chose, player 1 can choose again
-    if player1_choice == 'pass':
-        redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', None)
-    else:
-        player1_options = ['pass']
-        if POINTS_GAME_TYPE[player1_choice] < POINTS_GAME_TYPE[player2_choice]:
-            player1_options.append(player2_choice)
-        if POINTS_GAME_TYPE[player1_choice] < POINTS_GAME_TYPE[player3_choice]:
-            player1_options.append(player3_choice)
+        # if player 3 chose a game worth more than what player 2 chose, player 2 can choose again
+        if player2_choice == 'pass':
+            player2_options = []
+        else:
+            player2_options = calculate_player2_options(player2_choice, player3_choice, player2_options)
 
-        if minimum_available_games:
-            player1_options.extend(minimum_available_games)
-            player1_options = ','.join(list(set(player1_options)))
+        # if player 3 can still choose a game worth more than what they've alreasy chosen, they can choose again
+        if player3_choice == 'pass':
+            player3_options = []
 
-        redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', player1_options)
+    # update redis with current options for each player
+    redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', ','.join(player1_options))
+    redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', ','.join(player2_options))
+    redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', ','.join(player3_options))
 
-    # if player 3 chose a game worth more than what player 2 chose, player 2 can choose again
-    if player2_choice == 'pass':
-        redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', None)
-    else:
-        player2_options = ['pass']
-        if POINTS_GAME_TYPE[player2_choice] < POINTS_GAME_TYPE[player3_choice]:
-            player2_options.append(player3_choice)
-
-        if minimum_available_games:
-            player2_options.extend(minimum_available_games)
-            player2_options = ','.join(list(set(player2_options)))
-
-        redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', player2_options)
-
-    # if player 3 can still choose a game worth more than what they've alreasy chosen, they can choose again
-    if player3_choice == 'pass':
-        redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', None)
-    else:
-        if minimum_available_games:
-            player3_options = ','.join(minimum_available_games)
-            redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', player3_options)
+# TODO: test and debug and refactor this new code (choosing on a loop logic)

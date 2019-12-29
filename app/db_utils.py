@@ -152,7 +152,9 @@ def get_players_that_need_to_choose_game(game_id: int) -> list:
     # add player to end of choosing queue if they still have options available
     options_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{current_player}_options')
     if options_of_current_player:
-        player_order.append(current_player)
+        if player_order:
+            if player_order[-1] != current_player:
+                player_order.append(current_player)
 
     # save new revised order in redis db
     redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(player_order))
@@ -243,5 +245,3 @@ def update_player_options(game_id: int):
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', ','.join(player1_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', ','.join(player2_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', ','.join(player3_options))
-
-# TODO: test and debug and refactor this new code (choosing on a loop logic)

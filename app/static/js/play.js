@@ -40,10 +40,11 @@ function greyOutOptions() {
     allOptions.forEach(function(opt){
         if (currentlyChoosingPlayerOptions.includes(opt) === false) {
             document.getElementById(opt).disabled = true;
+        } else {
+            document.getElementById(opt).disabled = false;
         };
     });
 };
-
 greyOutOptions();
 
 

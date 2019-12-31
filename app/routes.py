@@ -163,5 +163,6 @@ def update_user_choice(username: str, choice: str):
     game_id = user.current_game
 
     # udate redis with user's choice
-    redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
+    if choice:
+        redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
     update_player_choosing()

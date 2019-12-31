@@ -54,14 +54,14 @@ socket.on('player game options', function(receivedData) {
     currentlyChoosingPlayerOptions = receivedData.player_options;
     console.log(`[RECEIVED] player waiting to choose: ${currentlyChoosingPlayer}, options: ${currentlyChoosingPlayerOptions}`);
 
-    greyOutOptions();
     showCurrentlyChoosing();
+    greyOutOptions();
 });
 
 
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
-    if (currentlyChoosingPlayer == false) {
+    if ((currentlyChoosingPlayer == null) || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
     } else if (currentlyChoosingPlayer == currentUser) {
         chooseGameDiv.style.display = 'block';

@@ -4,6 +4,10 @@ SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
 TAROK_CARDS = [str(i) for i in range(1, 23)]
 
+POINTS_GAME_TYPE = {'one': 30, 'two': 20, 'three': 10, 'pass': 0}
+TRANSLATION_GAME_TYPE = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
+
+
 def get_deck() -> list:
     """creates a deck of cards"""
     deck = TAROK_CARDS.copy()
@@ -19,7 +23,7 @@ def deal_new_round(usernames: list) -> dict:
     deck = get_deck()
     shuffle(deck)
 
-    dealt =  {}
+    dealt = {}
 
     for player in usernames:
         player_cards = []
@@ -41,8 +45,10 @@ def sort_player_cards(unsorted_cards: list) -> list:
     for suit_name in suits:
         if suit_name == 'tarok':
             suit = [int(x) for x in unsorted_cards if x.isdigit()]
+            suit.sort(reverse=True)
         else:
             suit = [x for x in unsorted_cards if suit_name in x]
-        sorted_cards.extend(sorted(suit))
+            suit.sort()
+        sorted_cards.extend(suit)
 
     return sorted_cards

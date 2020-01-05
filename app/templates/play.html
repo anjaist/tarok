@@ -55,6 +55,33 @@
             </div>
         {% endfor %}
     </div>
+    <meta id="current-user" content="{{ player }}">
+    <meta id="player-to-choose" content="{{ player_to_choose }}">
+    <meta id="player-to-choose-opts" content="{{ player_to_choose_opts }}">
+    <div id="round-options-popup" class="game-options">
+        <div id="co-players-choice">
+            {% for username, active in co_players.items() %}
+                <p id="{{ username }}-choice">-</p>
+            {% endfor %}
+        </div>
+        <div id="choose-game">
+            <h3>Izberi igro:</h3>
+            <form id="round-options-form">
+                <input type="radio" id="three" name="game-opt" value="three">
+                <label for="three">tri</label>
+                <input type="radio" id="two" name="game-opt" value="two">
+                <label for="two">dve</label>
+                <input type="radio" id="one" name="game-opt" value="one">
+                <label for="one">ena</label>
+                <input type="radio" id="pass" name="game-opt" value="pass">
+                <label for="pass">naprej</label>
+            </form>
+            <button type=submit name="submit-button" id="round-options-btn" class="btn btn-dark">Potrdi</button>
+        </div>
+        <div id="is-choosing-game">
+            <h3>co-player is choosing game</h3>
+        </div>
+    </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play.js') }}"></script>
 </body>

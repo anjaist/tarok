@@ -44,3 +44,8 @@ def test_unique_user_violation(client, test_db, test_users):
     assert response.status_code == 200
     error_msg = UniqueUserDataError().message
     assert error_msg.encode() in response.data
+
+
+def test_simple_users_setup(client, test_users_simple):
+    """test to be run in order to create three simple accounts for testing purposes"""
+    assert True

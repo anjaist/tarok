@@ -17,7 +17,9 @@ function showCoPlayersChoice(coPlayersChoice) {
         console.log(`${key}-choice`);
         let coPlayerChoiceDiv = document.getElementById(`${key}-choice`);
         console.log(coPlayersChoiceDiv);
-        coPlayerChoiceDiv.innerHTML = `${key}: ${coPlayersChoice[key]}`;
+        if (coPlayerChoiceDiv) {
+            coPlayerChoiceDiv.innerHTML = `${key}: ${coPlayersChoice[key]}`;
+        };
     });
 };
 

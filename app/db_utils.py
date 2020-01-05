@@ -4,7 +4,7 @@ import random
 from sqlalchemy.exc import IntegrityError
 
 from app import redis_db
-from app.game_utils import POINTS_GAME_TYPE
+from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE
 from app.models import User, db, Game
 
 
@@ -94,16 +94,28 @@ def update_user_in_game(user_id: int, in_game_value: bool):
     db.session.commit()
 
 
-def get_co_players(game_id: int, current_player_id: int) -> dict:
-    """returns dictionary of all co-players in game and their active status"""
+def get_all_players(game_id: int) -> list:
+    """returns list of all players in game"""
     game = Game.query.filter_by(id=game_id).first()
     players_of_game = [game.player1, game.player2, game.player3, game.player4]
     if players_of_game[-1] is None:
         players_of_game.pop()
 
-    co_players = {}
+    all_players = []
     for player_id in players_of_game:
         player = User.query.filter_by(id=player_id).first()
+        all_players.append(player.username)
+
+    return all_players
+
+
+def get_co_players(game_id: int, current_player_id: int) -> dict:
+    """returns dictionary of all co-players in game and their active status"""
+    all_players = get_all_players(game_id)
+
+    co_players = {}
+    for player_username in all_players:
+        player = User.query.filter_by(username=player_username).first()
         if player.id == current_player_id:
             continue
         co_players[player.username] = player.in_game
@@ -111,17 +123,20 @@ def get_co_players(game_id: int, current_player_id: int) -> dict:
     return co_players
 
 
-def get_co_players_choices(game_id: int, current_player_id: int) -> dict:
-    """returns dictionary containing choices made by co-players"""
-    co_players_choice = {}
-    co_players = get_co_players(game_id, current_player_id).keys()
-    for p in co_players:
-        p_choice = (redis_db.hget(f'{game_id}:round_choices', f'{p}_chosen')).decode('utf-8')
+def get_players_choices(game_id: int) -> dict:
+    """returns dictionary containing choices made so far by players"""
+    all_players = get_all_players(game_id)
+
+    players_choice = {}
+    for player_username in all_players:
+        p_choice = redis_db.hget(f'{game_id}:round_choices', f'{player_username}_chosen')
         if not p_choice:
             p_choice = 'čaka na izbiro'
-        co_players_choice[p] = p_choice
+        else:
+            p_choice = TRANSLATION_GAME_TYPE[p_choice.decode('utf-8')]
+        players_choice[player_username] = p_choice
 
-    return co_players_choice
+    return players_choice
 
 
 def check_validity_of_chosen_players(user: User, username1: str, username2: str):
@@ -268,6 +283,3 @@ def update_player_options(game_id: int):
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', ','.join(player1_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', ','.join(player2_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', ','.join(player3_options))
-
-
-# TODO: display what other players have chosen

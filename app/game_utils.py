@@ -5,6 +5,7 @@ SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'h
 TAROK_CARDS = [str(i) for i in range(1, 23)]
 
 POINTS_GAME_TYPE = {'one': 30, 'two': 20, 'three': 10, 'pass': 0}
+TRANSLATION_GAME_TYPE = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
 
 
 def get_deck() -> list:

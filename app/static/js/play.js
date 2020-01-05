@@ -8,6 +8,18 @@ let isChoosingGameDiv = document.getElementById('is-choosing-game');
 let currentlyChoosingPlayer = document.getElementById('player-to-choose').content;
 let currentlyChoosingPlayerOptions = document.getElementById('player-to-choose-opts').content;
 currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
+let coPlayersChoiceDiv = document.getElementById('co-players-choice');
+
+
+// show what co-players have chosen
+function showCoPlayersChoice(coPlayersChoice) {
+    Object.keys(coPlayersChoice).forEach(function(key) {
+        console.log(`${key}-choice`);
+        let coPlayerChoiceDiv = document.getElementById(`${key}-choice`);
+        console.log(coPlayersChoiceDiv);
+        coPlayerChoiceDiv.innerHTML = `${key}: ${coPlayersChoice[key]}`;
+    });
+};
 
 
 // deal with connection and disconnection events
@@ -16,13 +28,16 @@ socket.on('connect', function() {
     socket.emit('connect to playroom');
 });
 
-socket.on('a user connected', function(username) {
-    console.log(`User ${username} has joined`)
-    let user = document.getElementById(username);
+socket.on('a user connected', function(receivedData) {
+    console.log(`User ${receivedData.connected_user} has joined`)
+    let user = document.getElementById(receivedData.connected_user);
     if (user) {
         user.classList.remove('inactive-username');
-        user.innerHTML = username
+        user.innerHTML = receivedData.connected_user
     }
+    if (receivedData.connected_user == currentUser) {
+        showCoPlayersChoice(receivedData.co_players_choice);
+    };
 });
 
 socket.on('a user disconnected', function(username) {
@@ -52,9 +67,8 @@ greyOutOptions();
 socket.on('player game options', function(receivedData) {
     currentlyChoosingPlayer = receivedData.player;
     currentlyChoosingPlayerOptions = receivedData.player_options;
-    console.log(`[RECEIVED] player waiting to choose: ${currentlyChoosingPlayer}, options: ${currentlyChoosingPlayerOptions}`);
-
     showCurrentlyChoosing();
+    showCoPlayersChoice(receivedData.co_players_choice);
     greyOutOptions();
 });
 

@@ -59,6 +59,11 @@
     <meta id="player-to-choose" content="{{ player_to_choose }}">
     <meta id="player-to-choose-opts" content="{{ player_to_choose_opts }}">
     <div id="round-options-popup" class="game-options">
+        <div id="co-players-choice">
+            {% for username, active in co_players.items() %}
+                <p id="{{ username }}-choice">-</p>
+            {% endfor %}
+        </div>
         <div id="choose-game">
             <h3>Izberi igro:</h3>
             <form id="round-options-form">

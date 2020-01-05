@@ -5,7 +5,7 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_co_players_choices
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -125,7 +125,9 @@ def play():
 def connect_handler():
     """handler for connecting user to playroom via websocket"""
     user = User.query.filter_by(id=session['user_id']).first()
-    socketio.emit('a user connected', user.username)
+    co_players_choice = get_co_players_choices(user.current_game, user.id)
+    data_to_send = {'connected_user': user.username, 'co_players_choice': co_players_choice}
+    socketio.emit('a user connected', data_to_send)
 
 
 @socketio.on('disconnect')
@@ -149,7 +151,10 @@ def update_player_choosing():
         player_options = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose_game}_options')
         player_options = player_options.decode('utf-8')
 
-    data_to_send = {'player': player_to_choose_game, 'player_options': player_options}
+    co_players_choice = get_co_players_choices(game_id, user.id)
+
+    data_to_send = {'player': player_to_choose_game, 'player_options': player_options,
+                    'co_players_choice': co_players_choice}
 
     print(f'[SENDING] player to choose: {data_to_send}')
     socketio.emit('player game options', data_to_send)

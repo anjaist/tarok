@@ -114,3 +114,20 @@
 #is-choosing-game {
     display: none;
 }
+
+#co-players-choice {
+    position: absolute;
+    top: -12px;
+    padding: 6px 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 350px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 20px 20px 32px -18px rgba(0,0,0);
+    font-size: 13px;
+}
+
+#co-players-choice p {
+    margin: 0;
+}

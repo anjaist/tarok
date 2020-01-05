@@ -111,6 +111,19 @@ def get_co_players(game_id: int, current_player_id: int) -> dict:
     return co_players
 
 
+def get_co_players_choices(game_id: int, current_player_id: int) -> dict:
+    """returns dictionary containing choices made by co-players"""
+    co_players_choice = {}
+    co_players = get_co_players(game_id, current_player_id).keys()
+    for p in co_players:
+        p_choice = (redis_db.hget(f'{game_id}:round_choices', f'{p}_chosen')).decode('utf-8')
+        if not p_choice:
+            p_choice = 'čaka na izbiro'
+        co_players_choice[p] = p_choice
+
+    return co_players_choice
+
+
 def check_validity_of_chosen_players(user: User, username1: str, username2: str):
     """checks that chosen co_players exist in db"""
     co_player1 = User.query.filter_by(username=username1).first()

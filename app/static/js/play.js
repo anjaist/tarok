@@ -2,6 +2,7 @@ let socket = io.connect(window.location.protocol + '//' + document.domain + ':' 
 let allOptions = ['three', 'two', 'one', 'pass'];
 
 let currentUser = document.getElementById('current-user').content;
+let gameId = document.getElementById('game-id').content;
 let roundOptionsPopup = document.getElementById('round-options-popup');
 let chooseGameDiv = document.getElementById('choose-game');
 let isChoosingGameDiv = document.getElementById('is-choosing-game');
@@ -14,9 +15,7 @@ let coPlayersChoiceDiv = document.getElementById('co-players-choice');
 // show what co-players have chosen
 function showCoPlayersChoice(coPlayersChoice) {
     Object.keys(coPlayersChoice).forEach(function(key) {
-        console.log(`${key}-choice`);
         let coPlayerChoiceDiv = document.getElementById(`${key}-choice`);
-        console.log(coPlayersChoiceDiv);
         if (coPlayerChoiceDiv) {
             coPlayerChoiceDiv.innerHTML = `${key}: ${coPlayersChoice[key]}`;
         };
@@ -79,6 +78,9 @@ socket.on('player game options', function(receivedData) {
 function showCurrentlyChoosing() {
     if ((currentlyChoosingPlayer == null) || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
+        // once everyone has chosen and the choose displayed is gone, send message to server side
+        console.log('[SENDING] all users have chosen');
+        socket.emit('current round', gameId);
     } else if (currentlyChoosingPlayer == currentUser) {
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';

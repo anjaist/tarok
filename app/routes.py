@@ -5,7 +5,8 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
+    create_redis_entry_for_current_round
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -118,7 +119,8 @@ def play():
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
-                           player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts)
+                           player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
+                           game_id=game_id)
 
 
 @socketio.on('connect to playroom')
@@ -171,3 +173,9 @@ def update_user_choice(username: str, choice: str):
     if choice:
         redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
     update_player_choosing()
+
+
+@socketio.on('current round')
+def update_round_state(game_id: str):
+    """updates redis db with the current state of the round that is being played"""
+    create_redis_entry_for_current_round(int(game_id))

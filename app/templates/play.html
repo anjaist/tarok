@@ -47,10 +47,19 @@
             </div>
         {% endfor %}
     </div>
-    <div id="cards-wrapper-talon">
+    <div class="cards-wrapper-talon" id="talon-back">
         {% for card in round_state['talon'] %}
             <div class="card-cont">
                 <img class="tarok-card" src="{{ url_for('static', filename='img/card-back-vertical.png') }}"
+                     alt="tarok card">
+            </div>
+        {% endfor %}
+    </div>
+    <div class="cards-wrapper-talon" id="talon-front">
+        {% for card in round_state['talon'] %}
+            {% set img_path = 'img/' ~ card ~ '.png' %}
+            <div class="card-cont">
+                <img class="tarok-card" src="{{ url_for('static', filename=img_path) }}"
                      alt="tarok card">
             </div>
         {% endfor %}

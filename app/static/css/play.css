@@ -80,13 +80,17 @@
     height: 10vw;
 }
 
-#cards-wrapper-talon {
+.cards-wrapper-talon {
     display: flex;
     height: 30vh;
     width: 30vw;
     position: absolute;
     left: 35vw;
     top: 30vh;
+}
+
+#talon-front {
+    display: none;
 }
 
 #round-options-popup {

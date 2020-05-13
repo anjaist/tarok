@@ -11,6 +11,8 @@ let currentlyChoosingPlayerOptions = document.getElementById('player-to-choose-o
 currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
 let coPlayersChoiceDiv = document.getElementById('co-players-choice');
 
+let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
+
 
 // show what co-players have chosen
 function showCoPlayersChoice(coPlayersChoice) {
@@ -76,8 +78,9 @@ socket.on('player game options', function(receivedData) {
 
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
-    if ((currentlyChoosingPlayer == null) || currentlyChoosingPlayerOptions.includes('chosen')) {
+    if (noChoosingPlayer || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
+        isChoosingGameDiv.style.display = 'none';
         // once everyone has chosen and the choose displayed is gone, send message to server side
         console.log('[SENDING] all users have chosen');
         socket.emit('current round', gameId);

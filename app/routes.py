@@ -179,3 +179,5 @@ def update_user_choice(username: str, choice: str):
 def update_round_state(game_id: str):
     """updates redis db with the current state of the round that is being played"""
     create_redis_entry_for_current_round(int(game_id))
+    # todo: reveal talon + group cards based on type of game
+

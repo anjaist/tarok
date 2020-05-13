@@ -12,7 +12,7 @@ currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
 let coPlayersChoiceDiv = document.getElementById('co-players-choice');
 
 let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
-
+let isTalonShown = false;
 
 // show what co-players have chosen
 function showCoPlayersChoice(coPlayersChoice) {
@@ -76,6 +76,16 @@ socket.on('player game options', function(receivedData) {
 });
 
 
+let talonBack = document.getElementById('talon-back');
+let talonFront = document.getElementById('talon-front');
+
+function revealTalon() {
+    talonBack.style.display = 'none';
+    talonFront.style.display = 'flex';
+    isTalonShown = true;
+};
+
+
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
     if (noChoosingPlayer || currentlyChoosingPlayerOptions.includes('chosen')) {
@@ -84,6 +94,8 @@ function showCurrentlyChoosing() {
         // once everyone has chosen and the choose displayed is gone, send message to server side
         console.log('[SENDING] all users have chosen');
         socket.emit('current round', gameId);
+        // flip the talon cards
+        revealTalon();
     } else if (currentlyChoosingPlayer == currentUser) {
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';
@@ -108,4 +120,81 @@ roundOptionsButton.addEventListener('click', function() {
 
             showCurrentlyChoosing()
         }
+});
+
+
+// highlight available talon cards grouped according to the type of game played
+let gameType = null;
+let talonCard1 = document.getElementById('talon-card-img-1');
+let talonCard2 = document.getElementById('talon-card-img-2');
+let talonCard3 = document.getElementById('talon-card-img-3');
+let talonCard4 = document.getElementById('talon-card-img-4');
+let talonCard5 = document.getElementById('talon-card-img-5');
+let talonCard6 = document.getElementById('talon-card-img-6');
+let talonCardBg1 = document.getElementById('talon-card-bg-1');
+let talonCardBg2 = document.getElementById('talon-card-bg-2');
+let talonCardBg3 = document.getElementById('talon-card-bg-3');
+let talonCardBg4 = document.getElementById('talon-card-bg-4');
+let talonCardBg5 = document.getElementById('talon-card-bg-5');
+let talonCardBg6 = document.getElementById('talon-card-bg-6');
+
+
+function temp_test() {
+    console.log(`game type: ${gameType}`)
+    if (isTalonShown && gameType == 'one') {
+        talonCard1.onmouseover = function(event) {
+            talonCard1.style.opacity = '0.5';
+            talonCardBg1.style.background = 'green';
+        }
+        talonCard1.onmouseout = function(event) {
+            talonCard1.style.opacity = '1';
+            talonCardBg1.style.background = null;
+        }
+        talonCard2.onmouseover = function(event) {
+            talonCard2.style.opacity = '0.5';
+            talonCardBg2.style.background = 'green';
+        }
+        talonCard2.onmouseout = function(event) {
+            talonCard2.style.opacity = '1';
+            talonCardBg2.style.background = null;
+        }
+        talonCard3.onmouseover = function(event) {
+            talonCard3.style.opacity = '0.5';
+            talonCardBg3.style.background = 'green';
+        }
+        talonCard3.onmouseout = function(event) {
+            talonCard3.style.opacity = '1';
+            talonCardBg3.style.background = null;
+        }
+        talonCard4.onmouseover = function(event) {
+            talonCard4.style.opacity = '0.5';
+            talonCardBg4.style.background = 'green';
+        }
+        talonCard4.onmouseout = function(event) {
+            talonCard4.style.opacity = '1';
+            talonCardBg4.style.background = null;
+        }
+        talonCard5.onmouseover = function(event) {
+            talonCard5.style.opacity = '0.5';
+            talonCardBg5.style.background = 'green';
+        }
+        talonCard5.onmouseout = function(event) {
+            talonCard5.style.opacity = '1';
+            talonCardBg5.style.background = null;
+        }
+        talonCard6.onmouseover = function(event) {
+            talonCard6.style.opacity = '0.5';
+            talonCardBg6.style.background = 'green';
+        }
+        talonCard6.onmouseout = function(event) {
+            talonCard6.style.opacity = '1';
+            talonCardBg6.style.background = null;
+        }
+    }
+}
+
+// get information on the current round being played
+socket.on('current round', function(receivedData) {
+    gameType = receivedData.game_type;
+    temp_test();
 });

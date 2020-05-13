@@ -82,10 +82,9 @@
 
 .cards-wrapper-talon {
     display: flex;
-    height: 30vh;
-    width: 30vw;
+    width: 35vw;
     position: absolute;
-    left: 35vw;
+    left: 33vw;
     top: 30vh;
 }
 

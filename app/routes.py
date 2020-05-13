@@ -179,5 +179,12 @@ def update_user_choice(username: str, choice: str):
 def update_round_state(game_id: str):
     """updates redis db with the current state of the round that is being played"""
     create_redis_entry_for_current_round(int(game_id))
-    # todo: reveal talon + group cards based on type of game
 
+    game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
+    data_to_send = {'game_type': game_type}
+    print(f'[SENDING] game being played: {data_to_send}')
+    socketio.emit('current round', data_to_send)
+
+    # todo: group talon cards based on type of game ('one' is done, todo: 'two' and 'three')
+    # todo: show who is playing + what game (window just above talon)
+    #  "Igralec načrtuje igro "tri"..."

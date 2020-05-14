@@ -189,8 +189,6 @@ def update_round_state(game_id: str):
 
 
 # TODO:
-#  => show who is playing + what game (window just above talon)
-#       ("Igralec načrtuje igro "tri"...")
 #  => user clicks on a group of talon cards
 #  => user chooses three/two/one cards from their pile to exchange with talon
 #  => cards are swapped (cards in user's stack are sorted)

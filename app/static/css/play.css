@@ -134,3 +134,13 @@
 #co-players-choice p {
     margin: 0;
 }
+
+#talon-info {
+    position: absolute;
+    top: 20vw;
+    left: 35vw;
+    width: 298px;
+    font-size: 13px;
+    color: white;
+    text-align: center;
+}

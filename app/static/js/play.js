@@ -1,5 +1,6 @@
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
 let allOptions = ['three', 'two', 'one', 'pass'];
+let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
 
 let currentUser = document.getElementById('current-user').content;
 let gameId = document.getElementById('game-id').content;
@@ -309,9 +310,23 @@ function displayTalonOptions(playerName) {
     }
 }
 
+let talonInfoDiv = document.getElementById('talon-info');
+
+// display an info message about talon. The message is different for the main player
+function displayTalonInfoMessage(mainPlayer, gameType) {
+    if (currentUser == mainPlayer) {
+        message = 'Izberi karte iz talona in karte iz roke za zamenjavo'
+    } else {
+        message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`
+    }
+    talonInfoDiv.innerHTML = message;
+}
+
+
 // get information on the current round being played
 socket.on('current round', function(receivedData) {
     gameType = receivedData.game_type;
     mainPlayer = receivedData.main_player;
+    displayTalonInfoMessage(mainPlayer, gameType);
     displayTalonOptions(mainPlayer);
 });

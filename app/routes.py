@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
-    create_redis_entry_for_current_round
+    create_redis_entry_for_current_round, save_game_type
 from app.game_utils import deal_new_round
 from app.models import User
 
@@ -108,7 +108,8 @@ def play():
     co_players = get_co_players(game_id, session['user_id'])
     all_players = list(co_players.keys()) + [user.username]
 
-    new_round = deal_new_round(all_players)
+    dealt_cards = deal_new_round(all_players)
+    create_redis_entry_for_current_round(game_id, dealt_cards)
     choose_order = get_players_that_need_to_choose_game(game_id)
     player_to_choose = None
     player_to_choose_opts = None
@@ -118,7 +119,7 @@ def play():
         player_to_choose_opts = player_to_choose_opts.decode('utf-8')
 
     connect_handler()
-    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
+    return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
                            game_id=game_id)
 
@@ -178,7 +179,7 @@ def update_user_choice(username: str, choice: str):
 @socketio.on('current round')
 def update_round_state(game_id: str):
     """updates redis db with the current state of the round that is being played"""
-    create_redis_entry_for_current_round(int(game_id))
+    save_game_type(int(game_id))
 
     game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
     data_to_send = {'game_type': game_type}
@@ -189,7 +190,10 @@ def update_round_state(game_id: str):
 # TODO:
 #  => show who is playing + what game (window just above talon)
 #       ("Igralec načrtuje igro "tri"...")
+#  => highlights should only be available to current player
+#       (currently they are only available to last player that was choosing)
 #  => user clicks on a group of talon cards
 #  => user chooses three/two/one cards from their pile to exchange with talon
 #  => cards are swapped (cards in user's stack are sorted)
+#  => update state of cards for user in redis
 #  => talon disappears

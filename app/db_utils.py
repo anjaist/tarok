@@ -315,17 +315,31 @@ def get_game_type_and_main_player(game_id: int) -> tuple:
         return 'pass', None
 
 
-def create_redis_entry_for_current_round(game_id: int):
-    """creates new entry in redis db to start a new round.
-    The redis key {game_id}:current_round should be deleted once the round is complete"""
+def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
+    """creates new entry in redis db to start a new round. Saves the order of players and the state of the dealt cards.
+    The redis key {game_id}:current_round should be deleted once the round is complete."""
     key_exists = redis_db.exists(f'{game_id}:current_round')
     if key_exists:
         return  # it means that a round is currently in progress
 
+    # save order of players
     order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
-    game_type, main_player = get_game_type_and_main_player(game_id)
 
     redis_db.hset(f'{game_id}:current_round', 'order', order)
-    redis_db.hset(f'{game_id}:current_round', 'type', game_type)
     redis_db.hset(f'{game_id}:current_round', 'whose_turn', order.split(',')[0])
+
+    # save dealt cards
+    for key, value in dealt_cards.items():
+        value_for_redis = ','.join(str(card_name) for card_name in value)
+        redis_db.hset(f'{game_id}:current_round', f'{key}_cards', value_for_redis)
+
+
+def save_game_type(game_id: int):
+    """saves the game type and main player in redisdb. Should only be done once (per round)"""
+    game_type, main_player = get_game_type_and_main_player(game_id)
+    key_exists = redis_db.hexists(f'{game_id}:current_round', 'type')
+    if key_exists:
+        return None
+
+    redis_db.hset(f'{game_id}:current_round', 'type', game_type)
     redis_db.hset(f'{game_id}:current_round', 'main_player', main_player)

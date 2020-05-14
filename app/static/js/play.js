@@ -91,15 +91,21 @@ function showCurrentlyChoosing() {
     if (noChoosingPlayer || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
         isChoosingGameDiv.style.display = 'none';
-        // once everyone has chosen and the choose displayed is gone, send message to server side
+
+        // once everyone has chosen and the choose display is gone, send message to server side
         console.log('[SENDING] all users have chosen');
         socket.emit('current round', gameId);
+
         // flip the talon cards
         revealTalon();
+
     } else if (currentlyChoosingPlayer == currentUser) {
+        // show the game options to player, whose turn it is currently to choose
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';
+
     } else {
+        // if another player is choosing, hide the game options and show that another player is choosing
         chooseGameDiv.style.display = 'none';
         isChoosingGameDiv.style.display = 'block';
         isChoosingGameDiv.innerHTML = `<h3>${currentlyChoosingPlayer} izbira igro</h3>`
@@ -150,153 +156,155 @@ function removeHighlightTalonCard(cardElement, cardBgElement) {
 }
 
 
-function displayTalonOptions() {
-    if (isTalonShown && gameType == 'one') {
-        talonCard1.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-        }
-        talonCard1.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-        }
-        talonCard2.onmouseover = function(event) {
-            highlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard2.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard3.onmouseover = function(event) {
-            highlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard3.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard4.onmouseover = function(event) {
-            highlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard4.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard5.onmouseover = function(event) {
-            highlightTalonCard(talonCard5, talonCardBg5);
-        }
-        talonCard5.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-        }
-        talonCard6.onmouseover = function(event) {
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard6.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
-        }
-    } else if (isTalonShown && gameType == 'two') {
-        talonCard1.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-            highlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard1.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard2.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-            highlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard2.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-        }
-        talonCard3.onmouseover = function(event) {
-            highlightTalonCard(talonCard3, talonCardBg3);
-            highlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard3.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard4.onmouseover = function(event) {
-            highlightTalonCard(talonCard3, talonCardBg3);
-            highlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard4.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-        }
-        talonCard5.onmouseover = function(event) {
-            highlightTalonCard(talonCard5, talonCardBg5);
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard5.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard6.onmouseover = function(event) {
-            highlightTalonCard(talonCard5, talonCardBg5);
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard6.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
-        }
-    } else if (isTalonShown && gameType == 'three') {
-        talonCard1.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-            highlightTalonCard(talonCard2, talonCardBg2);
-            highlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard1.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard2.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-            highlightTalonCard(talonCard2, talonCardBg2);
-            highlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard2.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard3.onmouseover = function(event) {
-            highlightTalonCard(talonCard1, talonCardBg1);
-            highlightTalonCard(talonCard2, talonCardBg2);
-            highlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard3.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard1, talonCardBg1);
-            removeHighlightTalonCard(talonCard2, talonCardBg2);
-            removeHighlightTalonCard(talonCard3, talonCardBg3);
-        }
-        talonCard4.onmouseover = function(event) {
-            highlightTalonCard(talonCard4, talonCardBg4);
-            highlightTalonCard(talonCard5, talonCardBg5);
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard4.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard5.onmouseover = function(event) {
-            highlightTalonCard(talonCard4, talonCardBg4);
-            highlightTalonCard(talonCard5, talonCardBg5);
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard5.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard6.onmouseover = function(event) {
-            highlightTalonCard(talonCard4, talonCardBg4);
-            highlightTalonCard(talonCard5, talonCardBg5);
-            highlightTalonCard(talonCard6, talonCardBg6);
-        }
-        talonCard6.onmouseout = function(event) {
-            removeHighlightTalonCard(talonCard4, talonCardBg4);
-            removeHighlightTalonCard(talonCard5, talonCardBg5);
-            removeHighlightTalonCard(talonCard6, talonCardBg6);
+function displayTalonOptions(playerName) {
+    if (isTalonShown && currentUser == playerName) {
+        if (gameType == 'one') {
+            talonCard1.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+            }
+            talonCard1.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+            }
+            talonCard2.onmouseover = function(event) {
+                highlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard2.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard3.onmouseover = function(event) {
+                highlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard3.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard4.onmouseover = function(event) {
+                highlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard4.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard5.onmouseover = function(event) {
+                highlightTalonCard(talonCard5, talonCardBg5);
+            }
+            talonCard5.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+            }
+            talonCard6.onmouseover = function(event) {
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard6.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
+        } else if (gameType == 'two') {
+            talonCard1.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+                highlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard1.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard2.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+                highlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard2.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+            }
+            talonCard3.onmouseover = function(event) {
+                highlightTalonCard(talonCard3, talonCardBg3);
+                highlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard3.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard4.onmouseover = function(event) {
+                highlightTalonCard(talonCard3, talonCardBg3);
+                highlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard4.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+            }
+            talonCard5.onmouseover = function(event) {
+                highlightTalonCard(talonCard5, talonCardBg5);
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard5.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard6.onmouseover = function(event) {
+                highlightTalonCard(talonCard5, talonCardBg5);
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard6.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
+        } else if (gameType == 'three') {
+            talonCard1.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+                highlightTalonCard(talonCard2, talonCardBg2);
+                highlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard1.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard2.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+                highlightTalonCard(talonCard2, talonCardBg2);
+                highlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard2.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard3.onmouseover = function(event) {
+                highlightTalonCard(talonCard1, talonCardBg1);
+                highlightTalonCard(talonCard2, talonCardBg2);
+                highlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard3.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard1, talonCardBg1);
+                removeHighlightTalonCard(talonCard2, talonCardBg2);
+                removeHighlightTalonCard(talonCard3, talonCardBg3);
+            }
+            talonCard4.onmouseover = function(event) {
+                highlightTalonCard(talonCard4, talonCardBg4);
+                highlightTalonCard(talonCard5, talonCardBg5);
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard4.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard5.onmouseover = function(event) {
+                highlightTalonCard(talonCard4, talonCardBg4);
+                highlightTalonCard(talonCard5, talonCardBg5);
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard5.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard6.onmouseover = function(event) {
+                highlightTalonCard(talonCard4, talonCardBg4);
+                highlightTalonCard(talonCard5, talonCardBg5);
+                highlightTalonCard(talonCard6, talonCardBg6);
+            }
+            talonCard6.onmouseout = function(event) {
+                removeHighlightTalonCard(talonCard4, talonCardBg4);
+                removeHighlightTalonCard(talonCard5, talonCardBg5);
+                removeHighlightTalonCard(talonCard6, talonCardBg6);
+            }
         }
     }
 }
@@ -304,5 +312,6 @@ function displayTalonOptions() {
 // get information on the current round being played
 socket.on('current round', function(receivedData) {
     gameType = receivedData.game_type;
-    displayTalonOptions();
+    mainPlayer = receivedData.main_player;
+    displayTalonOptions(mainPlayer);
 });

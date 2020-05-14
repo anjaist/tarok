@@ -182,7 +182,8 @@ def update_round_state(game_id: str):
     save_game_type(int(game_id))
 
     game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
-    data_to_send = {'game_type': game_type}
+    main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+    data_to_send = {'game_type': game_type, 'main_player': main_player}
     print(f'[SENDING] game being played: {data_to_send}')
     socketio.emit('current round', data_to_send)
 
@@ -190,10 +191,10 @@ def update_round_state(game_id: str):
 # TODO:
 #  => show who is playing + what game (window just above talon)
 #       ("Igralec načrtuje igro "tri"...")
-#  => highlights should only be available to current player
-#       (currently they are only available to last player that was choosing)
 #  => user clicks on a group of talon cards
 #  => user chooses three/two/one cards from their pile to exchange with talon
 #  => cards are swapped (cards in user's stack are sorted)
 #  => update state of cards for user in redis
 #  => talon disappears
+#  => card persistency: if user refreshes page, the same cards should be displayed to them
+#       (currently a new deck is shuffled)

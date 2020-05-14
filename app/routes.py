@@ -169,7 +169,7 @@ def update_user_choice(username: str, choice: str):
     user = User.query.filter_by(username=username).first()
     game_id = user.current_game
 
-    # udate redis with user's choice
+    # update redis with user's choice
     if choice:
         redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
     update_player_choosing()
@@ -185,6 +185,11 @@ def update_round_state(game_id: str):
     print(f'[SENDING] game being played: {data_to_send}')
     socketio.emit('current round', data_to_send)
 
-    # todo: group talon cards based on type of game ('one' is done, todo: 'two' and 'three')
-    # todo: show who is playing + what game (window just above talon)
-    #  "Igralec načrtuje igro "tri"..."
+
+# TODO:
+#  => show who is playing + what game (window just above talon)
+#       ("Igralec načrtuje igro "tri"...")
+#  => user clicks on a group of talon cards
+#  => user chooses three/two/one cards from their pile to exchange with talon
+#  => cards are swapped (cards in user's stack are sorted)
+#  => talon disappears

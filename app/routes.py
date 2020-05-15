@@ -184,7 +184,7 @@ def update_round_state(game_id: str):
     game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
     main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
     data_to_send = {'game_type': game_type, 'main_player': main_player}
-    print(f'[SENDING] game being played: {data_to_send}')
+    print(f'[SENDING] current round information: {data_to_send}')
     socketio.emit('current round', data_to_send)
 
 
@@ -196,3 +196,4 @@ def update_round_state(game_id: str):
 #  => talon disappears
 #  => card persistency: if user refreshes page, the same cards should be displayed to them
 #       (currently a new deck is shuffled)
+#  => fix not being able to press the button on last player confirming their already chosen option

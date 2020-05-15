@@ -144,16 +144,28 @@ let talonCardBg3 = document.getElementById('talon-card-bg-3');
 let talonCardBg4 = document.getElementById('talon-card-bg-4');
 let talonCardBg5 = document.getElementById('talon-card-bg-5');
 let talonCardBg6 = document.getElementById('talon-card-bg-6');
+let talonChosen = [];
 
 
-function highlightTalonCard(cardElement, cardBgElement) {
-    cardElement.style.opacity = '0.5';
-    cardBgElement.style.background = 'green';
+function highlightTalonCard(cardElement, cardBgElement, highlightColor='green') {
+    cardElement.style.opacity = '0.6';
+    if (cardBgElement.style.background != 'yellow') {
+        cardBgElement.style.background = highlightColor;
+    }
 }
 
-function removeHighlightTalonCard(cardElement, cardBgElement) {
-    cardElement.style.opacity = '1';
-    cardBgElement.style.background = null;
+
+/* Removes highlight from card if the cards is green; if the card is yellow,
+   the highlight can be removed only by setting removeChose to true.
+*/
+function removeHighlightTalonCard(cardElement, cardBgElement, removeChosen=false) {
+    if (removeChosen) {
+        cardElement.style.opacity = '1';
+        cardBgElement.style.background = null;
+    } else if (cardBgElement.style.background == 'green') {
+        cardElement.style.opacity = '1';
+        cardBgElement.style.background = null;
+    }
 }
 
 
@@ -313,7 +325,7 @@ function displayTalonOptions(playerName) {
 let talonInfoDiv = document.getElementById('talon-info');
 
 // display an info message about talon. The message is different for the main player
-function displayTalonInfoMessage(mainPlayer, gameType) {
+function displayTalonInfoMessage(mainPlayer) {
     if (currentUser == mainPlayer) {
         message = 'Izberi karte iz talona in karte iz roke za zamenjavo'
     } else {
@@ -323,10 +335,98 @@ function displayTalonInfoMessage(mainPlayer, gameType) {
 }
 
 
+// todo: refactor this + this only works for game 'two' so far
+// Listen for a user's click on talon cards.
+talonCard1.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard1, talonCardBg1, 'yellow');
+        highlightTalonCard(talonCard2, talonCardBg2, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard1, talonCardBg1, true);
+        removeHighlightTalonCard(talonCard2, talonCardBg2, true);
+        talonChosen = [];
+    }
+})
+talonCard2.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard1, talonCardBg1, 'yellow');
+        highlightTalonCard(talonCard2, talonCardBg2, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard1, talonCardBg1, true);
+        removeHighlightTalonCard(talonCard2, talonCardBg2, true);
+        talonChosen = [];
+    }
+})
+talonCard3.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard3, talonCardBg3, 'yellow');
+        highlightTalonCard(talonCard4, talonCardBg4, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard3, talonCardBg3, true);
+        removeHighlightTalonCard(talonCard4, talonCardBg4, true);
+        talonChosen = [];
+    }
+})
+talonCard4.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard3, talonCardBg3, 'yellow');
+        highlightTalonCard(talonCard4, talonCardBg4, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard3, talonCardBg3, true);
+        removeHighlightTalonCard(talonCard4, talonCardBg4, true);
+        talonChosen = [];
+    }
+})
+talonCard5.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard5, talonCardBg5, 'yellow');
+        highlightTalonCard(talonCard6, talonCardBg6, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard5, talonCardBg5, true);
+        removeHighlightTalonCard(talonCard6, talonCardBg6, true);
+        talonChosen = [];
+    }
+})
+talonCard6.addEventListener('click', function() {
+    if (!talonChosen.length) {
+        let cardFileName = talonCard1.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(talonCard5, talonCardBg5, 'yellow');
+        highlightTalonCard(talonCard6, talonCardBg6, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(talonCard5, talonCardBg5, true);
+        removeHighlightTalonCard(talonCard6, talonCardBg6, true);
+        talonChosen = [];
+    }
+})
+
+
 // get information on the current round being played
 socket.on('current round', function(receivedData) {
     gameType = receivedData.game_type;
     mainPlayer = receivedData.main_player;
-    displayTalonInfoMessage(mainPlayer, gameType);
+    displayTalonInfoMessage(mainPlayer);
     displayTalonOptions(mainPlayer);
 });

@@ -335,91 +335,43 @@ function displayTalonInfoMessage(mainPlayer) {
 }
 
 
+// the user chooses the talon cards by clicking on them and "unchooses" by clicking again
+function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=false, card3=false, card3bg=false) {
+    if (!talonChosen.length) {
+        let cardFileName = listenerCard.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(listenerCard, listenerCardBg, 'yellow');
+        if (card2) highlightTalonCard(card2, card2bg, 'yellow');
+        if (card3) highlightTalonCard(card3, card3bg, 'yellow');
+    }
+    else {
+        removeHighlightTalonCard(listenerCard, listenerCardBg, true);
+        if (card2) removeHighlightTalonCard(card2, card2bg, true);
+        if (card3) removeHighlightTalonCard(card3, card3bg, true);
+        talonChosen = [];
+    }
+}
+
 // todo: refactor this + this only works for game 'two' so far
 // Listen for a user's click on talon cards.
 talonCard1.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard1, talonCardBg1, 'yellow');
-        highlightTalonCard(talonCard2, talonCardBg2, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard1, talonCardBg1, true);
-        removeHighlightTalonCard(talonCard2, talonCardBg2, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
 })
 talonCard2.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard1, talonCardBg1, 'yellow');
-        highlightTalonCard(talonCard2, talonCardBg2, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard1, talonCardBg1, true);
-        removeHighlightTalonCard(talonCard2, talonCardBg2, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
 })
 talonCard3.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard3, talonCardBg3, 'yellow');
-        highlightTalonCard(talonCard4, talonCardBg4, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard3, talonCardBg3, true);
-        removeHighlightTalonCard(talonCard4, talonCardBg4, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
 })
 talonCard4.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard3, talonCardBg3, 'yellow');
-        highlightTalonCard(talonCard4, talonCardBg4, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard3, talonCardBg3, true);
-        removeHighlightTalonCard(talonCard4, talonCardBg4, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
 })
 talonCard5.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard5, talonCardBg5, 'yellow');
-        highlightTalonCard(talonCard6, talonCardBg6, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard5, talonCardBg5, true);
-        removeHighlightTalonCard(talonCard6, talonCardBg6, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
 })
 talonCard6.addEventListener('click', function() {
-    if (!talonChosen.length) {
-        let cardFileName = talonCard1.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(talonCard5, talonCardBg5, 'yellow');
-        highlightTalonCard(talonCard6, talonCardBg6, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(talonCard5, talonCardBg5, true);
-        removeHighlightTalonCard(talonCard6, talonCardBg6, true);
-        talonChosen = [];
-    }
+    chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
 })
 
 

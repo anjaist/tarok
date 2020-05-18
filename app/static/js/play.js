@@ -169,9 +169,33 @@ function removeHighlightTalonCard(cardElement, cardBgElement, removeChosen=false
 }
 
 
+// the user chooses the talon cards by clicking on them and "unchooses" by clicking again
+function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=false, card3=false, card3bg=false) {
+    if (!talonChosen.length) {
+        let cardFileName = listenerCard.src.split('/').pop();
+        cardFileName = cardFileName.replace('.png', '');
+        talonChosen.push(cardFileName);
+        highlightTalonCard(listenerCard, listenerCardBg, 'yellow');
+        if (card2) highlightTalonCard(card2, card2bg, 'yellow');
+        if (card3) highlightTalonCard(card3, card3bg, 'yellow');
+    }
+    else {
+        // remove ALL yellow highlights if unchoosing
+        removeHighlightTalonCard(talonCard1, talonCardBg1, true);
+        removeHighlightTalonCard(talonCard2, talonCardBg2, true);
+        removeHighlightTalonCard(talonCard3, talonCardBg3, true);
+        removeHighlightTalonCard(talonCard4, talonCardBg4, true);
+        removeHighlightTalonCard(talonCard5, talonCardBg5, true);
+        removeHighlightTalonCard(talonCard6, talonCardBg6, true);
+        talonChosen = [];
+    }
+}
+
+
 function displayTalonOptions(playerName) {
     if (isTalonShown && currentUser == playerName) {
         if (gameType == 'one') {
+            // look for a user's mouse movements over talon cards
             talonCard1.onmouseover = function(event) {
                 highlightTalonCard(talonCard1, talonCardBg1);
             }
@@ -208,7 +232,29 @@ function displayTalonOptions(playerName) {
             talonCard6.onmouseout = function(event) {
                 removeHighlightTalonCard(talonCard6, talonCardBg6);
             }
+
+            // Listen for a user's click on talon cards.
+            talonCard1.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1);
+            })
+            talonCard2.addEventListener('click', function() {
+                chooseTalonCards(talonCard2, talonCardBg2);
+            })
+            talonCard3.addEventListener('click', function() {
+                chooseTalonCards(talonCard3, talonCardBg3);
+            })
+            talonCard4.addEventListener('click', function() {
+                chooseTalonCards(talonCard4, talonCardBg4);
+            })
+            talonCard5.addEventListener('click', function() {
+                chooseTalonCards(talonCard5, talonCardBg5);
+            })
+            talonCard6.addEventListener('click', function() {
+                chooseTalonCards(talonCard6, talonCardBg6);
+            })
+
         } else if (gameType == 'two') {
+            // look for a user's mouse movements over talon cards
             talonCard1.onmouseover = function(event) {
                 highlightTalonCard(talonCard1, talonCardBg1);
                 highlightTalonCard(talonCard2, talonCardBg2);
@@ -257,7 +303,29 @@ function displayTalonOptions(playerName) {
                 removeHighlightTalonCard(talonCard5, talonCardBg5);
                 removeHighlightTalonCard(talonCard6, talonCardBg6);
             }
+
+            // Listen for a user's click on talon cards
+            talonCard1.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
+            })
+            talonCard2.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
+            })
+            talonCard3.addEventListener('click', function() {
+                chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
+            })
+            talonCard4.addEventListener('click', function() {
+                chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
+            })
+            talonCard5.addEventListener('click', function() {
+                chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
+            })
+            talonCard6.addEventListener('click', function() {
+                chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
+            })
+
         } else if (gameType == 'three') {
+            // look for a user's mouse movements over talon cards
             talonCard1.onmouseover = function(event) {
                 highlightTalonCard(talonCard1, talonCardBg1);
                 highlightTalonCard(talonCard2, talonCardBg2);
@@ -318,6 +386,26 @@ function displayTalonOptions(playerName) {
                 removeHighlightTalonCard(talonCard5, talonCardBg5);
                 removeHighlightTalonCard(talonCard6, talonCardBg6);
             }
+
+            // Listen for a user's click on talon cards.
+            talonCard1.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2, talonCard3, talonCardBg3);
+            })
+            talonCard2.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2, talonCard3, talonCardBg3);
+            })
+            talonCard3.addEventListener('click', function() {
+                chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2, talonCard3, talonCardBg3);
+            })
+            talonCard4.addEventListener('click', function() {
+                chooseTalonCards(talonCard4, talonCardBg4, talonCard5, talonCardBg5, talonCard6, talonCardBg6);
+            })
+            talonCard5.addEventListener('click', function() {
+                chooseTalonCards(talonCard4, talonCardBg4, talonCard5, talonCardBg5, talonCard6, talonCardBg6);
+            })
+            talonCard6.addEventListener('click', function() {
+                chooseTalonCards(talonCard4, talonCardBg4, talonCard5, talonCardBg5, talonCard6, talonCardBg6);
+            })
         }
     }
 }
@@ -333,46 +421,6 @@ function displayTalonInfoMessage(mainPlayer) {
     }
     talonInfoDiv.innerHTML = message;
 }
-
-
-// the user chooses the talon cards by clicking on them and "unchooses" by clicking again
-function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=false, card3=false, card3bg=false) {
-    if (!talonChosen.length) {
-        let cardFileName = listenerCard.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
-        highlightTalonCard(listenerCard, listenerCardBg, 'yellow');
-        if (card2) highlightTalonCard(card2, card2bg, 'yellow');
-        if (card3) highlightTalonCard(card3, card3bg, 'yellow');
-    }
-    else {
-        removeHighlightTalonCard(listenerCard, listenerCardBg, true);
-        if (card2) removeHighlightTalonCard(card2, card2bg, true);
-        if (card3) removeHighlightTalonCard(card3, card3bg, true);
-        talonChosen = [];
-    }
-}
-
-// todo: refactor this + this only works for game 'two' so far
-// Listen for a user's click on talon cards.
-talonCard1.addEventListener('click', function() {
-    chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
-})
-talonCard2.addEventListener('click', function() {
-    chooseTalonCards(talonCard1, talonCardBg1, talonCard2, talonCardBg2);
-})
-talonCard3.addEventListener('click', function() {
-    chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
-})
-talonCard4.addEventListener('click', function() {
-    chooseTalonCards(talonCard3, talonCardBg3, talonCard4, talonCardBg4);
-})
-talonCard5.addEventListener('click', function() {
-    chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
-})
-talonCard6.addEventListener('click', function() {
-    chooseTalonCards(talonCard5, talonCardBg5, talonCard6, talonCardBg6);
-})
 
 
 // get information on the current round being played

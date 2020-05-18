@@ -25,8 +25,10 @@
     <div id="cards-wrapper-bottom">
         {% for card_name in round_state[player] %}
             {% set img_path = 'img/' ~ card_name ~ '.png' %}
-            <div class="card-cont">
-                <img class="tarok-card" id="{{ card_name }}" src="{{ url_for('static', filename=img_path) }}"
+            {% set user_card_bg_id = 'user-card-bg-' ~ loop.index %}
+            {% set user_card_id = 'user-card-' ~ loop.index %}
+            <div class="card-cont" id="{{ user_card_bg_id }}">
+                <img class="tarok-card" id="{{ user_card_id }}" src="{{ url_for('static', filename=img_path) }}"
                      alt="tarok card">
             </div>
         {% endfor %}

@@ -189,7 +189,6 @@ def update_round_state(game_id: str):
 
 
 # TODO:
-#  => fix: talon info message disappears when refreshing page (bc it's called in socket.on func)
 #  => user chooses three/two/one cards from their pile to exchange with talon:
 #        * [DONE] highlight cards that can be chosen
 #        * click/unclick on cards

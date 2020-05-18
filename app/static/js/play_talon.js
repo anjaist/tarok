@@ -213,21 +213,22 @@ function displayTalonInfoMessage(mainPlayer) {
 
 
 // cards from the user's hand: highlight cards that can be clicked on
-if (isTalonShown && currentUser == playerName) {
-    for (let i = 1; i <= 16; i++) {
-        (function(i) {
-            let userCard = document.getElementById('user-card-' + i);
-            let userCardBg = document.getElementById('user-card-bg-' + i);
-            userCard.onmouseover = function() {
-                highlightCard(userCard, userCardBg);
-            };
-            userCard.onmouseout = function() {
-            removeHighlightCard(userCard, userCardBg);
-            };
-        })(i);
-    };
-};
-
+function displayCardsToSwap(mainPlayer) {
+    if (isTalonShown && currentUser == mainPlayer) {
+        for (let i = 1; i <= 16; i++) {
+            (function(i) {
+                let userCard = document.getElementById('user-card-' + i);
+                let userCardBg = document.getElementById('user-card-bg-' + i);
+                userCard.onmouseover = function() {
+                    highlightCard(userCard, userCardBg);
+                };
+                userCard.onmouseout = function() {
+                removeHighlightCard(userCard, userCardBg);
+                };
+            })(i);
+        };
+    }
+}
 
 // get information on the current round being played
 socket.on('current round', function(receivedData) {
@@ -235,4 +236,5 @@ socket.on('current round', function(receivedData) {
     mainPlayer = receivedData.main_player;
     displayTalonInfoMessage(mainPlayer);
     displayTalonOptions(mainPlayer);
+    displayCardsToSwap(mainPlayer);
 });

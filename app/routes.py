@@ -189,12 +189,9 @@ def update_round_state(game_id: str):
 
 
 # TODO:
-#  => user chooses three/two/one cards from their pile to exchange with talon:
-#        * [DONE] highlight cards that can be chosen
-#        * click/unclick on cards
-#        * allow only one/two/three cards to be clicked on at once
-#        * save which cards have been clicked on in a variable
 #  => cards are swapped (cards in user's stack are sorted)
+#       * first talon is added to user's stack
+#       * the new talon cards should also be choosable to get rid of
 #  => update state of cards for user in redis
 #  => talon disappears
 #  => card persistency: if user refreshes page, the same cards should be displayed to them

@@ -3,8 +3,10 @@
 */
 
 let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
+let enumeratedGameType = {'three': 3, 'two': 2, 'one': 1, 'pass': 0}
 let gameType = null;
 let talonChosen = [];
+let userCardsChosen = [];
 
 
 // highlight a card that can be clicked on
@@ -30,7 +32,10 @@ function removeHighlightCard(cardElement, cardBgElement, removeChosen=false) {
 }
 
 
-// the user chooses the talon cards by clicking on them and "unchooses" by clicking again
+/*
+    The user chooses the talon cards by clicking on them and "unchooses" by clicking again.
+    Only one group of cards (grouped by one, two or three) can be chosen at once.
+ */
 function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=false, card3=false, card3bg=false) {
     if (!talonChosen.length) {
         let cardFileName = listenerCard.src.split('/').pop();
@@ -49,6 +54,27 @@ function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=fal
             removeHighlightCard(talonCard, talonCardBg, true);
         }
         talonChosen = [];
+    }
+}
+
+
+/*
+    The user chooses individual cards from their hand.
+    Depending on the game they are playing, one, two or three cards can be chosen at once.
+*/
+function chooseCardsFromHand(card, cardBg) {
+    let cardFileName = card.src.split('/').pop();
+    cardFileName = cardFileName.replace('.png', '');
+
+    // the limit of chosen cards has not been reached and the card clicked on is not already chosen
+    if (userCardsChosen.length < enumeratedGameType[gameType] && !userCardsChosen.includes(cardFileName)) {
+        userCardsChosen.push(cardFileName);
+        highlightCard(card, cardBg, 'yellow');
+
+    // card is already yellow and should get "unchosen"
+    } else if (userCardsChosen.includes(cardFileName)) {
+        removeHighlightCard(card, cardBg, true);
+        userCardsChosen = userCardsChosen.filter(function(cardValue) {return cardValue != cardFileName});
     }
 }
 
@@ -170,6 +196,11 @@ function displayCardsToSwap(mainPlayer) {
                 userCard.onmouseout = function() {
                 removeHighlightCard(userCard, userCardBg);
                 };
+
+                // Listen for a user's click on their cards
+                userCard.addEventListener('click', function() {
+                    chooseCardsFromHand(userCard, userCardBg);
+                })
             })(i);
         };
     }

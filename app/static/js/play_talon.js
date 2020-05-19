@@ -202,13 +202,18 @@ function displayTalonInfoMessage(mainPlayer) {
         }
     } else {
         message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`;
+        confirmButton.style.display = 'none';
     }
     talonInfoDiv.innerHTML = message;
 
     // listen to clicks on the "confirm" button
     confirmButton.addEventListener('click', function() {
-        if (!talonConfirmed) {
+        if (!talonConfirmed && currentUser == mainPlayer) {
             talonConfirmed = true;
+
+            let talonCardsFront = document.getElementById('talon-front-cards');
+            talonCardsFront.innerHTML = null;
+
             socket.emit('add talon to player', talonChosen, mainPlayer, gameId);
         }
     })

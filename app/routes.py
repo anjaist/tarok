@@ -208,10 +208,11 @@ def add_talon_cards_to_players_hand(cards_to_add: list, main_player: str, game_i
 #  => * [DONE] "choose talon" + "confirm"=greyed-out
 #     * [DONE] isTalonChosen + "confirm"
 #     * [DONE] talon cards are added to user's hand
-#     * chosen talon cards disappear from the talon stack
+#     * [DONE] chosen talon cards disappear from the talon stack
 #     * "choose cards from hand" + "confirm" (incl. chosen talon cards)
+#     * chosen card from hand can't be a tarok or a king
 #  => update state of cards for user and talon in redis
-#  => talon disappears
+#  => talon disappears for all users (also non main player)
 #  => card persistency: if user refreshes page, the same cards should be displayed to them
 #       (currently a new deck is shuffled)
 #  => fix not being able to press the button on last player confirming their already chosen option

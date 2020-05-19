@@ -57,20 +57,22 @@
             </div>
         {% endfor %}
     </div>
-    <div class="cards-wrapper-talon" id="talon-front">
+    <div id="talon-front">
         <div id="talon-info-wrapper">
             <p id="talon-info"></p>
             <button class="btn btn-greyedout" id="confirm-btn">Potrdi izbiro</button>
         </div>
-        {% for card in round_state['talon'] %}
-            {% set talon_card_bg_id = 'talon-card-bg-' ~ loop.index %}
-            {% set talon_card_img_id = 'talon-card-img-' ~ loop.index %}
-            {% set img_path = 'img/' ~ card ~ '.png' %}
-            <div class="card-cont" id="{{ talon_card_bg_id }}">
-                <img class="tarok-card" id="{{ talon_card_img_id }}" src="{{ url_for('static', filename=img_path) }}"
-                     alt="tarok card">
-            </div>
-        {% endfor %}
+        <div id="talon-front-cards" class="cards-wrapper-talon">
+            {% for card in round_state['talon'] %}
+                {% set talon_card_bg_id = 'talon-card-bg-' ~ loop.index %}
+                {% set talon_card_img_id = 'talon-card-img-' ~ loop.index %}
+                {% set img_path = 'img/' ~ card ~ '.png' %}
+                <div class="card-cont" id="{{ talon_card_bg_id }}">
+                    <img class="tarok-card" id="{{ talon_card_img_id }}" src="{{ url_for('static', filename=img_path) }}"
+                         alt="tarok card">
+                </div>
+            {% endfor %}
+        </div>
     </div>
     <meta id="base-url-for-img" content="{{ url_for('static', filename='img/') }}">
     <meta id="current-user" content="{{ player }}">

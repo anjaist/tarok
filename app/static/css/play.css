@@ -137,9 +137,9 @@
 }
 
 #talon-info-wrapper {
-    position: absolute;
-    top: -50px;
-    left: 0;
+    position: relative;
+    top: -15px;
+    left: 33vw;
     width: 35vw;
     font-size: 13px;
     text-align: center;

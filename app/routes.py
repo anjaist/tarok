@@ -207,7 +207,7 @@ def add_talon_cards_to_players_hand(cards_to_add: list, main_player: str, game_i
 # TODO:
 #  => * [DONE] "choose talon" + "confirm"=greyed-out
 #     * [DONE] isTalonChosen + "confirm"
-#     * talon cards are added to user's hand
+#     * [DONE] talon cards are added to user's hand
 #     * chosen talon cards disappear from the talon stack
 #     * "choose cards from hand" + "confirm" (incl. chosen talon cards)
 #  => update state of cards for user and talon in redis

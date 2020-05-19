@@ -10,6 +10,7 @@ let talonConfirmed = false;
 let userCardsChosen = [];
 
 let confirmButton = document.getElementById('confirm-btn');
+baseUrlImg = document.getElementById('base-url-for-img').content;
 
 
 // get card name from file name
@@ -209,31 +210,55 @@ function displayTalonInfoMessage(mainPlayer) {
         if (!talonConfirmed) {
             talonConfirmed = true;
             socket.emit('add talon to player', talonChosen, mainPlayer, gameId);
-    }
-})
+        }
+    })
 }
 
 
 // cards from the user's hand: highlight cards that can be clicked on
 function displayCardsToSwap(mainPlayer) {
-    if (isTalonShown && currentUser == mainPlayer && talonConfirmed) {
-        for (let i = 1; i <= 16; i++) {
-            (function(i) {
-                let userCard = document.getElementById('user-card-' + i);
-                let userCardBg = document.getElementById('user-card-bg-' + i);
-                userCard.onmouseover = function() {
-                    highlightCard(userCard, userCardBg);
-                };
-                userCard.onmouseout = function() {
-                removeHighlightCard(userCard, userCardBg);
-                };
 
-                // Listen for a user's click on their cards
-                userCard.addEventListener('click', function() {
-                    chooseCardsFromHand(userCard, userCardBg);
-                })
-            })(i);
-        };
+    let numberOfCards = 16 + enumeratedGameType[gameType]
+
+    for (let i = 1; i <= numberOfCards; i++) {
+        (function(i) {
+            let userCard = document.getElementById('user-card-' + i);
+            let userCardBg = document.getElementById('user-card-bg-' + i);
+            userCard.onmouseover = function() {
+                highlightCard(userCard, userCardBg);
+            };
+            userCard.onmouseout = function() {
+            removeHighlightCard(userCard, userCardBg);
+            };
+
+            // Listen for a user's click on their cards
+            userCard.addEventListener('click', function() {
+                chooseCardsFromHand(userCard, userCardBg);
+            })
+        })(i);
+    };
+}
+
+
+// re-render the main player's hand to show the additions from talon
+function displayUpdatedHand(updatedHand) {
+    let cardsWrapper = document.getElementById('cards-wrapper-bottom');
+    cardsWrapper.innerHTML = null;
+
+    for (let [i, card] of updatedHand.entries()) {
+
+        // create the container/bg element for each card
+        let cardContainer = document.createElement('div');
+        cardContainer.classList.add('card-cont');
+        cardContainer.id = `user-card-bg-${i+1}`;
+        cardsWrapper.appendChild(cardContainer);
+
+        // create the img tag for each card
+        let imgTag = document.createElement('img');
+        imgTag.classList.add('tarok-card');
+        imgTag.id = `user-card-${i+1}`;
+        imgTag.src = baseUrlImg + card + '.png';
+        cardContainer.appendChild(imgTag);
     }
 }
 
@@ -251,6 +276,9 @@ socket.on('round begins', function(receivedData) {
 socket.on('add talon to player', function(receivedData) {
     mainPlayer = receivedData.main_player;
     updatedHand = receivedData.updated_hand;
-    // todo: re-render cards in cards container bottom
-    displayCardsToSwap(mainPlayer);
+    if (mainPlayer == currentUser) {
+        displayTalonInfoMessage(mainPlayer);
+        displayUpdatedHand(updatedHand);
+        displayCardsToSwap(mainPlayer);
+    }
 });

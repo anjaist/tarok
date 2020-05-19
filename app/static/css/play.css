@@ -136,12 +136,23 @@
     margin: 0;
 }
 
-#talon-info {
+#talon-info-wrapper {
     position: absolute;
     top: -50px;
     left: 0;
     width: 35vw;
     font-size: 13px;
-    color: white;
     text-align: center;
+    display: flex;
+    justify-content: space-evenly;
+    color: white;
+}
+
+#talon-info {
+    padding-top: 8px;
+}
+
+#confirm-btn {
+    font-size: 13px;
+    max-height: 32px;
 }

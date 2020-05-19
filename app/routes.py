@@ -189,10 +189,11 @@ def update_round_state(game_id: str):
 
 
 # TODO:
-#  => cards are swapped (cards in user's stack are sorted)
-#       * first talon is added to user's stack
-#       * the new talon cards should also be choosable to get rid of
-#  => update state of cards for user in redis
+#  => * [DONE] "choose talon" + "confirm"=greyed-out
+#     * [DONE] isTalonChosen + "confirm"
+#     * talon cards are added to user's hand
+#     * "choose cards from hand" + "confirm" (incl. chosen talon cards)
+#  => update state of cards for user and talon in redis
 #  => talon disappears
 #  => card persistency: if user refreshes page, the same cards should be displayed to them
 #       (currently a new deck is shuffled)

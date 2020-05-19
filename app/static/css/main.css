@@ -36,3 +36,10 @@ h1 {
     left: calc(50vw - 210px);
     top: calc(50vh - 115px);
 }
+
+.btn-greyedout {
+    background: #525e66;
+    opacity: 0.5;
+    color: white;
+    cursor: initial !important;
+}

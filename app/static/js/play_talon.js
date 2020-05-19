@@ -6,8 +6,18 @@ let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': '
 let enumeratedGameType = {'three': 3, 'two': 2, 'one': 1, 'pass': 0}
 let gameType = null;
 let talonChosen = [];
+let talonConfirmed = false;
 let userCardsChosen = [];
 
+let confirmButton = document.getElementById('confirm-btn');
+
+
+// get card name from file name
+function getCardName(fileName) {
+    cardName = fileName.src.split('/').pop();
+    cardName = cardName.replace('.png', '');
+    return cardName
+}
 
 // highlight a card that can be clicked on
 function highlightCard(cardElement, cardBgElement, highlightColor='green') {
@@ -18,8 +28,9 @@ function highlightCard(cardElement, cardBgElement, highlightColor='green') {
 }
 
 
-/* Removes highlight from card if the card is green; if the card is yellow,
-   the highlight can be removed only by setting removeChosen to true.
+/*
+    Removes highlight from card if the card is green; if the card is yellow,
+    the highlight can be removed only by setting removeChosen to true.
 */
 function removeHighlightCard(cardElement, cardBgElement, removeChosen=false) {
     if (removeChosen) {
@@ -38,12 +49,19 @@ function removeHighlightCard(cardElement, cardBgElement, removeChosen=false) {
  */
 function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=false, card3=false, card3bg=false) {
     if (!talonChosen.length) {
-        let cardFileName = listenerCard.src.split('/').pop();
-        cardFileName = cardFileName.replace('.png', '');
-        talonChosen.push(cardFileName);
+        talonChosen.push(getCardName(listenerCard));
         highlightCard(listenerCard, listenerCardBg, 'yellow');
-        if (card2) highlightCard(card2, card2bg, 'yellow');
-        if (card3) highlightCard(card3, card3bg, 'yellow');
+        if (card2) {
+            highlightCard(card2, card2bg, 'yellow');
+            talonChosen.push(getCardName(card2));
+        }
+        if (card3) {
+            highlightCard(card3, card3bg, 'yellow');
+            talonChosen.push(getCardName(card3));
+        }
+
+        confirmButton.classList.remove('btn-greyedout');
+        confirmButton.classList.add('btn-dark');
     }
     else {
         // remove ALL yellow highlights if unchoosing
@@ -54,6 +72,8 @@ function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=fal
             removeHighlightCard(talonCard, talonCardBg, true);
         }
         talonChosen = [];
+        confirmButton.classList.remove('btn-dark');
+        confirmButton.classList.add('btn-greyedout');
     }
 }
 
@@ -63,18 +83,17 @@ function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=fal
     Depending on the game they are playing, one, two or three cards can be chosen at once.
 */
 function chooseCardsFromHand(card, cardBg) {
-    let cardFileName = card.src.split('/').pop();
-    cardFileName = cardFileName.replace('.png', '');
+    cardName = getCardName(card);
 
     // the limit of chosen cards has not been reached and the card clicked on is not already chosen
-    if (userCardsChosen.length < enumeratedGameType[gameType] && !userCardsChosen.includes(cardFileName)) {
-        userCardsChosen.push(cardFileName);
+    if (userCardsChosen.length < enumeratedGameType[gameType] && !userCardsChosen.includes(cardName)) {
+        userCardsChosen.push(cardName);
         highlightCard(card, cardBg, 'yellow');
 
     // card is already yellow and should get "unchosen"
-    } else if (userCardsChosen.includes(cardFileName)) {
+    } else if (userCardsChosen.includes(cardName)) {
         removeHighlightCard(card, cardBg, true);
-        userCardsChosen = userCardsChosen.filter(function(cardValue) {return cardValue != cardFileName});
+        userCardsChosen = userCardsChosen.filter(function(cardValue) {return cardValue != cardName});
     }
 }
 
@@ -175,9 +194,13 @@ let talonInfoDiv = document.getElementById('talon-info');
 // display an info message about talon. The message is different for the main player
 function displayTalonInfoMessage(mainPlayer) {
     if (currentUser == mainPlayer) {
-        message = 'Izberi karte iz talona in karte iz roke za zamenjavo'
+        if (!talonConfirmed) {
+            message = 'Izberi karte iz talona';
+        } else {
+            message = 'Izberi karte za založit';
+        }
     } else {
-        message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`
+        message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`;
     }
     talonInfoDiv.innerHTML = message;
 }
@@ -185,7 +208,7 @@ function displayTalonInfoMessage(mainPlayer) {
 
 // cards from the user's hand: highlight cards that can be clicked on
 function displayCardsToSwap(mainPlayer) {
-    if (isTalonShown && currentUser == mainPlayer) {
+    if (isTalonShown && currentUser == mainPlayer && talonConfirmed) {
         for (let i = 1; i <= 16; i++) {
             (function(i) {
                 let userCard = document.getElementById('user-card-' + i);
@@ -205,6 +228,18 @@ function displayCardsToSwap(mainPlayer) {
         };
     }
 }
+
+
+// listen to clicks on the "confirm" button
+confirmButton.addEventListener('click', function() {
+    if (!talonConfirmed) {
+        talonConfirmed = true;
+
+        // TODO add the chosen cards from talon to user's hand
+        console.log(`talonChosen: ${talonChosen}`);
+    }
+})
+
 
 // get information on the current round being played
 socket.on('current round', function(receivedData) {

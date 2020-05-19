@@ -98,7 +98,7 @@ function showCurrentlyChoosing() {
 
         // once everyone has chosen and the choose display is gone, send message to server side
         console.log('[SENDING] all users have chosen');
-        socket.emit('current round', gameId);
+        socket.emit('round begins', gameId);
 
         // flip the talon cards
         revealTalon();

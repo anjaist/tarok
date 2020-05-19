@@ -7,7 +7,7 @@ from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     create_redis_entry_for_current_round, save_game_type
-from app.game_utils import deal_new_round
+from app.game_utils import deal_new_round, sort_player_cards
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -176,22 +176,39 @@ def update_user_choice(username: str, choice: str):
     update_player_choosing()
 
 
-@socketio.on('current round')
-def update_round_state(game_id: str):
-    """updates redis db with the current state of the round that is being played"""
+@socketio.on('round begins')
+def update_round_state_at_beginning(game_id: str):
+    """updates redis db with the state of the round at its beginning"""
     save_game_type(int(game_id))
 
     game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
     main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
     data_to_send = {'game_type': game_type, 'main_player': main_player}
-    print(f'[SENDING] current round information: {data_to_send}')
-    socketio.emit('current round', data_to_send)
+    print(f'[SENDING] new round information: {data_to_send}')
+    socketio.emit('round begins', data_to_send)
+
+
+@socketio.on('add talon to player')
+def add_talon_cards_to_players_hand(cards_to_add: list, main_player: str, game_id: str):
+    """the chosen cards from talon are added to the array of cards the player is already holding.
+    The cards are sorted again and returned to the JS component"""
+    print(f'[RECEIVED] cards to add: {cards_to_add}')
+
+    cards_in_hand = redis_db.hget(f'{game_id}:current_round', f'{main_player}_cards').decode('utf-8')
+    cards_in_hand = cards_in_hand.split(',')
+    cards_in_hand.extend(cards_to_add)
+
+    updated_hand = sort_player_cards(cards_in_hand)
+
+    data_to_send = {'updated_hand': updated_hand, 'main_player': main_player}
+    socketio.emit('add talon to player', data_to_send)
 
 
 # TODO:
 #  => * [DONE] "choose talon" + "confirm"=greyed-out
 #     * [DONE] isTalonChosen + "confirm"
 #     * talon cards are added to user's hand
+#     * chosen talon cards disappear from the talon stack
 #     * "choose cards from hand" + "confirm" (incl. chosen talon cards)
 #  => update state of cards for user and talon in redis
 #  => talon disappears

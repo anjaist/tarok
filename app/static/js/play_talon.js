@@ -203,6 +203,14 @@ function displayTalonInfoMessage(mainPlayer) {
         message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`;
     }
     talonInfoDiv.innerHTML = message;
+
+    // listen to clicks on the "confirm" button
+    confirmButton.addEventListener('click', function() {
+        if (!talonConfirmed) {
+            talonConfirmed = true;
+            socket.emit('add talon to player', talonChosen, mainPlayer, gameId);
+    }
+})
 }
 
 
@@ -230,22 +238,19 @@ function displayCardsToSwap(mainPlayer) {
 }
 
 
-// listen to clicks on the "confirm" button
-confirmButton.addEventListener('click', function() {
-    if (!talonConfirmed) {
-        talonConfirmed = true;
-
-        // TODO add the chosen cards from talon to user's hand
-        console.log(`talonChosen: ${talonChosen}`);
-    }
-})
-
-
 // get information on the current round being played
-socket.on('current round', function(receivedData) {
+socket.on('round begins', function(receivedData) {
     gameType = receivedData.game_type;
     mainPlayer = receivedData.main_player;
     displayTalonInfoMessage(mainPlayer);
     displayTalonOptions(mainPlayer);
+});
+
+
+// get a player's updated hand with added talon cards
+socket.on('add talon to player', function(receivedData) {
+    mainPlayer = receivedData.main_player;
+    updatedHand = receivedData.updated_hand;
+    // todo: re-render cards in cards container bottom
     displayCardsToSwap(mainPlayer);
 });

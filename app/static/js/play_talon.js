@@ -225,18 +225,18 @@ function displayTalonInfoMessage(mainPlayer) {
 
             let talonCardsFront = document.getElementById('talon-front-cards');
             talonCardsFront.innerHTML = null;
-
             socket.emit('update players hand', mainPlayer, gameId, talonChosen, null);
+
         } else if (talonConfirmed && !userCardsConfirmed && currentUser == mainPlayer) {
             userCardsConfirmed = true;
-
             socket.emit('update players hand', mainPlayer, gameId, null, userCardsChosen);
-
-            // remove info message and "confirm" button
-            document.getElementById('talon-info-wrapper').style.display = 'none';
         }
-
     })
+
+    // remove info message and "confirm" button once card swap is finished
+    if (userCardsConfirmed) {
+        document.getElementById('talon-front').style.display = 'none';
+    }
 }
 
 
@@ -301,8 +301,10 @@ socket.on('round begins', function(receivedData) {
 socket.on('update players hand', function(receivedData) {
     mainPlayer = receivedData.main_player;
     updatedHand = receivedData.updated_hand;
+    userCardsConfirmed = receivedData.swap_finished;
+
+    displayTalonInfoMessage(mainPlayer);
     if (mainPlayer == currentUser) {
-        displayTalonInfoMessage(mainPlayer);
         displayUpdatedHand(updatedHand);
         displayCardsToSwap(mainPlayer);
     }

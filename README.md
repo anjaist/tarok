@@ -11,7 +11,8 @@ KEY name => game_id:round_choices
   "{username3}_chosen": "one",
   "{username3}_options": "pass,one",
   "order": "{username1},{username2},{username3}",
-  "new_order": "{username2},{username3},{username1}"
+  "new_order": "{username2},{username3},{username1}",
+  "last_choice": 'false'
 }
 ```
 key               | value                                                     | 
@@ -20,6 +21,7 @@ order             | order of players as established at the beginning of choosing
 new_order         | order, as updated based on players being able to choose again (their name is appended to the end)
 usernameX_chosen  | choice usernameX has already made
 usernameX_options | options usernameX can choose from
+last_choice       | string ('false' or 'true'); indicates if the current choice should be the last in the round
 
 ```
 KEY name => game_id:current_round

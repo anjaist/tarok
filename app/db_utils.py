@@ -75,6 +75,7 @@ def create_redis_entry_for_round_choices(game_id: int, players: list):
 
     redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
     redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(players))
+    redis_db.hset(f'{game_id}:round_choices', 'last_choice', 'false')
 
 
 def update_user_with_new_game_info(game_id: int, users: list):
@@ -246,6 +247,7 @@ def calculate_player2_options(player2_choice: str, player3_choice: str, player2_
 
 def update_player_options(game_id: int):
     """updates players' options based on current state of choices in redis db"""
+    is_last_choice = redis_db.hget(f'{game_id}:round_choices', 'last_choice').decode('utf-8')
 
     # get original player order from redis
     player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
@@ -269,29 +271,34 @@ def update_player_options(game_id: int):
     # if all players have made first choice, compare choices and find available ones for each player
     if player1_choice and player2_choice and player3_choice:
         # if players 2 and 3 chose a game worth more than what player 1 chose, player 1 can choose again
-        if player1_choice == 'pass':
+        if player1_choice == 'pass' or is_last_choice == 'true':
             player1_options = ['chosen']
         else:
             player1_options = calculate_player1_options(player1_choice, player2_choice, player3_choice, player1_options)
 
         # if player 3 chose a game worth more than what player 2 chose, player 2 can choose again
-        if player2_choice == 'pass':
+        if player2_choice == 'pass' or is_last_choice == 'true':
             player2_options = ['chosen']
         else:
             player2_options = calculate_player2_options(player2_choice, player3_choice, player2_options)
 
         # if player 3 can still choose a game worth more than what they've already chosen, they can choose again
-        if player3_choice == 'pass':
+        if player3_choice == 'pass' or is_last_choice == 'true':
             player3_options = ['chosen']
+
+    if chosen_games.count('pass') == 2:
+        is_last_choice = 'true'
 
     # update redis with current options for each player
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', ','.join(player1_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', ','.join(player2_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', ','.join(player3_options))
+    if is_last_choice == 'true':
+        redis_db.hset(f'{game_id}:round_choices', 'last_choice', is_last_choice)
 
 
 def get_game_type_and_main_player(game_id: int) -> tuple:
-    """checks redis round_choices entry and finds which player has chose the highest game
+    """checks redis round_choices entry and finds which player has chosen the highest game
     and which game is being played.
     Returns a tuple of (game_type, main_player)"""
 

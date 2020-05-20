@@ -18,6 +18,7 @@ let coPlayersChoiceDiv = document.getElementById('co-players-choice');
 let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
 let isTalonShown = false;
 
+
 // show what co-players have chosen
 function showCoPlayersChoice(coPlayersChoice) {
     Object.keys(coPlayersChoice).forEach(function(key) {
@@ -74,6 +75,7 @@ greyOutOptions();
 socket.on('player game options', function(receivedData) {
     currentlyChoosingPlayer = receivedData.player;
     currentlyChoosingPlayerOptions = receivedData.player_options;
+    if (currentlyChoosingPlayerOptions == null) currentlyChoosingPlayerOptions = ['chosen'];
     showCurrentlyChoosing();
     showCoPlayersChoice(receivedData.co_players_choice);
     greyOutOptions();

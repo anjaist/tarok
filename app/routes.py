@@ -188,20 +188,22 @@ def update_round_state_at_beginning(game_id: str):
     socketio.emit('round begins', data_to_send)
 
 
-@socketio.on('add talon to player')
-def add_talon_cards_to_players_hand(cards_to_add: list, main_player: str, game_id: str):
-    """the chosen cards from talon are added to the array of cards the player is already holding.
+@socketio.on('update players hand')
+def update_players_hand(main_player: str, game_id: str, cards_to_add: list, cards_to_remove: list):
+    """the chosen cards from talon are either added to or removed from the array of cards the player is already holding.
     The cards are sorted again and returned to the JS component"""
-    print(f'[RECEIVED] cards to add: {cards_to_add}')
-
     cards_in_hand = redis_db.hget(f'{game_id}:current_round', f'{main_player}_cards').decode('utf-8')
     cards_in_hand = cards_in_hand.split(',')
-    cards_in_hand.extend(cards_to_add)
+
+    if cards_to_add:
+        cards_in_hand.extend(cards_to_add)
+    elif cards_to_remove:
+        cards_in_hand = [card for card in cards_in_hand if card not in cards_to_remove]
 
     updated_hand = sort_player_cards(cards_in_hand)
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player}
-    socketio.emit('add talon to player', data_to_send)
+    socketio.emit('update players hand', data_to_send)
 
 
 # TODO:
@@ -209,7 +211,7 @@ def add_talon_cards_to_players_hand(cards_to_add: list, main_player: str, game_i
 #     * [DONE] isTalonChosen + "confirm"
 #     * [DONE] talon cards are added to user's hand
 #     * [DONE] chosen talon cards disappear from the talon stack
-#     * "choose cards from hand" + "confirm" (incl. chosen talon cards)
+#     * [DONE] "choose cards from hand" + "confirm" (incl. chosen talon cards)
 #     * chosen card from hand can't be a tarok or a king
 #  => update state of cards for user and talon in redis
 #  => talon disappears for all users (also non main player)

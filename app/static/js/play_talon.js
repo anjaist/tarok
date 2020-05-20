@@ -8,6 +8,7 @@ let gameType = null;
 let talonChosen = [];
 let talonConfirmed = false;
 let userCardsChosen = [];
+let userCardsConfirmed = false;
 
 let confirmButton = document.getElementById('confirm-btn');
 baseUrlImg = document.getElementById('base-url-for-img').content;
@@ -91,10 +92,19 @@ function chooseCardsFromHand(card, cardBg) {
         userCardsChosen.push(cardName);
         highlightCard(card, cardBg, 'yellow');
 
+        // user can confirm chosen cards once they have chose the expected number of them (1, 2 or 3)
+        if (userCardsChosen.length == enumeratedGameType[gameType]) {
+            confirmButton.classList.remove('btn-greyedout');
+            confirmButton.classList.add('btn-dark');
+        }
+
     // card is already yellow and should get "unchosen"
     } else if (userCardsChosen.includes(cardName)) {
         removeHighlightCard(card, cardBg, true);
         userCardsChosen = userCardsChosen.filter(function(cardValue) {return cardValue != cardName});
+
+        confirmButton.classList.remove('btn-dark');
+        confirmButton.classList.add('btn-greyedout');
     }
 }
 
@@ -199,6 +209,8 @@ function displayTalonInfoMessage(mainPlayer) {
             message = 'Izberi karte iz talona';
         } else {
             message = 'Izberi karte za založit';
+            confirmButton.classList.remove('btn-dark');
+            confirmButton.classList.add('btn-greyedout');
         }
     } else {
         message = `${mainPlayer} načrtuje igro "${gameTypeTranslation[gameType]}"...`;
@@ -214,8 +226,16 @@ function displayTalonInfoMessage(mainPlayer) {
             let talonCardsFront = document.getElementById('talon-front-cards');
             talonCardsFront.innerHTML = null;
 
-            socket.emit('add talon to player', talonChosen, mainPlayer, gameId);
+            socket.emit('update players hand', mainPlayer, gameId, talonChosen, null);
+        } else if (talonConfirmed && !userCardsConfirmed && currentUser == mainPlayer) {
+            userCardsConfirmed = true;
+
+            socket.emit('update players hand', mainPlayer, gameId, null, userCardsChosen);
+
+            // remove info message and "confirm" button
+            document.getElementById('talon-info-wrapper').style.display = 'none';
         }
+
     })
 }
 
@@ -278,7 +298,7 @@ socket.on('round begins', function(receivedData) {
 
 
 // get a player's updated hand with added talon cards
-socket.on('add talon to player', function(receivedData) {
+socket.on('update players hand', function(receivedData) {
     mainPlayer = receivedData.main_player;
     updatedHand = receivedData.updated_hand;
     if (mainPlayer == currentUser) {

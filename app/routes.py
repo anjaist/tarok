@@ -6,8 +6,8 @@ from flask_socketio import SocketIO
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
-    create_redis_entry_for_current_round, save_game_type
-from app.game_utils import deal_new_round, sort_player_cards
+    save_game_type, get_dealt_cards
+from app.game_utils import sort_player_cards
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -108,8 +108,7 @@ def play():
     co_players = get_co_players(game_id, session['user_id'])
     all_players = list(co_players.keys()) + [user.username]
 
-    dealt_cards = deal_new_round(all_players)
-    create_redis_entry_for_current_round(game_id, dealt_cards)
+    dealt_cards = get_dealt_cards(game_id, all_players)
     choose_order = get_players_that_need_to_choose_game(game_id)
     player_to_choose = None
     player_to_choose_opts = None
@@ -198,11 +197,16 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     if cards_to_add:
         cards_in_hand.extend(cards_to_add)
+
     elif cards_to_remove:
         cards_in_hand = [card for card in cards_in_hand if card not in cards_to_remove]
         swap_finished = True
 
     updated_hand = sort_player_cards(cards_in_hand)
+
+    # save player's new cards to redis
+    value_for_redis = ','.join(str(card_name) for card_name in updated_hand)
+    redis_db.hset(f'{game_id}:current_round', f'{main_player}_cards', value_for_redis)
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
@@ -210,7 +214,6 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
 # TODO:
 #  => chosen card from hand can't be a tarok or a king
-#  => update state of cards for user and talon in redis
-#  => card persistency: if user refreshes page, the same cards should be displayed to them
-#       (currently a new deck is shuffled)
+#  => redis .encode() refactoring + '{}:current_round' etc. in config
+#  => fix positioning of info message (should be relative to talon cards)
 #  => fix not being able to press the button on last player confirming their already chosen option

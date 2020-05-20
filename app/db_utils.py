@@ -5,7 +5,7 @@ from typing import Union
 from sqlalchemy.exc import IntegrityError
 
 from app import redis_db
-from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE
+from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_round
 from app.models import User, db, Game
 
 
@@ -315,13 +315,27 @@ def get_game_type_and_main_player(game_id: int) -> tuple:
         return 'pass', None
 
 
+def get_dealt_cards(game_id: int, all_players: list) -> list:
+    """checks redisdb to see if a game is in progress and either returns the cards that have been previously dealt
+    or deals a new round if a current_round doesn't exist in redis (and creates the entry in redis)"""
+    key_exists = redis_db.exists(f'{game_id}:current_round')
+
+    if key_exists:  # it means that a round is currently in progress
+        all_players_with_talon = all_players + ['talon']
+        dealt_cards = {}
+        for player in all_players_with_talon:
+            cards = redis_db.hget(f'{game_id}:current_round', f'{player}_cards').decode('utf-8')
+            dealt_cards[player] = cards.split(',')
+    else:
+        dealt_cards = deal_new_round(all_players)
+        create_redis_entry_for_current_round(game_id, dealt_cards)
+
+    return dealt_cards
+
+
 def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
     """creates new entry in redis db to start a new round. Saves the order of players and the state of the dealt cards.
     The redis key {game_id}:current_round should be deleted once the round is complete."""
-    key_exists = redis_db.exists(f'{game_id}:current_round')
-    if key_exists:
-        return  # it means that a round is currently in progress
-
     # save order of players
     order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
 

@@ -245,23 +245,25 @@ function displayCardsToSwap(mainPlayer) {
 
     let numberOfCards = 16 + enumeratedGameType[gameType]
 
-    for (let i = 1; i <= numberOfCards; i++) {
-        (function(i) {
-            let userCard = document.getElementById('user-card-' + i);
-            let userCardBg = document.getElementById('user-card-bg-' + i);
-            userCard.onmouseover = function() {
-                highlightCard(userCard, userCardBg);
-            };
-            userCard.onmouseout = function() {
-            removeHighlightCard(userCard, userCardBg);
-            };
+    if (talonConfirmed && !userCardsConfirmed) {
+        for (let i = 1; i <= numberOfCards; i++) {
+            (function(i) {
+                let userCard = document.getElementById('user-card-' + i);
+                let userCardBg = document.getElementById('user-card-bg-' + i);
+                userCard.onmouseover = function() {
+                    highlightCard(userCard, userCardBg);
+                };
+                userCard.onmouseout = function() {
+                removeHighlightCard(userCard, userCardBg);
+                };
 
-            // Listen for a user's click on their cards
-            userCard.addEventListener('click', function() {
-                chooseCardsFromHand(userCard, userCardBg);
-            })
-        })(i);
-    };
+                // Listen for a user's click on their cards
+                userCard.addEventListener('click', function() {
+                    chooseCardsFromHand(userCard, userCardBg);
+                })
+            })(i);
+        };
+    }
 }
 
 

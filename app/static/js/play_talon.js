@@ -110,7 +110,7 @@ function chooseCardsFromHand(card, cardBg) {
 
 
 function displayTalonOptions(playerName) {
-    if (isTalonShown && currentUser == playerName) {
+    if (!talonConfirmed && currentUser == playerName) {
         if (gameType == 'one') {
             // look for a user's mouse movements over talon cards
             for (let i = 1; i <= 6; i++) {
@@ -287,6 +287,15 @@ function displayUpdatedHand(updatedHand) {
         imgTag.src = baseUrlImg + card + '.png';
         cardContainer.appendChild(imgTag);
     }
+}
+
+
+/*
+    Remove info message and "confirm" button once card swap is finished.
+    This needs to be outside of the displayTalonInfoMessage function so that talon is not shown again on page refresh.
+*/
+if (userCardsConfirmed) {
+    document.getElementById('talon-front').style.display = 'none';
 }
 
 

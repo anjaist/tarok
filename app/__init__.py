@@ -3,14 +3,14 @@ import time
 
 import redis
 
-from config import config
+from config import config, ProductionConfig
 
 REDIS_CONN_TIMEOUT = 20
 
 
 def init_redis():
     """initiates redis db"""
-    is_in_production = config[os.environ['APP_SETTINGS']] == config.ProductionConfig
+    is_in_production = config[os.environ['APP_SETTINGS']] == ProductionConfig
 
     # redis-server
     i = 0

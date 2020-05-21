@@ -311,6 +311,7 @@ def get_game_type_and_main_player(game_id: int) -> tuple:
     player2_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[1]}_chosen')).decode('utf-8')
     player3_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[2]}_chosen')).decode('utf-8')
 
+    # if a player's choice is 'pass', it means they are not the main player
     if player1_choice != 'pass':
         return player1_choice, player_order[0]
     elif player2_choice != 'pass':

@@ -2,8 +2,8 @@
     This file contains the functionality for the showing and choosing of talon cards
 */
 
-let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
-let enumeratedGameType = {'three': 3, 'two': 2, 'one': 1, 'pass': 0}
+let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'};
+let enumeratedGameType = {'three': 3, 'two': 2, 'one': 1, 'pass': 0};
 let gameType = null;
 let talonChosen = [];
 let talonConfirmed = false;
@@ -11,7 +11,7 @@ let userCardsChosen = [];
 let userCardsConfirmed = false;
 
 let confirmButton = document.getElementById('confirm-btn');
-baseUrlImg = document.getElementById('base-url-for-img').content;
+let baseUrlImg = document.getElementById('base-url-for-img').content;
 
 
 // get card name from file name
@@ -35,10 +35,7 @@ function highlightCard(cardElement, cardBgElement, highlightColor='green') {
     the highlight can be removed only by setting removeChosen to true.
 */
 function removeHighlightCard(cardElement, cardBgElement, removeChosen=false) {
-    if (removeChosen) {
-        cardElement.style.opacity = '1';
-        cardBgElement.style.background = null;
-    } else if (cardBgElement.style.background == 'green') {
+    if (removeChosen || cardBgElement.style.background == 'green') {
         cardElement.style.opacity = '1';
         cardBgElement.style.background = null;
     }
@@ -62,6 +59,7 @@ function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=fal
             talonChosen.push(getCardName(card3));
         }
 
+        // when all the cards have been chosen, enable the "confirm" button
         confirmButton.classList.remove('btn-greyedout');
         confirmButton.classList.add('btn-dark');
     }

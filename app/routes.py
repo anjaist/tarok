@@ -190,7 +190,9 @@ def update_round_state_at_beginning(game_id: str):
 @socketio.on('update players hand')
 def update_players_hand(main_player: str, game_id: str, cards_to_add: list, cards_to_remove: list):
     """the chosen cards from talon are either added to or removed from the array of cards the player is already holding.
-    The cards are sorted again and returned to the JS component"""
+    The cards are sorted again and returned to the JS component.
+    A player's hand will always need to be updated twice, first with cards_to_add and then with cards_to_remove.
+    To distinguish when the updating of the player's hand is finished, swap_finished is set to True."""
     swap_finished = False
     cards_in_hand = redis_db.hget(f'{game_id}:current_round', f'{main_player}_cards').decode('utf-8')
     cards_in_hand = cards_in_hand.split(',')

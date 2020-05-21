@@ -18,9 +18,6 @@ class DevelopmentConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     DEBUG = False
     SQLALCHEMY_ECHO = False
-    # REDIS_HOST = os.environ['REDIS_HOST']
-    # REDIS_PORT = os.environ['REDIS_PORT']
-    # TODO: redis on heroku
 
 
 config = {

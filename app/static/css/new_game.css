@@ -17,13 +17,6 @@
     width: 200px;
 }
 
-.btn-greyedout {
-    background: #525e66;
-    opacity: 0.5;
-    color: white;
-    cursor: initial !important;
-}
-
 #disabled-button-info {
     color: white;
     font-size: 10px;

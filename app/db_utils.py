@@ -1,10 +1,11 @@
 import hashlib
 import random
+from typing import Union
 
 from sqlalchemy.exc import IntegrityError
 
 from app import redis_db
-from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE
+from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_round
 from app.models import User, db, Game
 
 
@@ -74,6 +75,7 @@ def create_redis_entry_for_round_choices(game_id: int, players: list):
 
     redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
     redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(players))
+    redis_db.hset(f'{game_id}:round_choices', 'last_choice', 'false')
 
 
 def update_user_with_new_game_info(game_id: int, users: list):
@@ -164,7 +166,7 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
     return error
 
 
-def get_players_that_need_to_choose_game(game_id: int) -> list:
+def get_players_that_need_to_choose_game(game_id: int) -> Union[list, None]:
     """queries redis db and returns players that can still make a choice of game for round"""
     update_player_options(game_id)
 
@@ -178,7 +180,11 @@ def get_players_that_need_to_choose_game(game_id: int) -> list:
         player_order.pop(0)
 
     # add player to end of choosing queue if they still have options available
-    options_of_current_player = (redis_db.hget(f'{game_id}:round_choices', f'{current_player}_options')).decode('utf-8')
+    options_of_current_player = redis_db.hget(f'{game_id}:round_choices', f'{current_player}_options')
+    if options_of_current_player is None:
+        return None
+    else:
+        options_of_current_player = options_of_current_player.decode('utf-8')
     if options_of_current_player != 'chosen':
         if player_order:
             if player_order[-1] != current_player:
@@ -241,6 +247,7 @@ def calculate_player2_options(player2_choice: str, player3_choice: str, player2_
 
 def update_player_options(game_id: int):
     """updates players' options based on current state of choices in redis db"""
+    is_last_choice = redis_db.hget(f'{game_id}:round_choices', 'last_choice').decode('utf-8')
 
     # get original player order from redis
     player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
@@ -264,22 +271,97 @@ def update_player_options(game_id: int):
     # if all players have made first choice, compare choices and find available ones for each player
     if player1_choice and player2_choice and player3_choice:
         # if players 2 and 3 chose a game worth more than what player 1 chose, player 1 can choose again
-        if player1_choice == 'pass':
+        if player1_choice == 'pass' or is_last_choice == 'true':
             player1_options = ['chosen']
         else:
             player1_options = calculate_player1_options(player1_choice, player2_choice, player3_choice, player1_options)
 
         # if player 3 chose a game worth more than what player 2 chose, player 2 can choose again
-        if player2_choice == 'pass':
+        if player2_choice == 'pass' or is_last_choice == 'true':
             player2_options = ['chosen']
         else:
             player2_options = calculate_player2_options(player2_choice, player3_choice, player2_options)
 
-        # if player 3 can still choose a game worth more than what they've alreasy chosen, they can choose again
-        if player3_choice == 'pass':
+        # if player 3 can still choose a game worth more than what they've already chosen, they can choose again
+        if player3_choice == 'pass' or is_last_choice == 'true':
             player3_options = ['chosen']
+
+    if chosen_games.count('pass') == 2:
+        is_last_choice = 'true'
 
     # update redis with current options for each player
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[0]}_options', ','.join(player1_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[1]}_options', ','.join(player2_options))
     redis_db.hset(f'{game_id}:round_choices', f'{player_order[2]}_options', ','.join(player3_options))
+    if is_last_choice == 'true':
+        redis_db.hset(f'{game_id}:round_choices', 'last_choice', is_last_choice)
+
+
+def get_game_type_and_main_player(game_id: int) -> tuple:
+    """checks redis round_choices entry and finds which player has chosen the highest game
+    and which game is being played.
+    Returns a tuple of (game_type, main_player)"""
+
+    # get original player order from redis
+    player_order = (redis_db.hget(f'{game_id}:round_choices', 'order')).decode('utf-8')
+    player_order = player_order.split(',')
+
+    # get choice of each player
+    player1_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[0]}_chosen')).decode('utf-8')
+    player2_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[1]}_chosen')).decode('utf-8')
+    player3_choice = (redis_db.hget(f'{game_id}:round_choices', f'{player_order[2]}_chosen')).decode('utf-8')
+
+    # if a player's choice is 'pass', it means they are not the main player
+    if player1_choice != 'pass':
+        return player1_choice, player_order[0]
+    elif player2_choice != 'pass':
+        return player2_choice, player_order[1]
+    elif player3_choice != 'pass':
+        return player3_choice, player_order[2]
+    else:
+        # all three players' choice was 'pass'
+        return 'pass', None
+
+
+def get_dealt_cards(game_id: int, all_players: list) -> list:
+    """checks redisdb to see if a game is in progress and either returns the cards that have been previously dealt
+    or deals a new round if a current_round doesn't exist in redis (and creates the entry in redis)"""
+    key_exists = redis_db.exists(f'{game_id}:current_round')
+
+    if key_exists:  # it means that a round is currently in progress
+        all_players_with_talon = all_players + ['talon']
+        dealt_cards = {}
+        for player in all_players_with_talon:
+            cards = redis_db.hget(f'{game_id}:current_round', f'{player}_cards').decode('utf-8')
+            dealt_cards[player] = cards.split(',')
+    else:
+        dealt_cards = deal_new_round(all_players)
+        create_redis_entry_for_current_round(game_id, dealt_cards)
+
+    return dealt_cards
+
+
+def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
+    """creates new entry in redis db to start a new round. Saves the order of players and the state of the dealt cards.
+    The redis key {game_id}:current_round should be deleted once the round is complete."""
+    # save order of players
+    order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
+
+    redis_db.hset(f'{game_id}:current_round', 'order', order)
+    redis_db.hset(f'{game_id}:current_round', 'whose_turn', order.split(',')[0])
+
+    # save dealt cards
+    for key, value in dealt_cards.items():
+        value_for_redis = ','.join(str(card_name) for card_name in value)
+        redis_db.hset(f'{game_id}:current_round', f'{key}_cards', value_for_redis)
+
+
+def save_game_type(game_id: int):
+    """saves the game type and main player in redisdb. Should only be done once (per round)"""
+    game_type, main_player = get_game_type_and_main_player(game_id)
+    key_exists = redis_db.hexists(f'{game_id}:current_round', 'type')
+    if key_exists:
+        return None
+
+    redis_db.hset(f'{game_id}:current_round', 'type', game_type)
+    redis_db.hset(f'{game_id}:current_round', 'main_player', main_player)

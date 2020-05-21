@@ -1,5 +1,6 @@
 from app.game_utils import deal_new_round, sort_player_cards
 
+
 def test_deal_new_round():
     """tests that all cards are dealt between players and talon and no one card is dealt twice"""
     all_players = ['a', 'b', 'c']

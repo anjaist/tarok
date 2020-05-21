@@ -37,7 +37,8 @@
 
 .card-cont {
     flex: 1 0 0;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: calc(1.8 * 10vw);
 }
 
 .card-cont:last-child {
@@ -69,7 +70,7 @@
 
 .card-cont-rot90 {
     flex: 1 0 0;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .card-cont-rot90:last-child {
@@ -80,13 +81,45 @@
     height: 10vw;
 }
 
-#cards-wrapper-talon {
+.cards-wrapper-talon {
     display: flex;
-    height: 30vh;
-    width: 30vw;
+    width: 35vw;
     position: absolute;
-    left: 35vw;
+    left: 33vw;
     top: 30vh;
+}
+
+#talon-front {
+    display: none;
+    position: absolute;
+    left: 33vw;
+    top: 30vh;
+    width: 35vw;
+}
+
+#talon-front-cards {
+    left: 0px;
+    top: 3px;
+}
+
+#talon-info-wrapper {
+    position: relative;
+    top: -39px;
+    width: 35vw;
+    font-size: 13px;
+    text-align: center;
+    display: flex;
+    justify-content: space-evenly;
+    color: white;
+}
+
+#talon-info {
+    padding-top: 8px;
+}
+
+#confirm-btn {
+    font-size: 13px;
+    max-height: 32px;
 }
 
 #round-options-popup {

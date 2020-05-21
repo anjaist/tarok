@@ -1,7 +1,12 @@
+/*
+    This file contains the functionality for each user choosing what type of game they will play
+*/
+
 let socket = io.connect(window.location.protocol + '//' + document.domain + ':' + location.port);
 let allOptions = ['three', 'two', 'one', 'pass'];
 
 let currentUser = document.getElementById('current-user').content;
+let gameId = document.getElementById('game-id').content;
 let roundOptionsPopup = document.getElementById('round-options-popup');
 let chooseGameDiv = document.getElementById('choose-game');
 let isChoosingGameDiv = document.getElementById('is-choosing-game');
@@ -10,13 +15,14 @@ let currentlyChoosingPlayerOptions = document.getElementById('player-to-choose-o
 currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
 let coPlayersChoiceDiv = document.getElementById('co-players-choice');
 
+let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
+let isTalonShown = false;
+
 
 // show what co-players have chosen
 function showCoPlayersChoice(coPlayersChoice) {
     Object.keys(coPlayersChoice).forEach(function(key) {
-        console.log(`${key}-choice`);
         let coPlayerChoiceDiv = document.getElementById(`${key}-choice`);
-        console.log(coPlayersChoiceDiv);
         if (coPlayerChoiceDiv) {
             coPlayerChoiceDiv.innerHTML = `${key}: ${coPlayersChoice[key]}`;
         };
@@ -69,20 +75,43 @@ greyOutOptions();
 socket.on('player game options', function(receivedData) {
     currentlyChoosingPlayer = receivedData.player;
     currentlyChoosingPlayerOptions = receivedData.player_options;
+    if (currentlyChoosingPlayerOptions == null) currentlyChoosingPlayerOptions = ['chosen'];
     showCurrentlyChoosing();
     showCoPlayersChoice(receivedData.co_players_choice);
     greyOutOptions();
 });
 
 
+let talonBack = document.getElementById('talon-back');
+let talonFront = document.getElementById('talon-front');
+
+function revealTalon() {
+    talonBack.style.display = 'none';
+    talonFront.style.display = 'flex';
+    isTalonShown = true;
+};
+
+
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
-    if ((currentlyChoosingPlayer == null) || currentlyChoosingPlayerOptions.includes('chosen')) {
+    if (noChoosingPlayer || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
+        isChoosingGameDiv.style.display = 'none';
+
+        // once everyone has chosen and the choose display is gone, send message to server side
+        console.log('[SENDING] all users have chosen');
+        socket.emit('round begins', gameId);
+
+        // flip the talon cards
+        revealTalon();
+
     } else if (currentlyChoosingPlayer == currentUser) {
+        // show the game options to player, whose turn it is currently to choose
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';
+
     } else {
+        // if another player is choosing, hide the game options and show that another player is choosing
         chooseGameDiv.style.display = 'none';
         isChoosingGameDiv.style.display = 'block';
         isChoosingGameDiv.innerHTML = `<h3>${currentlyChoosingPlayer} izbira igro</h3>`

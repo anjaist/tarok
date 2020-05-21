@@ -5,8 +5,9 @@ from flask_socketio import SocketIO
 
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
-    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices
-from app.game_utils import deal_new_round
+    get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
+    save_game_type, get_dealt_cards
+from app.game_utils import sort_player_cards
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -107,7 +108,7 @@ def play():
     co_players = get_co_players(game_id, session['user_id'])
     all_players = list(co_players.keys()) + [user.username]
 
-    new_round = deal_new_round(all_players)
+    dealt_cards = get_dealt_cards(game_id, all_players)
     choose_order = get_players_that_need_to_choose_game(game_id)
     player_to_choose = None
     player_to_choose_opts = None
@@ -117,8 +118,9 @@ def play():
         player_to_choose_opts = player_to_choose_opts.decode('utf-8')
 
     connect_handler()
-    return render_template('play.html', player=user.username, co_players=co_players, round_state=new_round,
-                           player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts)
+    return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
+                           player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
+                           game_id=game_id)
 
 
 @socketio.on('connect to playroom')
@@ -167,7 +169,46 @@ def update_user_choice(username: str, choice: str):
     user = User.query.filter_by(username=username).first()
     game_id = user.current_game
 
-    # udate redis with user's choice
+    # update redis with user's choice
     if choice:
         redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
     update_player_choosing()
+
+
+@socketio.on('round begins')
+def update_round_state_at_beginning(game_id: str):
+    """updates redis db with the state of the round at its beginning"""
+    save_game_type(int(game_id))
+
+    game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
+    main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+    data_to_send = {'game_type': game_type, 'main_player': main_player}
+    print(f'[SENDING] new round information: {data_to_send}')
+    socketio.emit('round begins', data_to_send)
+
+
+@socketio.on('update players hand')
+def update_players_hand(main_player: str, game_id: str, cards_to_add: list, cards_to_remove: list):
+    """the chosen cards from talon are either added to or removed from the array of cards the player is already holding.
+    The cards are sorted again and returned to the JS component.
+    A player's hand will always need to be updated twice, first with cards_to_add and then with cards_to_remove.
+    To distinguish when the updating of the player's hand is finished, swap_finished is set to True."""
+    swap_finished = False
+    cards_in_hand = redis_db.hget(f'{game_id}:current_round', f'{main_player}_cards').decode('utf-8')
+    cards_in_hand = cards_in_hand.split(',')
+
+    if cards_to_add:
+        cards_in_hand.extend(cards_to_add)
+
+    elif cards_to_remove:
+        cards_in_hand = [card for card in cards_in_hand if card not in cards_to_remove]
+        swap_finished = True
+
+    updated_hand = sort_player_cards(cards_in_hand)
+
+    # save player's new cards to redis
+    value_for_redis = ','.join(str(card_name) for card_name in updated_hand)
+    redis_db.hset(f'{game_id}:current_round', f'{main_player}_cards', value_for_redis)
+
+    data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
+    socketio.emit('update players hand', data_to_send)

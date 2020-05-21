@@ -210,7 +210,3 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
-
-
-# TODO:
-#  => fix positioning of info message (should be relative to talon cards)

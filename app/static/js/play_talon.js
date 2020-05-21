@@ -250,17 +250,24 @@ function displayCardsToSwap(mainPlayer) {
             (function(i) {
                 let userCard = document.getElementById('user-card-' + i);
                 let userCardBg = document.getElementById('user-card-bg-' + i);
-                userCard.onmouseover = function() {
-                    highlightCard(userCard, userCardBg);
-                };
-                userCard.onmouseout = function() {
-                removeHighlightCard(userCard, userCardBg);
-                };
+                cardName = getCardName(userCard);
 
-                // Listen for a user's click on their cards
-                userCard.addEventListener('click', function() {
-                    chooseCardsFromHand(userCard, userCardBg);
-                })
+                // a user can't choose a king or a tarok (tarok has a number as the cardName)
+                needsToBeKept = cardName.includes('king') || /^\d+$/.test(cardName)
+
+                if (!needsToBeKept) {
+                    userCard.onmouseover = function() {
+                        highlightCard(userCard, userCardBg);
+                    };
+                    userCard.onmouseout = function() {
+                    removeHighlightCard(userCard, userCardBg);
+                    };
+
+                    // Listen for a user's click on their cards
+                    userCard.addEventListener('click', function() {
+                        chooseCardsFromHand(userCard, userCardBg);
+                    })
+                }
             })(i);
         };
     }

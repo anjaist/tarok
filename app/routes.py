@@ -213,5 +213,4 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
 
 # TODO:
-#  => chosen card from hand can't be a tarok or a king
 #  => fix positioning of info message (should be relative to talon cards)

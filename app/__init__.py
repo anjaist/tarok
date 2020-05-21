@@ -32,7 +32,7 @@ def init_redis():
             break
         except Exception as e:
             print(str(e))
-            print(f'Connecting to {host} redis database...')
+            print(f'Connecting to redis database...')
             time.sleep(1)
             i += 1
             if i == REDIS_CONN_TIMEOUT:

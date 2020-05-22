@@ -212,3 +212,14 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
+
+
+# TODO: implement calling options: trula, pagat ultimo, trulpagat, vsi 4 kralji, valat, brez napovedi
+#  => popup "napovej" menu (that only main user sees)
+#  => only the all 4 kings call is compatible with other options
+#  => confirm call choice
+#  => save user's call choice to redis
+#  => menu disappears
+#  => the other users are shown what the user has called
+#  => check if talon needs to be displayed on /page first load
+#  => fix: "last_choice" is set to True one round too soon...

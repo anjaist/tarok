@@ -295,6 +295,13 @@ function displayUpdatedHand(updatedHand) {
 }
 
 
+// reveals the call options menu
+function showCallOptions() {
+    let callOptionsMenu = document.getElementById("call-round-attributes");
+    callOptionsMenu.style.display = 'flex';
+}
+
+
 /*
     Remove info message and "confirm" button once card swap is finished.
     This needs to be outside of the displayTalonInfoMessage function so that talon is not shown again on page refresh.
@@ -323,5 +330,6 @@ socket.on('update players hand', function(receivedData) {
     if (mainPlayer == currentUser) {
         displayUpdatedHand(updatedHand);
         displayCardsToSwap(mainPlayer);
+        if (userCardsConfirmed) showCallOptions();
     }
 });

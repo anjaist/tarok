@@ -349,6 +349,7 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
 
     redis_db.hset(f'{game_id}:current_round', 'order', order)
     redis_db.hset(f'{game_id}:current_round', 'whose_turn', order.split(',')[0])
+    redis_db.hset(f'{game_id}:current_round', 'called', '')
 
     # save dealt cards
     for key, value in dealt_cards.items():

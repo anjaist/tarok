@@ -117,10 +117,12 @@ def play():
         player_to_choose_opts = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose}_options')
         player_to_choose_opts = player_to_choose_opts.decode('utf-8')
 
+    called = redis_db.hget(f'{game_id}:current_round', 'called').decode('utf-8')
+
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
-                           game_id=game_id)
+                           game_id=game_id, called=called)
 
 
 @socketio.on('connect to playroom')
@@ -214,12 +216,10 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
     socketio.emit('update players hand', data_to_send)
 
 
-# TODO: implement calling options: trula, pagat ultimo, trulpagat, vsi 4 kralji, valat, brez napovedi
-#  => popup "napovej" menu (that only main user sees)
+# TODO: implement calling options:
 #  => only the all 4 kings call is compatible with other options
 #  => confirm call choice
 #  => save user's call choice to redis
 #  => menu disappears
 #  => the other users are shown what the user has called
-#  => check if talon needs to be displayed on /page first load
 #  => fix: "last_choice" is set to True one round too soon...

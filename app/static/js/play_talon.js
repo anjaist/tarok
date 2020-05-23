@@ -12,6 +12,7 @@ let userCardsConfirmed = false;
 
 let confirmButton = document.getElementById('confirm-btn');
 let baseUrlImg = document.getElementById('base-url-for-img').content;
+let callConfirmed = (document.getElementById('called').content == "") ? false : true;
 
 
 // get card name from file name
@@ -231,8 +232,9 @@ function displayTalonInfoMessage(mainPlayer) {
         }
     })
 
-    // remove info message and "confirm" button once card swap is finished
-    if (userCardsConfirmed) {
+    //  Remove info message and "confirm" button for main user once card swap is finished.
+    //  For other players this block should disappear once mainPlayer has chosen calling options.
+    if (userCardsConfirmed && mainPlayer == currentUser || callConfirmed) {
         document.getElementById('talon-front').style.display = 'none';
     }
 }
@@ -306,7 +308,7 @@ function showCallOptions() {
     Remove info message and "confirm" button once card swap is finished.
     This needs to be outside of the displayTalonInfoMessage function so that talon is not shown again on page refresh.
 */
-if (userCardsConfirmed) {
+if (callConfirmed) {
     document.getElementById('talon-front').style.display = 'none';
 }
 

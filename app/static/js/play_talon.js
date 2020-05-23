@@ -352,6 +352,7 @@ function showCallOptions() {
                 if (el.checked) selectedOptions.push(el.value);
             })
             socket.emit('round call options', gameId, selectedOptions);
+            callOptionsMenu.style.display = 'none';
         }
     })
 }
@@ -361,9 +362,10 @@ function showCallOptions() {
     Remove info message and "confirm" button once card swap is finished.
     This needs to be outside of the displayTalonInfoMessage function so that talon is not shown again on page refresh.
 */
-if (callConfirmed) {
-    document.getElementById('talon-front').style.display = 'none';
+function hideTalon() {
+    if (callConfirmed) document.getElementById('talon-front').style.display = 'none';
 }
+hideTalon();
 
 
 // get information on the current round being played
@@ -385,6 +387,13 @@ socket.on('update players hand', function(receivedData) {
     if (mainPlayer == currentUser) {
         displayUpdatedHand(updatedHand);
         displayCardsToSwap(mainPlayer);
-        if (userCardsConfirmed) showCallOptions();
+        if (userCardsConfirmed) showCallOptions(); // todo: this is only called for mainPlayer...
     }
 });
+
+
+// get a message when calling of options has been completed
+socket.on('round call options', function() {
+    callConfirmed = true;
+    hideTalon();
+})

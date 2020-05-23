@@ -220,8 +220,8 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
     redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
+    socketio.emit('round call options')
 
 
 # TODO: implement calling options:
-#  => menu disappears
 #  => the other users are shown what the user has called

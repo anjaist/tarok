@@ -116,10 +116,12 @@
             </br>
             <input type="checkbox" id="valat" value="valat">
             <label for="valat">valat</label>
-            <input type="checkbox" id="no-calls" value="null">
+            <input type="checkbox" id="no-calls" value="pass">
             <label for="no-calls">brez napovedi</label>
         </form>
-        <button type=submit name="submit-button" id="call-round-attributes-btn" class="btn btn-dark">Potrdi</button>
+        <button type=submit name="submit-button" id="call-round-attributes-btn" class="btn btn-greyedout">
+            Potrdi
+        </button>
     </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play_choose_game.js') }}"></script>

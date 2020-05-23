@@ -307,16 +307,18 @@ function showCallOptions() {
     let kings = document.getElementById("kings");
     let valat = document.getElementById("valat");
     let noCalls = document.getElementById("no-calls");
+    let callConfirmButton = document.getElementById("call-round-attributes-btn");
 
-    allOptions = [trula, pagat, kings, valat, noCalls]
+    let allOptions = [trula, pagat, kings, valat, noCalls];
+    let selectedOptions = [];
 
-    incompatibleChoices = {
+    let incompatibleChoices = {
         "trula": [valat, noCalls],
         "pagat": [noCalls],
         "kings": [valat, noCalls],
         "valat": [trula, kings, noCalls],
         "no-calls": [trula, pagat, kings, valat]
-    }
+    };
 
     // listen for when a box has been checked or unchecked
     allOptions.forEach(function(callChoice) {
@@ -331,7 +333,26 @@ function showCallOptions() {
             if (trula.checked || pagat.checked || kings.checked || valat.checked) {
                 noCalls.disabled = true;
             }
+
+            // if no checkbox is checked, disable the "confirm" button
+            if (noCalls.disabled || noCalls.checked) {
+                callConfirmButton.classList.remove('btn-greyedout');
+                callConfirmButton.classList.add('btn-dark');
+            } else {
+                callConfirmButton.classList.remove('btn-dark');
+                callConfirmButton.classList.add('btn-greyedout');
+            }
         })
+    })
+
+    // listen for click on the "confirm" button
+    callConfirmButton.addEventListener("click", function() {
+        if (callConfirmButton.classList.contains('btn-dark')) {
+            allOptions.forEach(function(el) {
+                if (el.checked) selectedOptions.push(el.value);
+            })
+            socket.emit('round call options', gameId, selectedOptions);
+        }
     })
 }
 

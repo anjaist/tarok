@@ -12,8 +12,16 @@ let userCardsConfirmed = false;
 
 let confirmButton = document.getElementById('confirm-btn');
 let baseUrlImg = document.getElementById('base-url-for-img').content;
-let callConfirmed = (document.getElementById('called').content == "") ? false : true;
+let firstPlayer = document.getElementById('first-player').content;
+let mainPlayer = document.getElementById('main-player').content;
 
+let callConfirmed = false;
+let calledSelectedOptions = [];
+
+if (document.getElementById('called').content != "") {
+    callConfirmed = true;
+    calledSelectedOptions = document.getElementById('called').content.split(',');
+}
 
 // get card name from file name
 function getCardName(fileName) {
@@ -310,7 +318,6 @@ function showCallOptions() {
     let callConfirmButton = document.getElementById("call-round-attributes-btn");
 
     let allOptions = [trula, pagat, kings, valat, noCalls];
-    let selectedOptions = [];
 
     let incompatibleChoices = {
         "trula": [valat, noCalls],
@@ -349,9 +356,9 @@ function showCallOptions() {
     callConfirmButton.addEventListener("click", function() {
         if (callConfirmButton.classList.contains('btn-dark')) {
             allOptions.forEach(function(el) {
-                if (el.checked) selectedOptions.push(el.value);
+                if (el.checked) calledSelectedOptions.push(el.value);
             })
-            socket.emit('round call options', gameId, selectedOptions);
+            socket.emit('round call options', gameId, calledSelectedOptions);
             callOptionsMenu.style.display = 'none';
         }
     })
@@ -362,10 +369,16 @@ function showCallOptions() {
     Remove info message and "confirm" button once card swap is finished.
     This needs to be outside of the displayTalonInfoMessage function so that talon is not shown again on page refresh.
 */
-function hideTalon() {
-    if (callConfirmed) document.getElementById('talon-front').style.display = 'none';
+function displayInfo(mainPlayer, gameType, called, whoseTurn) {
+    if (callConfirmed) {
+        document.getElementById('talon-front').style.display = 'none';
+        document.getElementById('info-game-wrapper').style.display = 'flex';
+        document.getElementById('info-player-game').innerHTML = `${mainPlayer} igra ${gameType}`;
+        document.getElementById('info-called').innerHTML = `Napovedano: ${called.join(', ')}`;
+        document.getElementById('info-whose-turn').innerHTML = `Na vrsti: ${whoseTurn}`
+    }
 }
-hideTalon();
+displayInfo(mainPlayer, gameType, calledSelectedOptions, firstPlayer);
 
 
 // get information on the current round being played
@@ -387,7 +400,7 @@ socket.on('update players hand', function(receivedData) {
     if (mainPlayer == currentUser) {
         displayUpdatedHand(updatedHand);
         displayCardsToSwap(mainPlayer);
-        if (userCardsConfirmed) showCallOptions(); // todo: this is only called for mainPlayer...
+        if (userCardsConfirmed) showCallOptions();
     }
 });
 
@@ -395,5 +408,5 @@ socket.on('update players hand', function(receivedData) {
 // get a message when calling of options has been completed
 socket.on('round call options', function() {
     callConfirmed = true;
-    hideTalon();
+    displayInfo(mainPlayer, gameType, calledSelectedOptions, firstPlayer);
 })

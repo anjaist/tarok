@@ -187,3 +187,22 @@
 #call-round-attributes-form label {
     margin-right: .5rem;
 }
+
+#info-game-wrapper {
+    display: none;
+    top: 8vh;
+    left: calc(50vw - 112px);
+    max-width: 224px;
+    font-size: 13px;
+    padding: 5px 10px;
+}
+
+#info-game-wrapper p {
+    margin-bottom: 2px;
+}
+
+#info-game-wrapper hr {
+    width: 100%;
+    margin: 4px 0px;
+    border-color: black;
+}

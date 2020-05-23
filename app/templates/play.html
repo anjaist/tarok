@@ -107,19 +107,17 @@
     <div class="game-options" id="call-round-attributes">
         <h3>Kaj za napovedati?</h3>
         <form id="call-round-attributes-form">
-            <input type="radio" id="trula" name="game-opt" value="trula">
+            <input type="checkbox" id="trula" value="trula">
             <label for="trula">trula</label>
-            <input type="radio" id="pagat" name="game-opt" value="pagat">
+            <input type="checkbox" id="pagat" value="pagat">
             <label for="pagat">pagat ultimo</label>
-            <input type="radio" id="trulpagat" name="game-opt" value="trulpagat">
-            <label for="trulpagat">trulpagat</label>
+            <input type="checkbox" id="kings" value="kings">
+            <label for="kings">vsi štirje kralji</label>
             </br>
-            <input type="radio" id="all-kings" name="game-opt2" value="all-kings">
-            <label for="all-kings">vsi štirje kralji</label>
-            <input type="radio" id="valat" name="game-opt" value="valat">
+            <input type="checkbox" id="valat" value="valat">
             <label for="valat">valat</label>
-            <input type="radio" id="null" name="game-opt" value="null">
-            <label for="null">brez napovedi</label>
+            <input type="checkbox" id="no-calls" value="null">
+            <label for="no-calls">brez napovedi</label>
         </form>
         <button type=submit name="submit-button" id="call-round-attributes-btn" class="btn btn-dark">Potrdi</button>
     </div>

@@ -297,10 +297,42 @@ function displayUpdatedHand(updatedHand) {
 }
 
 
-// reveals the call options menu
+// reveals the call options menu and adjusts options based on their inner-compatibility
 function showCallOptions() {
     let callOptionsMenu = document.getElementById("call-round-attributes");
     callOptionsMenu.style.display = 'flex';
+
+    let trula = document.getElementById("trula");
+    let pagat = document.getElementById("pagat");
+    let kings = document.getElementById("kings");
+    let valat = document.getElementById("valat");
+    let noCalls = document.getElementById("no-calls");
+
+    allOptions = [trula, pagat, kings, valat, noCalls]
+
+    incompatibleChoices = {
+        "trula": [valat, noCalls],
+        "pagat": [noCalls],
+        "kings": [valat, noCalls],
+        "valat": [trula, kings, noCalls],
+        "no-calls": [trula, pagat, kings, valat]
+    }
+
+    // listen for when a box has been checked or unchecked
+    allOptions.forEach(function(callChoice) {
+        callChoice.addEventListener("change", function() {
+
+            // disable or enable other options based on if they are compatible with what has just been checked
+            incompatibleChoices[callChoice.id].forEach(function(el) {
+                el.disabled = (callChoice.checked) ? true : false;
+            })
+
+            // if any option is still checked, disable the no-calls option
+            if (trula.checked || pagat.checked || kings.checked || valat.checked) {
+                noCalls.disabled = true;
+            }
+        })
+    })
 }
 
 

@@ -217,9 +217,7 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
 
 # TODO: implement calling options:
-#  => only the all 4 kings call is compatible with other options
 #  => confirm call choice
 #  => save user's call choice to redis
 #  => menu disappears
 #  => the other users are shown what the user has called
-#  => fix: "last_choice" is set to True one round too soon...

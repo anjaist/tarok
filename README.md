@@ -26,7 +26,6 @@ and `-` points if they aren't successful).
     Options:
     - `trula` (The player collects the following tarok cards: I, XXI, XXII)
     - `pagat ultimo` (The player uses tarok I as their last card and takes the sweep)
-    - `trulpagat` (trula + pagat ultimo)
     - `all 4 kings` (the player collects all 4 kings)
     - `valat` (the player collects all cards)
     - `nothing called`

@@ -359,9 +359,11 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
     redis_db.hset(f'{game_id}:current_round', 'against_players_score_pile', '')
 
     # save dealt cards
-    for key, value in dealt_cards.items():
+    for user, value in dealt_cards.items():
         value_for_redis = ','.join(str(card_name) for card_name in value)
-        redis_db.hset(f'{game_id}:current_round', f'{key}_cards', value_for_redis)
+        redis_db.hset(f'{game_id}:current_round', f'{user}_cards', value_for_redis)
+        if user != 'talon':
+            redis_db.hset(f'{game_id}:current_round', f'{user}_played', '')
 
 
 def save_game_type(game_id: int):
@@ -373,3 +375,27 @@ def save_game_type(game_id: int):
 
     redis_db.hset(f'{game_id}:current_round', 'type', game_type)
     redis_db.hset(f'{game_id}:current_round', 'main_player', main_player)
+
+
+def get_cards_on_table(game_id: str) -> Union[list, None]:
+    """retrieves the on_table information from redis and returns a list of cards currently on the table"""
+    cards_on_table = redis_db.hget(f'{game_id}:current_round', 'on_table')
+    if not cards_on_table:
+        return None
+
+    cards_on_table = cards_on_table.decode('utf-8')
+    return cards_on_table.split(',')
+
+
+def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
+    """determines which card is the highest (takes the round) and queries redis to determine
+    which player played that card. Returns their username"""
+    highest_card = cards_on_table[1]  # todo: put game logic in game_utils (if tarok, if cards of same colour, if trula but pagat last etc.)
+
+    players_in_game = get_all_players(int(game_id))
+    for player in players_in_game:
+        players_card = redis_db.hget(f'{game_id}:current_round', f'{player}_played').decode('utf-8')
+        if players_card == highest_card:
+            return player
+
+    raise RuntimeError(f'Couldn\'t determine who clears table. Highest card played: {highest_card}')

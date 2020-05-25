@@ -15,6 +15,8 @@ function oneTurn(playerName) {
     // todo display chosen card on table
 
     // todo: socket send to server - chose card, playerName
+    let tempCard = 'temp-card'
+    socket.emit('gameplay for round', gameId, playerName, tempCard);
 }
 
 
@@ -28,6 +30,9 @@ socket.on('gameplay_for_round', function(receivedData) {
         oneTurn(whoseTurn);
 
         // todo if three cards on the table, they should disappear and whose turn display should be updated
+
+        // todo: pile of cards (cards back) should have a number on it, displaying how many cards have been taken
+        // that number should be updated when cards are added to it
     }
 })
 

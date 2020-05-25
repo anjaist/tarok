@@ -72,6 +72,9 @@ KEY name => game_id:current_round
   "talon_cards": "card1,card2,card3,{...}",
   "called": "",
   "on_table": "card1,card2,card3",
+  "{username1_played}: "card1",
+  "{username2_played}: "card2",
+  "{username3_played}: "card3",
   "main_player_score_pile": "card1,card2,card3,{...}",
   "against_players_score_pile": "card1,card2,card3,{...}"
 }
@@ -86,5 +89,6 @@ usernameX_cards            | saves usernameX's cards in current round in a sorte
 talon_cards                | saves cards in talon in current round in a sorted order (based on game sort logic, not python one)
 called                     | saves what attributes have been called by main_player for current round. Empty entry means the user has not yet made their call choice
 on_table                   | saves cards that are currently on the table (in the order they were played in) - max. of 3 (3-player game) or 4 (4-player game)
+usernameX_played           | saves which card usernameX played (put on the table). Value removed every time the table is cleared.
 main_player_score_pile     | saves cards that the main player has taken in the round
 against_players_score_pile | saves cards that the two other players have taken in the round

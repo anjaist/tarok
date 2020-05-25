@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
-    save_game_type, get_dealt_cards
+    save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table
 from app.game_utils import sort_player_cards
 from app.models import User
 
@@ -229,23 +229,37 @@ def update_round_call_options(game_id: str, call_options: list):
     socketio.emit('round call options')
 
 
-@socketio.on('gameplay_for_round')
-def play_round(game_id: str, user_whose_card: str = None, card_played: str = None):
+@socketio.on('gameplay for round')
+def play_round(game_id: str, user_whose_card: str, card_played: str):
     """..."""
     # check that the received card is from the expected user
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
     assert user_whose_card == whose_turn
 
-    # todo if the card played is the third card on the table, determine who takes the sweep
+    # add card_played to redis for the relevant user
+    redis_db.hset(f'{game_id}:current_round', f'{user_whose_card}_played', card_played)
 
-    # todo add swept cards to the correct user's (or user group's) pile
+    # if the card played is the third card on the table, determine who clears the table
+    pile_to_add_to = None
+    cards_on_table = get_cards_on_table(game_id)
+    cards_on_table.append(card_played)
+    if len(cards_on_table) == 3:
+        pile_to_add_to = determine_who_clears_table(game_id, cards_on_table)
+
+        # add cleared cards to the correct user's (or user group's) pile
+        main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+        identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
+        current_pile = redis_db.hget(f'{game_id}:current_round', f'{identifier}_score_pile')
+        current_pile = "" if not current_pile else current_pile.decode('utf-8')
+        updated_pile = current_pile + ','.join(cards_on_table)
+        redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
 
     # todo update whose_turn in redis
 
     # todo if everyone has played their card, remove/wipe the redis entry for game_id:current_round
 
-    data_to_send = {'whose_turn': whose_turn}
-    socketio.emit('gameplay_for_round', data_to_send)
+    data_to_send = {'whose_turn': whose_turn, 'pile_to_add_to': pile_to_add_to}
+    socketio.emit('gameplay for round', data_to_send)
 
 
 # TODO: gameplay loop:
@@ -253,3 +267,4 @@ def play_round(game_id: str, user_whose_card: str = None, card_played: str = Non
 #  => the player whose turn it is plays their cards (appears in the middle, visible to everyone)
 #  => when all players have put out a card, one of them collects it
 #  => the player that has collected the card is now the new "player whose turn it is"
+#  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

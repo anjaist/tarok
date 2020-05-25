@@ -82,6 +82,7 @@
     <meta id="called" content="{{ called }}">
     <meta id="first-player" content="{{ first_player }}">
     <meta id="main-player" content="{{ main_player }}">
+    <meta id="game-type" content="{{ game_type }}">
     <div id="round-options-popup" class="game-options">
         <div id="co-players-choice">
             {% for username, active in co_players.items() %}
@@ -113,12 +114,12 @@
             <label for="trula">trula</label>
             <input type="checkbox" id="pagat" value="pagat">
             <label for="pagat">pagat ultimo</label>
-            <input type="checkbox" id="kings" value="kings">
+            <input type="checkbox" id="kings" value="kralji">
             <label for="kings">vsi štirje kralji</label>
             </br>
             <input type="checkbox" id="valat" value="valat">
             <label for="valat">valat</label>
-            <input type="checkbox" id="no-calls" value="pass">
+            <input type="checkbox" id="no-calls" value="nič">
             <label for="no-calls">brez napovedi</label>
         </form>
         <button type=submit name="submit-button" id="call-round-attributes-btn" class="btn btn-greyedout">
@@ -126,10 +127,10 @@
         </button>
     </div>
     <div class="game-options" id="info-game-wrapper">
-        <p id="info-player-game">anja igra "tri"</p>
-        <p id="info-called">napovedano: trula, pagat, kralji</p>
+        <p id="info-player-game"></p>
+        <p id="info-called"></p>
         <hr>
-        <p id="info-whose-turn">na vrsti: igralka</p>
+        <p id="info-whose-turn"></p>
     </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play_choose_game.js') }}"></script>

@@ -121,11 +121,14 @@ def play():
     first_player_in_db = redis_db.hget(f'{game_id}:current_round', 'order').decode('utf-8')
     first_player = first_player_in_db.split(',')[0]
     main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+    game_type_in_redis = redis_db.hget(f'{game_id}:current_round', 'type')
+    game_type = None if not game_type_in_redis else game_type_in_redis.decode('utf-8')
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
-                           game_id=game_id, called=called, first_player=first_player, main_player=main_player)
+                           game_id=game_id, called=called, first_player=first_player, main_player=main_player,
+                           game_type=game_type)
 
 
 @socketio.on('connect to playroom')
@@ -227,6 +230,4 @@ def update_round_call_options(game_id: str, call_options: list):
 
 
 # TODO:
-#  => translate things shown in displayInfo() (play_talon.js)
-#  => use the connect handler to transmit information, rather than pass everything in /play handler?
 #  => firstPlayer is currently set but this should be figured out dynamically (order vs. current order)

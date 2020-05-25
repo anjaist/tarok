@@ -373,7 +373,7 @@ function displayInfo(mainPlayer, gameType, called, whoseTurn) {
     if (callConfirmed) {
         document.getElementById('talon-front').style.display = 'none';
         document.getElementById('info-game-wrapper').style.display = 'flex';
-        document.getElementById('info-player-game').innerHTML = `${mainPlayer} igra ${gameType}`;
+        document.getElementById('info-player-game').innerHTML = `${mainPlayer} igra ${gameTypeTranslation[gameType]}`;
         document.getElementById('info-called').innerHTML = `Napovedano: ${called.join(', ')}`;
         document.getElementById('info-whose-turn').innerHTML = `Na vrsti: ${whoseTurn}`
     }

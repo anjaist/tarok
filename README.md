@@ -34,7 +34,7 @@ and `-` points if they aren't successful).
 
 ### RedisDB
 
-*Round Choices*
+**Round Choices**
 ```
 KEY name => game_id:round_choices
 {
@@ -58,7 +58,7 @@ usernameX_options | options usernameX can choose from
 last_choice       | string ('false' or 'true'); indicates if the current choice should be the last in the round
 
 
-*State of Current Round*
+**State of Current Round**
 ```
 KEY name => game_id:current_round
 {

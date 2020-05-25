@@ -117,10 +117,18 @@ def play():
         player_to_choose_opts = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose}_options')
         player_to_choose_opts = player_to_choose_opts.decode('utf-8')
 
+    called = redis_db.hget(f'{game_id}:current_round', 'called').decode('utf-8')
+    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+    main_player_in_redis = redis_db.hget(f'{game_id}:current_round', 'main_player')
+    main_player = None if not main_player_in_redis else main_player_in_redis.decode('utf-8')
+    game_type_in_redis = redis_db.hget(f'{game_id}:current_round', 'type')
+    game_type = None if not game_type_in_redis else game_type_in_redis.decode('utf-8')
+
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
-                           game_id=game_id)
+                           game_id=game_id, called=called, whose_turn=whose_turn, main_player=main_player,
+                           game_type=game_type)
 
 
 @socketio.on('connect to playroom')
@@ -212,3 +220,10 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
+
+
+@socketio.on('round call options')
+def update_round_call_options(game_id: str, call_options: list):
+    """adds call options to the corresponding entry in redisdb"""
+    redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
+    socketio.emit('round call options')

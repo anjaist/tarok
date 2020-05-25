@@ -9,6 +9,8 @@ from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_rou
 from app.models import User, db, Game
 
 
+# ======== postgres ========
+
 class UniqueUserDataError(Exception):
     """custom error class to be thrown when unique restraint in db is violated"""
     def __init__(self, message='Račun s tem uporabniškim imenom ali emailom že obstaja'):
@@ -59,25 +61,6 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
     update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
 
 
-def create_redis_entry_for_round_choices(game_id: int, players: list):
-    """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
-    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]} """
-    players = [player.username for player in players]
-    random.shuffle(players)
-
-    for player in players:
-        redis_db.hset(f'{game_id}:round_choices', f'{player}_chosen', '')
-        redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one,pass')
-
-        # player 1 initially shouldn't be able to choose 'pass'
-        if player == players[0]:
-            redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one')
-
-    redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
-    redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(players))
-    redis_db.hset(f'{game_id}:round_choices', 'last_choice', 'false')
-
-
 def update_user_with_new_game_info(game_id: int, users: list):
     """updates current_game, current_score and current_duplication_tokens columns for each user in users"""
     for user in users:
@@ -125,22 +108,6 @@ def get_co_players(game_id: int, current_player_id: int) -> dict:
     return co_players
 
 
-def get_players_choices(game_id: int) -> dict:
-    """returns dictionary containing choices made so far by players"""
-    all_players = get_all_players(game_id)
-
-    players_choice = {}
-    for player_username in all_players:
-        p_choice = redis_db.hget(f'{game_id}:round_choices', f'{player_username}_chosen')
-        if not p_choice:
-            p_choice = 'čaka na izbiro'
-        else:
-            p_choice = TRANSLATION_GAME_TYPE[p_choice.decode('utf-8')]
-        players_choice[player_username] = p_choice
-
-    return players_choice
-
-
 def check_validity_of_chosen_players(user: User, username1: str, username2: str):
     """checks that chosen co_players exist in db"""
     co_player1 = User.query.filter_by(username=username1).first()
@@ -164,6 +131,43 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
         create_new_game(co_player1, co_player2, user)
 
     return error
+
+
+# ======== redis ========
+
+def create_redis_entry_for_round_choices(game_id: int, players: list):
+    """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
+    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]} """
+    players = [player.username for player in players]
+    random.shuffle(players)
+
+    for player in players:
+        redis_db.hset(f'{game_id}:round_choices', f'{player}_chosen', '')
+        redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one,pass')
+
+        # player 1 initially shouldn't be able to choose 'pass'
+        if player == players[0]:
+            redis_db.hset(f'{game_id}:round_choices', f'{player}_options', 'three,two,one')
+
+    redis_db.hset(f'{game_id}:round_choices', 'order', ','.join(players))
+    redis_db.hset(f'{game_id}:round_choices', 'new_order', ','.join(players))
+    redis_db.hset(f'{game_id}:round_choices', 'last_choice', 'false')
+
+
+def get_players_choices(game_id: int) -> dict:
+    """returns dictionary containing choices made so far by players"""
+    all_players = get_all_players(game_id)
+
+    players_choice = {}
+    for player_username in all_players:
+        p_choice = redis_db.hget(f'{game_id}:round_choices', f'{player_username}_chosen')
+        if not p_choice:
+            p_choice = 'čaka na izbiro'
+        else:
+            p_choice = TRANSLATION_GAME_TYPE[p_choice.decode('utf-8')]
+        players_choice[player_username] = p_choice
+
+    return players_choice
 
 
 def get_players_that_need_to_choose_game(game_id: int) -> Union[list, None]:

@@ -118,16 +118,16 @@ def play():
         player_to_choose_opts = player_to_choose_opts.decode('utf-8')
 
     called = redis_db.hget(f'{game_id}:current_round', 'called').decode('utf-8')
-    first_player_in_db = redis_db.hget(f'{game_id}:current_round', 'order').decode('utf-8')
-    first_player = first_player_in_db.split(',')[0]
-    main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+    main_player_in_redis = redis_db.hget(f'{game_id}:current_round', 'main_player')
+    main_player = None if not main_player_in_redis else main_player_in_redis.decode('utf-8')
     game_type_in_redis = redis_db.hget(f'{game_id}:current_round', 'type')
     game_type = None if not game_type_in_redis else game_type_in_redis.decode('utf-8')
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
-                           game_id=game_id, called=called, first_player=first_player, main_player=main_player,
+                           game_id=game_id, called=called, whose_turn=whose_turn, main_player=main_player,
                            game_type=game_type)
 
 

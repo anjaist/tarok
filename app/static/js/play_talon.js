@@ -4,7 +4,7 @@
 
 let gameTypeTranslation = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'};
 let enumeratedGameType = {'three': 3, 'two': 2, 'one': 1, 'pass': 0};
-let gameType = null;
+let gameType = document.getElementById('game-type').content;;
 let talonChosen = [];
 let talonConfirmed = false;
 let userCardsChosen = [];
@@ -12,7 +12,7 @@ let userCardsConfirmed = false;
 
 let confirmButton = document.getElementById('confirm-btn');
 let baseUrlImg = document.getElementById('base-url-for-img').content;
-let firstPlayer = document.getElementById('first-player').content;
+let whoseTurn = document.getElementById('whose-turn').content;
 let mainPlayer = document.getElementById('main-player').content;
 
 let callConfirmed = false;
@@ -378,7 +378,7 @@ function displayInfo(mainPlayer, gameType, called, whoseTurn) {
         document.getElementById('info-whose-turn').innerHTML = `Na vrsti: ${whoseTurn}`
     }
 }
-displayInfo(mainPlayer, gameType, calledSelectedOptions, firstPlayer);
+displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
 
 
 // get information on the current round being played
@@ -408,5 +408,5 @@ socket.on('update players hand', function(receivedData) {
 // get a message when calling of options has been completed
 socket.on('round call options', function() {
     callConfirmed = true;
-    displayInfo(mainPlayer, gameType, calledSelectedOptions, firstPlayer);
+    displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
 })

@@ -227,7 +227,3 @@ def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
     redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
     socketio.emit('round call options')
-
-
-# TODO:
-#  => firstPlayer is currently set but this should be figured out dynamically (order vs. current order)

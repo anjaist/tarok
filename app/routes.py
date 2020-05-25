@@ -227,3 +227,29 @@ def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
     redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
     socketio.emit('round call options')
+
+
+@socketio.on('gameplay_for_round')
+def play_round(game_id: str, user_whose_card: str = None, card_played: str = None):
+    """..."""
+    # check that the received card is from the expected user
+    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+    assert user_whose_card == whose_turn
+
+    # todo if the card played is the third card on the table, determine who takes the sweep
+
+    # todo add swept cards to the correct user's (or user group's) pile
+
+    # todo update whose_turn in redis
+
+    # todo if everyone has played their card, remove/wipe the redis entry for game_id:current_round
+
+    data_to_send = {'whose_turn': whose_turn}
+    socketio.emit('gameplay_for_round', data_to_send)
+
+
+# TODO: gameplay loop:
+#  => dynamically get player whose turn it is
+#  => the player whose turn it is plays their cards (appears in the middle, visible to everyone)
+#  => when all players have put out a card, one of them collects it
+#  => the player that has collected the card is now the new "player whose turn it is"

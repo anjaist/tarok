@@ -405,8 +405,7 @@ socket.on('update players hand', function(receivedData) {
 });
 
 
-// get a message when calling of options has been completed
-socket.on('round call options', function() {
-    callConfirmed = true;
-    displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
-})
+/*
+    Get a message when calling of options has been completed - the function starts the round gameplay
+    and is therefore in the play_round_flow.js file
+*/

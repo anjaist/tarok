@@ -14,6 +14,8 @@ function oneTurn(playerName) {
 
     // todo display chosen card on table
 
+    // todo remove played card from player's hand
+
     // todo: socket send to server - chose card, playerName
     let tempCard = 'temp-card'
     socket.emit('gameplay for round', gameId, playerName, tempCard);

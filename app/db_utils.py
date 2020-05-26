@@ -57,7 +57,8 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
     db.session.add(game)
     db.session.commit()
 
-    create_redis_entry_for_round_choices(game.id, [player1, player2, player3])
+    player_usernames = [player.username for player in [player1, player2, player3]]
+    create_redis_entry_for_round_choices(game.id, player_usernames, new_game=True)
     update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
 
 
@@ -135,11 +136,22 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
 
 # ======== redis ========
 
-def create_redis_entry_for_round_choices(game_id: int, players: list):
+def create_redis_entry_for_round_choices(game_id: int, players: list, new_game: bool = False):
     """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
-    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]} """
+    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]}
+
+     new_game=True should be set only when a new game (not a new round!) begins
+     so that the order of the players is set (randomly).
+     After that, the same order is kept throughout the game's lifetime (but cycled through)
+     """
     players = [player.username for player in players]
-    random.shuffle(players)
+    if new_game:
+        random.shuffle(players)
+    else:
+        old_order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
+        order = old_order.split(',')
+        order.append(order.pop(0))  # move each player up a spot (the previously first player is now in last spot)
+        players = order
 
     for player in players:
         redis_db.hset(f'{game_id}:round_choices', f'{player}_chosen', '')
@@ -399,3 +411,32 @@ def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
             return player
 
     raise RuntimeError(f'Couldn\'t determine who clears table. Highest card played: {highest_card}')
+
+
+def check_for_end_of_round(game_id: str):
+    """if all players have played all of their cards, the round is over and the redis entries are deleted or reset"""
+    end_of_round = True
+
+    players_in_game = get_all_players(int(game_id))
+    for player in players_in_game:
+        players_hand = redis_db.hget(f'{game_id}:current_round', f'{player}_cards')
+        if players_hand:
+            end_of_round = False
+
+    if end_of_round:
+        print(f'Round is finished! Clearing redis for game {game_id}')
+        # delete the entire entry for :current_round
+        redis_db.delete(f'{game_id}:current_round')
+
+        # delete all keys for :choose_game apart from 'order'
+        # todo: the entire entry should be deleted if game is finished
+        keys = redis_db.hkeys(f'{game_id}:round_choices')
+        keys.remove('order')
+        redis_db.hdel(f'{game_id}:round_choices', *keys)
+
+
+def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
+    """removes played_card from the player's hand"""
+    current_hand = redis_db.hget(f'{game_id}:current_round', f'{player_name}_cards').decode('utf-8')
+    updated_hand = current_hand.replace(f',{played_card}', '')
+    redis_db.hset(f'{game_id}:current_round', f'{player_name}_cards', updated_hand)

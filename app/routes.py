@@ -6,7 +6,8 @@ from flask_socketio import SocketIO
 from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
-    save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table
+    save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
+    remove_card_from_hand
 from app.game_utils import sort_player_cards
 from app.models import User
 
@@ -236,8 +237,9 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
     assert user_whose_card == whose_turn
 
-    # add card_played to redis for the relevant user
+    # add card_played to redis for the relevant user and remove it from their hand
     redis_db.hset(f'{game_id}:current_round', f'{user_whose_card}_played', card_played)
+    remove_card_from_hand(game_id, user_whose_card, card_played)
 
     # if the card played is the third card on the table, determine who clears the table
     pile_to_add_to = None
@@ -256,7 +258,8 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
     # todo update whose_turn in redis
 
-    # todo if everyone has played their card, remove/wipe the redis entry for game_id:current_round
+    # todo: scoring should done (and saved to postgres) before redis is wiped
+    check_for_end_of_round(game_id)
 
     data_to_send = {'whose_turn': whose_turn, 'pile_to_add_to': pile_to_add_to}
     socketio.emit('gameplay for round', data_to_send)

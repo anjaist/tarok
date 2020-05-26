@@ -7,7 +7,7 @@ from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
-    remove_card_from_hand
+    remove_card_from_hand, update_order_of_players
 from app.game_utils import sort_player_cards
 from app.models import User
 
@@ -232,7 +232,11 @@ def update_round_call_options(game_id: str, call_options: list):
 
 @socketio.on('gameplay for round')
 def play_round(game_id: str, user_whose_card: str, card_played: str):
-    """..."""
+    """This method is called continuously by the JS side for the lifetime of the game.
+    It needs to be called once every time a player plays a card.
+    Once all players have played their card, the round has ended and the redis data is cleared for the game_id.
+    This means that the players once again need to choose their round options, see talon and call round attributes
+    before this method is called again and a new round is played."""
     # check that the received card is from the expected user
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
     assert user_whose_card == whose_turn
@@ -256,9 +260,11 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
         updated_pile = current_pile + ','.join(cards_on_table)
         redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
 
-    # todo update whose_turn in redis
+        update_order_of_players(game_id, new_first_player=pile_to_add_to)
+    else:
+        update_order_of_players(game_id)
 
-    # todo: scoring should done (and saved to postgres) before redis is wiped
+    # todo: scoring should be done (and saved to postgres) before redis is wiped
     check_for_end_of_round(game_id)
 
     data_to_send = {'whose_turn': whose_turn, 'pile_to_add_to': pile_to_add_to}
@@ -266,7 +272,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
 
 # TODO: gameplay loop:
-#  => dynamically get player whose turn it is
 #  => the player whose turn it is plays their cards (appears in the middle, visible to everyone)
 #  => when all players have put out a card, one of them collects it
 #  => the player that has collected the card is now the new "player whose turn it is"

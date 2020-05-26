@@ -440,3 +440,33 @@ def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
     current_hand = redis_db.hget(f'{game_id}:current_round', f'{player_name}_cards').decode('utf-8')
     updated_hand = current_hand.replace(f',{played_card}', '')
     redis_db.hset(f'{game_id}:current_round', f'{player_name}_cards', updated_hand)
+
+
+def update_order_of_players(game_id: str, new_first_player: str = None):
+    """this method updates the order of players in the :current_round hash in redis.
+
+    If new_first_player=None, it means that a round is currently in progress (there are cards on the table)
+    and so the first player is simply removed from the order.
+
+    If new_first_player='some player' it means that the table has been cleared and the first player is known.
+    The other players are determined based on who comes after the known player
+    in the original order found in the :round_choices hash"""
+
+    original_order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
+    original_order = original_order.split(',')
+
+    if new_first_player is None:
+        order_to_update = redis_db.hget(f'{game_id}:current_round', 'order').decode('utf-8')
+        order_to_update.pop(0)
+        redis_db.hset(f'{game_id}:current_round', 'order', order_to_update)
+    else:
+        if original_order.index(new_first_player) == 0:
+            new_order = original_order
+        elif original_order.index(new_first_player) == 1:
+            new_order = [new_first_player, original_order[2], original_order[0]]
+        elif original_order.index(new_first_player) == 2:
+            new_order = [new_first_player, original_order[0], original_order[1]]
+        else:
+            raise RuntimeError(f'Error on trying to retrieve {new_first_player} from {original_order}.')
+
+        redis_db.hset(f'{game_id}:current_round', 'order', new_order)

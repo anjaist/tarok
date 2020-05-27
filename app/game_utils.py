@@ -52,3 +52,9 @@ def sort_player_cards(unsorted_cards: list) -> list:
         sorted_cards.extend(suit)
 
     return sorted_cards
+
+
+def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
+    """returns a list of cards that can be played based on what is already on the table"""
+    # TODO
+    return ['temp-card-1', 'temp-card-2', 'temp-card-3']

@@ -8,7 +8,7 @@ from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataErro
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players
-from app.game_utils import sort_player_cards
+from app.game_utils import sort_player_cards, get_possible_card_plays
 from app.models import User
 
 bp = Blueprint('routes', __name__)
@@ -227,7 +227,14 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
     redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
-    socketio.emit('round call options')
+
+    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+
+    # as this triggers the first round for the first player, all cards from their hand can be played
+    can_be_played = redis_db.hget(f'{game_id}:current_round', f'{whose_turn}_cards').decode('utf-8')
+
+    data_to_send = {'whose_turn': whose_turn, 'can_be_played': can_be_played.split(',')}
+    socketio.emit('round call options', data_to_send)
 
 
 @socketio.on('gameplay for round')
@@ -260,14 +267,21 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
         updated_pile = current_pile + ','.join(cards_on_table)
         redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
 
-        update_order_of_players(game_id, new_first_player=pile_to_add_to)
+        updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
     else:
-        update_order_of_players(game_id)
+        updated_whose_turn = update_order_of_players(game_id)
 
     # todo: scoring should be done (and saved to postgres) before redis is wiped
-    check_for_end_of_round(game_id)
+    is_round_finished = check_for_end_of_round(game_id)
 
-    data_to_send = {'whose_turn': whose_turn, 'pile_to_add_to': pile_to_add_to}
+    if is_round_finished:
+        can_be_played = None
+    else:
+        players_cards = redis_db.hget(f'{game_id}:current_round', f'{updated_whose_turn}_cards').decode('utf-8')
+        can_be_played = get_possible_card_plays(cards_on_table, players_cards.split(','))
+
+    data_to_send = {'is_round_finished': is_round_finished, 'whose_turn': updated_whose_turn,
+                    'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played}
     socketio.emit('gameplay for round', data_to_send)
 
 

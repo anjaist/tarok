@@ -134,7 +134,7 @@ function displayTalonOptions(playerName) {
 
                     // Listen for a user's click on talon cards
                     talonCard.addEventListener('click', function() {
-                        chooseTalonCards(talonCard, talonCardBg)
+                        chooseTalonCards(talonCard, talonCardBg);
                     })
                 })(i);
             }
@@ -165,7 +165,7 @@ function displayTalonOptions(playerName) {
 
                     // Listen for a user's click on talon cards
                     talonCard.addEventListener('click', function() {
-                        chooseTalonCards(talonCard, talonCardBg, pairedCard, pairedCardBg)
+                        chooseTalonCards(talonCard, talonCardBg, pairedCard, pairedCardBg);
                     })
                 })(i);
             }
@@ -268,7 +268,7 @@ function displayCardsToSwap(mainPlayer) {
                         highlightCard(userCard, userCardBg);
                     };
                     userCard.onmouseout = function() {
-                    removeHighlightCard(userCard, userCardBg);
+                        removeHighlightCard(userCard, userCardBg);
                     };
 
                     // Listen for a user's click on their cards

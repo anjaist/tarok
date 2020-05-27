@@ -144,7 +144,6 @@ def create_redis_entry_for_round_choices(game_id: int, players: list, new_game: 
      so that the order of the players is set (randomly).
      After that, the same order is kept throughout the game's lifetime (but cycled through)
      """
-    players = [player.username for player in players]
     if new_game:
         random.shuffle(players)
     else:
@@ -413,8 +412,9 @@ def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
     raise RuntimeError(f'Couldn\'t determine who clears table. Highest card played: {highest_card}')
 
 
-def check_for_end_of_round(game_id: str):
-    """if all players have played all of their cards, the round is over and the redis entries are deleted or reset"""
+def check_for_end_of_round(game_id: str) -> bool:
+    """if all players have played all of their cards, the round is over and the redis entries are deleted or reset.
+    Return indicates whether the round is finished or not"""
     end_of_round = True
 
     players_in_game = get_all_players(int(game_id))
@@ -434,6 +434,8 @@ def check_for_end_of_round(game_id: str):
         keys.remove('order')
         redis_db.hdel(f'{game_id}:round_choices', *keys)
 
+    return not end_of_round
+
 
 def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
     """removes played_card from the player's hand"""
@@ -442,7 +444,7 @@ def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
     redis_db.hset(f'{game_id}:current_round', f'{player_name}_cards', updated_hand)
 
 
-def update_order_of_players(game_id: str, new_first_player: str = None):
+def update_order_of_players(game_id: str, new_first_player: str = None) -> str:
     """this method updates the order of players in the :current_round hash in redis.
 
     If new_first_player=None, it means that a round is currently in progress (there are cards on the table)
@@ -450,15 +452,17 @@ def update_order_of_players(game_id: str, new_first_player: str = None):
 
     If new_first_player='some player' it means that the table has been cleared and the first player is known.
     The other players are determined based on who comes after the known player
-    in the original order found in the :round_choices hash"""
+    in the original order found in the :round_choices hash.
+
+    Returns the player whose turn it is next"""
 
     original_order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
     original_order = original_order.split(',')
 
     if new_first_player is None:
-        order_to_update = redis_db.hget(f'{game_id}:current_round', 'order').decode('utf-8')
-        order_to_update.pop(0)
-        redis_db.hset(f'{game_id}:current_round', 'order', order_to_update)
+        order_in_redis = redis_db.hget(f'{game_id}:current_round', 'order').decode('utf-8')
+        new_order = order_in_redis.split(',')
+        new_order.pop(0)
     else:
         if original_order.index(new_first_player) == 0:
             new_order = original_order
@@ -469,4 +473,6 @@ def update_order_of_players(game_id: str, new_first_player: str = None):
         else:
             raise RuntimeError(f'Error on trying to retrieve {new_first_player} from {original_order}.')
 
-        redis_db.hset(f'{game_id}:current_round', 'order', new_order)
+    redis_db.hset(f'{game_id}:current_round', 'order', ','.join(new_order))
+
+    return new_order[0]

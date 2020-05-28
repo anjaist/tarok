@@ -206,3 +206,30 @@
     margin: 4px 0px;
     border-color: black;
 }
+
+#on-table-wrapper {
+    width: 100vw;
+    height: auto;
+    position: absolute;
+}
+
+#card-on-table-1 {
+    position: relative;
+    left: 45vw;
+    transform: rotate(200deg);
+    display: none;
+}
+
+#card-on-table-2 {
+    position: relative;
+    left: 40vw;
+    transform: rotate(250deg);
+    display: none;
+}
+
+#card-on-table-3 {
+    position: relative;
+    left: 22vw;
+    transform: rotate(300deg);
+    display: none;
+}

@@ -245,6 +245,8 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
     Once all players have played their card, the round has ended and the redis data is cleared for the game_id.
     This means that the players once again need to choose their round options, see talon and call round attributes
     before this method is called again and a new round is played."""
+    print(f'[RECEIVED] card played by {user_whose_card}: {card_played}')
+
     # check that the received card is from the expected user
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
     assert user_whose_card == whose_turn

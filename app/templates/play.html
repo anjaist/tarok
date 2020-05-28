@@ -74,6 +74,14 @@
             {% endfor %}
         </div>
     </div>
+    <div id="on-table-wrapper">
+        <img class="tarok-card" id="card-on-table-1"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+        <img class="tarok-card" id="card-on-table-2"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+        <img class="tarok-card" id="card-on-table-3"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+    </div>
     <meta id="base-url-for-img" content="{{ url_for('static', filename='img/') }}">
     <meta id="current-user" content="{{ player }}">
     <meta id="player-to-choose" content="{{ player_to_choose }}">

@@ -388,11 +388,11 @@ def save_game_type(game_id: int):
     redis_db.hset(f'{game_id}:current_round', 'main_player', main_player)
 
 
-def get_cards_on_table(game_id: str) -> Union[list, None]:
+def get_cards_on_table(game_id: str) -> list:
     """retrieves the on_table information from redis and returns a list of cards currently on the table"""
     cards_on_table = redis_db.hget(f'{game_id}:current_round', 'on_table')
     if not cards_on_table:
-        return None
+        return []
 
     cards_on_table = cards_on_table.decode('utf-8')
     return cards_on_table.split(',')

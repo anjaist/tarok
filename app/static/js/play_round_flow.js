@@ -6,62 +6,67 @@
 let isRoundFinished = false;
 
 
+// checks which card div needs to be activated
+function getCardOnTableNumber() {
+    let onTableCard1 = document.getElementById('card-on-table-1');
+    let onTableCard2 = document.getElementById('card-on-table-2');
+
+    if (onTableCard1.style.display == 'block') {
+        if (onTableCard2.style.display == 'block') {
+            return '3'
+        }
+        return '2'
+    }
+    return '1'
+}
+
+
 // displays chosen card on "the table" (middle of the screen) for all users to see
 function displayCardOnTable(cardName) {
-    console.log(`card to display: ${cardName}`)
-    // TODO: start here JS
+    let onTableCard = document.getElementById('card-on-table-' + getCardOnTableNumber());
+    onTableCard.src = baseUrlImg + cardName + '.png';
+    onTableCard.style.display = 'block';
 }
 
 
 /*
+    Describes one player's one turn.
     Cards from the user's hand: highlight cards that can be clicked on (based on what is already on the table).
     When a card is clicked, it is played.
 */
-function highlightCardsThatCanBePlayed(canBePlayedCards, playersHand) {
-    let isCardPlayed = false;
-
-    if (!isCardPlayed) {
-        for (let i = 1; i <= canBePlayedCards.length; i++) {
-            (function(i) {
-                let userCard = document.getElementById('user-card-' + i);
-                let userCardBg = document.getElementById('user-card-bg-' + i);
-                let cardName = getCardName(userCard);
-
-                if (canBePlayedCards.includes(cardName)) {
-                    userCard.onmouseover = function() {
-                        highlightCard(userCard, userCardBg);
-                    };
-                    userCard.onmouseout = function() {
-                        removeHighlightCard(userCard, userCardBg);
-                    };
-
-                    // when the user clicks on a card, that card is played
-                    userCard.addEventListener('click', function() {
-
-                        // remove played card from hand and re-render the display of user's hand
-                        let updatedPlayersHand = playersHand.filter(function(card) { return card != cardName })
-                        displayUpdatedHand(updatedPlayersHand);
-
-                        // display the played card in the middle of the screen
-                        displayCardOnTable(cardName);
-                        isCardPlayed = true;
-                    })
-                }
-            })(i);
-        }
-    }
-}
-
-
-// describes one player's one turn. Involves playing choosing a card from their hand and playing it.
 function oneTurn(playerName, canBePlayedCards, playersHand) {
-    highlightCardsThatCanBePlayed(canBePlayedCards, playersHand);
 
-    // todo display chosen card on table
+    for (let i = 1; i <= canBePlayedCards.length; i++) {
+        (function(i) {
+            let userCard = document.getElementById('user-card-' + i);
+            let userCardBg = document.getElementById('user-card-bg-' + i);
+            let cardName = getCardName(userCard);
 
-    // todo: socket send to server - chosen card, playerName
-    let tempCard = 'temp-card'
-    socket.emit('gameplay for round', gameId, playerName, tempCard);
+            if (canBePlayedCards.includes(cardName)) {
+                userCard.onmouseover = function() {
+                    highlightCard(userCard, userCardBg);
+                };
+                userCard.onmouseout = function() {
+                    removeHighlightCard(userCard, userCardBg);
+                };
+
+                // when the user clicks on a card, that card is played
+                userCard.addEventListener('click', function() {
+
+                    // remove played card from hand and re-render the display of user's hand
+                    let updatedPlayersHand = playersHand.filter(function(card) { return card != cardName })
+                    displayUpdatedHand(updatedPlayersHand);
+
+                    // display the played card in the middle of the screen
+                    displayCardOnTable(cardName);
+
+                    // send information about the played card to server side
+                    console.log(`[SENDING] card chosen by ${playerName}: ${cardName}`)
+                    socket.emit('gameplay for round', gameId, playerName, cardName);
+                })
+            }
+        })(i);
+    }
 }
 
 
@@ -73,7 +78,7 @@ socket.on('gameplay for round', function(receivedData) {
     playersHand = receivedData.players_hand;
 
     if (!isRoundFinished) {
-        // todo update info: whose turn is it
+        // todo update info: whose turn is it -> should be visible to all windows
 
         oneTurn(whoseTurn, canBePlayedCards, playersHand);
 

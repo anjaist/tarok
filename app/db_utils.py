@@ -454,7 +454,7 @@ def update_order_of_players(game_id: str, new_first_player: str = None) -> str:
     The other players are determined based on who comes after the known player
     in the original order found in the :round_choices hash.
 
-    Returns the player whose turn it is next"""
+    Returns the player whose turn it is next and updates the whose_turn entry in redis"""
 
     original_order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
     original_order = original_order.split(',')
@@ -474,5 +474,6 @@ def update_order_of_players(game_id: str, new_first_player: str = None) -> str:
             raise RuntimeError(f'Error on trying to retrieve {new_first_player} from {original_order}.')
 
     redis_db.hset(f'{game_id}:current_round', 'order', ','.join(new_order))
+    redis_db.hset(f'{game_id}:current_round', 'whose_turn', new_order[0])
 
     return new_order[0]

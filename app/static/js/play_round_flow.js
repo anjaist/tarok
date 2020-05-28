@@ -60,6 +60,7 @@ function oneTurn(playerName, canBePlayedCards, playersHand) {
                     // display the played card in the middle of the screen
                     displayCardOnTable(cardName);
 
+                    // todo: should be outside of an event listener (rn it only happens in the current user's window)
                     // send information about the played card to server side
                     console.log(`[SENDING] card chosen by ${playerName}: ${cardName}`)
                     socket.emit('gameplay for round', gameId, playerName, cardName);
@@ -95,6 +96,7 @@ socket.on('round call options', function(receivedData) {
     whoseTurn = receivedData.whose_turn;
     canBePlayedCards = receivedData.can_be_played;
     playersHand = receivedData.players_hand;
+    calledSelectedOptions = receivedData.called;
 
     callConfirmed = true;
     displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);

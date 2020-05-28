@@ -226,7 +226,8 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 @socketio.on('round call options')
 def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
-    redis_db.hset(f'{game_id}:current_round', 'called', ','.join(call_options))
+    called = ','.join(call_options)
+    redis_db.hset(f'{game_id}:current_round', 'called', called)
 
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
 
@@ -234,7 +235,8 @@ def update_round_call_options(game_id: str, call_options: list):
     can_be_played = redis_db.hget(f'{game_id}:current_round', f'{whose_turn}_cards').decode('utf-8')
     players_cards = can_be_played.split(',')
 
-    data_to_send = {'whose_turn': whose_turn, 'can_be_played': players_cards,  'players_hand': players_cards}
+    data_to_send = {'called': called, 'whose_turn': whose_turn, 'can_be_played': players_cards,
+                    'players_hand': players_cards}
     socketio.emit('round call options', data_to_send)
 
 

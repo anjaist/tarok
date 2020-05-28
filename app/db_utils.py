@@ -434,7 +434,7 @@ def check_for_end_of_round(game_id: str) -> bool:
         keys.remove('order')
         redis_db.hdel(f'{game_id}:round_choices', *keys)
 
-    return not end_of_round
+    return end_of_round
 
 
 def remove_card_from_hand(game_id: str, player_name: str, played_card: str):

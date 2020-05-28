@@ -60,7 +60,6 @@ function oneTurn(playerName, canBePlayedCards, playersHand) {
                     // display the played card in the middle of the screen
                     displayCardOnTable(cardName);
 
-                    // todo: should be outside of an event listener (rn it only happens in the current user's window)
                     // send information about the played card to server side
                     console.log(`[SENDING] card chosen by ${playerName}: ${cardName}`)
                     socket.emit('gameplay for round', gameId, playerName, cardName);
@@ -79,9 +78,10 @@ socket.on('gameplay for round', function(receivedData) {
     playersHand = receivedData.players_hand;
 
     if (!isRoundFinished) {
-        // todo update info: whose turn is it -> should be visible to all windows
-
+        displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
         oneTurn(whoseTurn, canBePlayedCards, playersHand);
+
+        // todo: displayCardOnTable for all users (need to call it again here like displayInfo?)
 
         // todo if three cards on the table, they should disappear and whose turn display should be updated
 

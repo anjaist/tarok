@@ -232,8 +232,9 @@ def update_round_call_options(game_id: str, call_options: list):
 
     # as this triggers the first round for the first player, all cards from their hand can be played
     can_be_played = redis_db.hget(f'{game_id}:current_round', f'{whose_turn}_cards').decode('utf-8')
+    players_cards = can_be_played.split(',')
 
-    data_to_send = {'whose_turn': whose_turn, 'can_be_played': can_be_played.split(',')}
+    data_to_send = {'whose_turn': whose_turn, 'can_be_played': players_cards,  'players_hand': players_cards}
     socketio.emit('round call options', data_to_send)
 
 
@@ -275,13 +276,14 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
     is_round_finished = check_for_end_of_round(game_id)
 
     if is_round_finished:
+        players_cards = None
         can_be_played = None
     else:
         players_cards = redis_db.hget(f'{game_id}:current_round', f'{updated_whose_turn}_cards').decode('utf-8')
         can_be_played = get_possible_card_plays(cards_on_table, players_cards.split(','))
 
     data_to_send = {'is_round_finished': is_round_finished, 'whose_turn': updated_whose_turn,
-                    'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played}
+                    'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played, 'players_hand': players_cards}
     socketio.emit('gameplay for round', data_to_send)
 
 

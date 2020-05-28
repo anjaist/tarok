@@ -17,7 +17,7 @@ function displayCardOnTable(cardName) {
     Cards from the user's hand: highlight cards that can be clicked on (based on what is already on the table).
     When a card is clicked, it is played.
 */
-function highlightCardsThatCanBePlayed(canBePlayedCards) {
+function highlightCardsThatCanBePlayed(canBePlayedCards, playersHand) {
     let isCardPlayed = false;
 
     if (!isCardPlayed) {
@@ -37,6 +37,12 @@ function highlightCardsThatCanBePlayed(canBePlayedCards) {
 
                     // when the user clicks on a card, that card is played
                     userCard.addEventListener('click', function() {
+
+                        // remove played card from hand and re-render the display of user's hand
+                        let updatedPlayersHand = playersHand.filter(function(card) { return card != cardName })
+                        displayUpdatedHand(updatedPlayersHand);
+
+                        // display the played card in the middle of the screen
                         displayCardOnTable(cardName);
                         isCardPlayed = true;
                     })
@@ -48,12 +54,10 @@ function highlightCardsThatCanBePlayed(canBePlayedCards) {
 
 
 // describes one player's one turn. Involves playing choosing a card from their hand and playing it.
-function oneTurn(playerName, canBePlayedCards) {
-    highlightCardsThatCanBePlayed(canBePlayedCards);
+function oneTurn(playerName, canBePlayedCards, playersHand) {
+    highlightCardsThatCanBePlayed(canBePlayedCards, playersHand);
 
     // todo display chosen card on table
-
-    // todo remove played card from player's hand
 
     // todo: socket send to server - chosen card, playerName
     let tempCard = 'temp-card'
@@ -66,11 +70,12 @@ socket.on('gameplay for round', function(receivedData) {
     whoseTurn = receivedData.whose_turn;
     isRoundFinished = receivedData.is_round_finished;
     canBePlayedCards = receivedData.can_be_played;
+    playersHand = receivedData.players_hand;
 
     if (!isRoundFinished) {
         // todo update info: whose turn is it
 
-        oneTurn(whoseTurn, canBePlayedCards);
+        oneTurn(whoseTurn, canBePlayedCards, playersHand);
 
         // todo if three cards on the table, they should disappear and whose turn display should be updated
 
@@ -84,8 +89,9 @@ socket.on('gameplay for round', function(receivedData) {
 socket.on('round call options', function(receivedData) {
     whoseTurn = receivedData.whose_turn;
     canBePlayedCards = receivedData.can_be_played;
+    playersHand = receivedData.players_hand;
 
     callConfirmed = true;
     displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
-    oneTurn(whoseTurn, canBePlayedCards);
+    oneTurn(whoseTurn, canBePlayedCards, playersHand);
 })

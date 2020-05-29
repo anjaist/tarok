@@ -4,13 +4,12 @@
 */
 
 let isRoundFinished = false;
-
+let onTableCard1 = document.getElementById('card-on-table-1');
+let onTableCard2 = document.getElementById('card-on-table-2');
+let onTableCard3 = document.getElementById('card-on-table-3');
 
 // checks which card div needs to be activated
 function getCardOnTableNumber() {
-    let onTableCard1 = document.getElementById('card-on-table-1');
-    let onTableCard2 = document.getElementById('card-on-table-2');
-
     if (onTableCard1.style.display == 'block') {
         if (onTableCard2.style.display == 'block') {
             return '3'
@@ -21,8 +20,25 @@ function getCardOnTableNumber() {
 }
 
 
-// displays chosen card on "the table" (middle of the screen) for all users to see
-function displayCardOnTable(cardName) {
+// hides all cards on table (clears table)
+function hideOnTable() {
+    onTableCard1.style.display = 'none';
+    onTableCard2.style.display = 'none';
+    onTableCard3.style.display = 'none';
+}
+
+
+// displays all cards on table for all users
+function displayOnTable(onTable) {
+    hideOnTable();
+    onTable.forEach(function(card) {
+        displayNewCardOnTable(card);
+    });
+}
+
+
+// displays newly chosen card on "the table" (middle of the screen) for all users to see
+function displayNewCardOnTable(cardName) {
     let onTableCard = document.getElementById('card-on-table-' + getCardOnTableNumber());
     onTableCard.src = baseUrlImg + cardName + '.png';
     onTableCard.style.display = 'block';
@@ -58,7 +74,7 @@ function oneTurn(playerName, canBePlayedCards, playersHand) {
                     displayUpdatedHand(updatedPlayersHand);
 
                     // display the played card in the middle of the screen
-                    displayCardOnTable(cardName);
+                    displayNewCardOnTable(cardName);
 
                     // send information about the played card to server side
                     console.log(`[SENDING] card chosen by ${playerName}: ${cardName}`)
@@ -76,12 +92,12 @@ socket.on('gameplay for round', function(receivedData) {
     isRoundFinished = receivedData.is_round_finished;
     canBePlayedCards = receivedData.can_be_played;
     playersHand = receivedData.players_hand;
+    onTable = receivedData.on_table;
 
     if (!isRoundFinished) {
         displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
         oneTurn(whoseTurn, canBePlayedCards, playersHand);
-
-        // todo: displayCardOnTable for all users (need to call it again here like displayInfo?)
+        displayOnTable(onTable);
 
         // todo if three cards on the table, they should disappear and whose turn display should be updated
 

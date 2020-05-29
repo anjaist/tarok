@@ -261,6 +261,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
     pile_to_add_to = None
     cards_on_table = get_cards_on_table(game_id)
     cards_on_table.append(card_played)
+    redis_db.hset(f'{game_id}:current_round', 'on_table', ','.join(cards_on_table))
     if len(cards_on_table) == 3:
         pile_to_add_to = determine_who_clears_table(game_id, cards_on_table)
 
@@ -294,7 +295,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
 
 # TODO: gameplay loop:
-#  => when all players have put out a card, one of them collects it
-#  => the player that has collected the card is now the new "player whose turn it is"
+#  => new mini-round: player can again choose any card from hand (highlight)
+#  => page reload in the middle of the game should show the correct state of cards on table, whose turn etc.
 #  => update images with the missing taroks
 #  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

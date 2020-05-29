@@ -223,13 +223,15 @@
 #card-on-table-2 {
     position: relative;
     left: 40vw;
+    top: -8vh;
     transform: rotate(250deg);
     display: none;
 }
 
 #card-on-table-3 {
     position: relative;
-    left: 22vw;
+    left: 42vw;
+    top: -31vh;
     transform: rotate(300deg);
     display: none;
 }

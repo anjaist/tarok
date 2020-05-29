@@ -49,10 +49,12 @@ function displayNewCardOnTable(cardName) {
     Describes one player's one turn.
     Cards from the user's hand: highlight cards that can be clicked on (based on what is already on the table).
     When a card is clicked, it is played.
+    If 3 cards are on the table, they will disappear when a user chooses another card (the first one of the new round)
 */
-function oneTurn(playerName, canBePlayedCards, playersHand) {
+function oneTurn(playerName, canBePlayedCards, playersHand, onTable) {
 
-    for (let i = 1; i <= canBePlayedCards.length; i++) {
+    let handSize = playerName == currentUser ? playersHand.length : playersHand.length - 1
+    for (let i = 1; i <= handSize; i++) {
         (function(i) {
             let userCard = document.getElementById('user-card-' + i);
             let userCardBg = document.getElementById('user-card-bg-' + i);
@@ -68,6 +70,11 @@ function oneTurn(playerName, canBePlayedCards, playersHand) {
 
                 // when the user clicks on a card, that card is played
                 userCard.addEventListener('click', function() {
+                    // remove all cards from table if there are already 3 cards on it
+                    if (onTable.length == 3) {
+                        hideOnTable(onTable);
+                        onTable = []
+                    }
 
                     // remove played card from hand and re-render the display of user's hand
                     let updatedPlayersHand = playersHand.filter(function(card) { return card != cardName })
@@ -96,13 +103,10 @@ socket.on('gameplay for round', function(receivedData) {
 
     if (!isRoundFinished) {
         displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
-        oneTurn(whoseTurn, canBePlayedCards, playersHand);
+        oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
         displayOnTable(onTable);
 
         // todo if three cards on the table, they should disappear and whose turn display should be updated
-
-        // todo: pile of cards (cards back) should have a number on it, displaying how many cards have been taken
-        // that number should be updated when cards are added to it
     }
 })
 
@@ -113,8 +117,9 @@ socket.on('round call options', function(receivedData) {
     canBePlayedCards = receivedData.can_be_played;
     playersHand = receivedData.players_hand;
     calledSelectedOptions = receivedData.called;
+    onTable = [];
 
     callConfirmed = true;
     displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
-    oneTurn(whoseTurn, canBePlayedCards, playersHand);
+    oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
 })

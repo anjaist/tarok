@@ -98,7 +98,7 @@ def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
     on_table_suit = get_card_suit(cards_on_table[0])
 
     # a card of the same suit must be played
-    cards_of_suit = get_cards_of_suit(on_table_suit, cards_on_table)
+    cards_of_suit = get_cards_of_suit(on_table_suit, cards_in_hand)
 
     # if there is no cards of the same suit in hand, a tarok must be played
     if not cards_of_suit:

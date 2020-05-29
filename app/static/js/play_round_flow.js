@@ -105,8 +105,6 @@ socket.on('gameplay for round', function(receivedData) {
         displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
         oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
         displayOnTable(onTable);
-
-        // todo if three cards on the table, they should disappear and whose turn display should be updated
     }
 })
 

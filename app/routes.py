@@ -295,7 +295,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
 
 # TODO: gameplay loop:
-#  => new mini-round: player can again choose any card from hand (highlight)
+#  => determine who clears the table (takes the card)
 #  => page reload in the middle of the game should show the correct state of cards on table, whose turn etc.
-#  => update images with the missing taroks
 #  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

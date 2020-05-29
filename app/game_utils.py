@@ -81,7 +81,8 @@ def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
     taroks_in_hand = get_taroks_in_hand(cards_in_hand)
 
     # any card can be played if no card is already on the table
-    if not cards_on_table:
+    # or if there are three cards on the table (this means the round has to be reset)
+    if not cards_on_table or len(cards_on_table):
         return cards_in_hand
 
     # if XXI and XXII are played in that order, pagat must be played third (if in hand)

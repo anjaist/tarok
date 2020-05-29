@@ -389,13 +389,19 @@ def save_game_type(game_id: int):
 
 
 def get_cards_on_table(game_id: str) -> list:
-    """retrieves the on_table information from redis and returns a list of cards currently on the table"""
+    """retrieves the on_table information from redis and returns a list of cards currently on the table.
+    If all 3 cards on the table are present, it means that the mini round is over
+    and the on_table entry is reset to an empty string."""
     cards_on_table = redis_db.hget(f'{game_id}:current_round', 'on_table')
     if not cards_on_table:
         return []
 
     cards_on_table = cards_on_table.decode('utf-8')
-    return cards_on_table.split(',')
+    cards_on_table = cards_on_table.split(',')
+    if len(cards_on_table) == 3:
+        redis_db.hset(f'{game_id}:current_round', 'on_table', '')
+        return []
+    return cards_on_table
 
 
 def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:

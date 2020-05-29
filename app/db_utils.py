@@ -5,7 +5,7 @@ from typing import Union
 from sqlalchemy.exc import IntegrityError
 
 from app import redis_db
-from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_round
+from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_round, determine_winning_card
 from app.models import User, db, Game
 
 
@@ -407,7 +407,7 @@ def get_cards_on_table(game_id: str) -> list:
 def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
     """determines which card is the highest (takes the round) and queries redis to determine
     which player played that card. Returns their username"""
-    highest_card = cards_on_table[1]  # todo: put game logic in game_utils (if tarok, if cards of same colour, if trula but pagat last etc.)
+    highest_card = determine_winning_card(cards_on_table)
 
     players_in_game = get_all_players(int(game_id))
     for player in players_in_game:

@@ -295,6 +295,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
 
 # TODO: gameplay loop:
-#  => determine who clears the table (takes the card)
 #  => page reload in the middle of the game should show the correct state of cards on table, whose turn etc.
+#  => check end of round: play till none of the players have any cards left in hand
 #  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

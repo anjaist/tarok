@@ -7,6 +7,9 @@ let isRoundFinished = false;
 let onTableCard1 = document.getElementById('card-on-table-1');
 let onTableCard2 = document.getElementById('card-on-table-2');
 let onTableCard3 = document.getElementById('card-on-table-3');
+let onTable = document.getElementById('on-table').content;
+onTable = onTable != "" ? onTable.split(',') : [];
+
 
 // checks which card div needs to be activated
 function getCardOnTableNumber() {
@@ -35,6 +38,7 @@ function displayOnTable(onTable) {
         displayNewCardOnTable(card);
     });
 }
+displayOnTable(onTable);
 
 
 // displays newly chosen card on "the table" (middle of the screen) for all users to see
@@ -90,6 +94,10 @@ function oneTurn(playerName, canBePlayedCards, playersHand, onTable) {
             }
         })(i);
     }
+}
+if (callConfirmed && !isRoundFinished) {
+    console.log(`[SENDING] The page was reloaded. No card was played. Asking server side for data...`)
+    socket.emit('gameplay for round', gameId, currentUser, null);
 }
 
 

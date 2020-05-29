@@ -446,8 +446,9 @@ def check_for_end_of_round(game_id: str) -> bool:
 def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
     """removes played_card from the player's hand"""
     current_hand = redis_db.hget(f'{game_id}:current_round', f'{player_name}_cards').decode('utf-8')
-    updated_hand = current_hand.replace(f',{played_card}', '')
-    redis_db.hset(f'{game_id}:current_round', f'{player_name}_cards', updated_hand)
+    updated_hand = current_hand.split(',')
+    updated_hand.remove(played_card)
+    redis_db.hset(f'{game_id}:current_round', f'{player_name}_cards', ','.join(updated_hand))
 
 
 def update_order_of_players(game_id: str, new_first_player: str = None) -> str:

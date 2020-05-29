@@ -1,5 +1,4 @@
 from random import shuffle
-from typing import Union
 
 SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
@@ -83,7 +82,7 @@ def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
 
     # any card can be played if no card is already on the table
     # or if there are three cards on the table (this means the round has to be reset)
-    if not cards_on_table or len(cards_on_table):
+    if not cards_on_table or len(cards_on_table) == 3:
         return cards_in_hand
 
     # if XXI and XXII are played in that order, pagat must be played third (if in hand)
@@ -110,7 +109,7 @@ def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
     return cards_of_suit
 
 
-def determine_winning_card(cards_on_table: list) -> Union[str, int]:
+def determine_winning_card(cards_on_table: list) -> str:
     """returns the card that takes the round (clears the table).
     This method assumes there are three cards on the table."""
     if len(cards_on_table) != 3:
@@ -118,12 +117,13 @@ def determine_winning_card(cards_on_table: list) -> Union[str, int]:
 
     # if XXI, XXII and I (pagat) are played in that order, pagat takes the round
     if cards_on_table[0] == 22 and cards_on_table[1] == 21 and cards_on_table[2] == 1:
-        return 1
+        return '1'
 
     # if there is a tarok in the mix, the highest tarok takes the round
     taroks_on_table = get_taroks_cards(cards_on_table)
     if taroks_on_table:
-        return max(taroks_on_table)
+        taroks_as_ints = [int(card) for card in taroks_on_table]
+        return str(max(taroks_as_ints))
 
     # if the first card is a suit, the highest of that suit takes the table
     on_table_suit = get_card_suit(cards_on_table[0])

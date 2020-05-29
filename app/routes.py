@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Union
 
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
@@ -124,12 +125,14 @@ def play():
     main_player = None if not main_player_in_redis else main_player_in_redis.decode('utf-8')
     game_type_in_redis = redis_db.hget(f'{game_id}:current_round', 'type')
     game_type = None if not game_type_in_redis else game_type_in_redis.decode('utf-8')
+    cards_on_table_in_redis = redis_db.hget(f'{game_id}:current_round', 'on_table')
+    cards_on_table = '' if not cards_on_table_in_redis else cards_on_table_in_redis.decode('utf-8')
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
                            player_to_choose=player_to_choose, player_to_choose_opts=player_to_choose_opts,
                            game_id=game_id, called=called, whose_turn=whose_turn, main_player=main_player,
-                           game_type=game_type)
+                           game_type=game_type, on_table=cards_on_table)
 
 
 @socketio.on('connect to playroom')
@@ -241,41 +244,52 @@ def update_round_call_options(game_id: str, call_options: list):
 
 
 @socketio.on('gameplay for round')
-def play_round(game_id: str, user_whose_card: str, card_played: str):
-    """This method is called continuously by the JS side for the lifetime of the game.
+def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]):
+    """
+    This method is called continuously by the JS side for the lifetime of the game.
     It needs to be called once every time a player plays a card.
+
     Once all players have played their card, the round has ended and the redis data is cleared for the game_id.
     This means that the players once again need to choose their round options, see talon and call round attributes
-    before this method is called again and a new round is played."""
+    before this method is called again and a new round is played.
+
+    If card_played=None, this means that the page was reloaded and the frontend side needs information
+    on the current state (namely, cards that can be played) and so information should be sent
+    but no data in redis should be changed.
+    """
     print(f'[RECEIVED] card played by {user_whose_card}: {card_played}')
 
-    # check that the received card is from the expected user
     whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
-    assert user_whose_card == whose_turn
-
-    # add card_played to redis for the relevant user and remove it from their hand
-    redis_db.hset(f'{game_id}:current_round', f'{user_whose_card}_played', card_played)
-    remove_card_from_hand(game_id, user_whose_card, card_played)
-
-    # if the card played is the third card on the table, determine who clears the table
-    pile_to_add_to = None
     cards_on_table = get_cards_on_table(game_id)
-    cards_on_table.append(card_played)
-    redis_db.hset(f'{game_id}:current_round', 'on_table', ','.join(cards_on_table))
-    if len(cards_on_table) == 3:
-        pile_to_add_to = determine_who_clears_table(game_id, cards_on_table)
+    pile_to_add_to = None
 
-        # add cleared cards to the correct user's (or user group's) pile
-        main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
-        identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
-        current_pile = redis_db.hget(f'{game_id}:current_round', f'{identifier}_score_pile')
-        current_pile = "" if not current_pile else current_pile.decode('utf-8')
-        updated_pile = current_pile + ','.join(cards_on_table)
-        redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
+    if card_played:
+        # check that the received card is from the expected user
+        assert user_whose_card == whose_turn
 
-        updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
+        # add card_played to redis for the relevant user and remove it from their hand
+        redis_db.hset(f'{game_id}:current_round', f'{user_whose_card}_played', card_played)
+        remove_card_from_hand(game_id, user_whose_card, card_played)
+
+        # if the card played is the third card on the table, determine who clears the table
+        cards_on_table.append(card_played)
+        redis_db.hset(f'{game_id}:current_round', 'on_table', ','.join(cards_on_table))
+        if len(cards_on_table) == 3:
+            pile_to_add_to = determine_who_clears_table(game_id, cards_on_table)
+
+            # add cleared cards to the correct user's (or user group's) pile
+            main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+            identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
+            current_pile = redis_db.hget(f'{game_id}:current_round', f'{identifier}_score_pile')
+            current_pile = "" if not current_pile else current_pile.decode('utf-8')
+            updated_pile = current_pile + ','.join(cards_on_table)
+            redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
+
+            updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
+        else:
+            updated_whose_turn = update_order_of_players(game_id)
     else:
-        updated_whose_turn = update_order_of_players(game_id)
+        updated_whose_turn = whose_turn
 
     # todo: scoring should be done (and saved to postgres) before redis is wiped
     is_round_finished = check_for_end_of_round(game_id)
@@ -295,6 +309,8 @@ def play_round(game_id: str, user_whose_card: str, card_played: str):
 
 
 # TODO: gameplay loop:
-#  => page reload in the middle of the game should show the correct state of cards on table, whose turn etc.
-#  => check end of round: play till none of the players have any cards left in hand
+#  => end of round: does isRoundFinished get set to True? (check screenshot)
+#  => end of round: currently the very last card is not being shown to the two users that didn't play it
+#  => end of round: redis should be reset (main_player in current round and every choice in round_choices)
+#  => end of round: game choices should be shown again (isCardChosen etc. should be reset in JS)
 #  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

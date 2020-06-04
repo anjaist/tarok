@@ -63,22 +63,32 @@ last_choice       | string ('false' or 'true'); indicates if the current choice 
 KEY name => game_id:current_round
 {
   "type": "pass/three/two",
-  "player_order": "{username1},{username2},{username3}",
+  "order": "{username1},{username2},{username3}",
   "main_player": "{username1}",
   "whose_turn": "{username2}",
-  "{username1}_cards": "card1.jpg,card2.jpg,card3,jpg,{...}",
-  "{username2}_cards": "card1.jpg,card2.jpg,card3,jpg,{...}",
-  "{username3}_cards": "card1.jpg,card2.jpg,card3,jpg,{...}",
-  "talon_cards": "card1.jpg,card2.jpg,card3,jpg,{...}",
-  "called": ""
+  "{username1}_cards": "card1,card2,card3,{...}",
+  "{username2}_cards": "card1,card2,card3,{...}",
+  "{username3}_cards": "card1,card2,card3,{...}",
+  "talon_cards": "card1,card2,card3,{...}",
+  "called": "",
+  "on_table": "card1,card2,card3",
+  "{username1_played}": "card1",
+  "{username2_played}": "card2",
+  "{username3_played}": "card3",
+  "main_player_score_pile": "card1,card2,card3,{...}",
+  "against_players_score_pile": "card1,card2,card3,{...}"
 }
 ```
-key             | value                                                     | 
---------------- | --------------------------------------------------------- | 
-type            | type of game the `main_player` is playing
-player_order    | the order the players set down their cards. This order is fixed for the lifetime of the game (all rounds)
-main_player     | player who is currently playing the game. If "klop/pass", this field is set to null
-whose_turn      | player, whose turn to set down a card it is currently
-usernameX_cards | saves usernameX's cards in current round in a sorted order (based on game sort logic, not python one)
-talon_cards     | saves cards in talon in current round in a sorted order (based on game sort logic, not python one)
-called          | saves what attributes have been called by main_player for current round. Empty entry means the user has not yet made their call choice
+key                        | value                                                     | 
+-------------------------- | --------------------------------------------------------- | 
+type                       | type of game the `main_player` is playing
+order                      | the order the players set down their cards. This order is fixed for the lifetime of the game (all rounds)
+main_player                | player who is currently playing the game. If "klop/pass", this field is set to null
+whose_turn                 | player, whose turn to set down a card it is currently
+usernameX_cards            | saves usernameX's cards in current round in a sorted order (based on game sort logic, not python one)
+talon_cards                | saves cards in talon in current round in a sorted order (based on game sort logic, not python one)
+called                     | saves what attributes have been called by main_player for current round. Empty entry means the user has not yet made their call choice
+on_table                   | saves cards that are currently on the table (in the order they were played in) - max. of 3 (3-player game) or 4 (4-player game)
+usernameX_played           | saves which card usernameX played (put on the table). Value removed every time the table is cleared.
+main_player_score_pile     | saves cards that the main player has taken in the round
+against_players_score_pile | saves cards that the two other players have taken in the round

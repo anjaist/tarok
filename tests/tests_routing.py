@@ -1,5 +1,6 @@
 from app.db_utils import encrypt_password, UniqueUserDataError
 from app.models import User
+from app.redis_helpers import RedisSetter
 
 
 def test_login_page(client, test_db, test_users):
@@ -49,3 +50,14 @@ def test_unique_user_violation(client, test_db, test_users):
 def test_simple_users_setup(client, test_users_simple):
     """test to be run in order to create three simple accounts for testing purposes"""
     assert True
+
+
+def test_setup_end_of_round(client, test_users_with_game, redis_end_of_round):
+    """tests to be run in order to create a new game with a round played nearly to the end - with one more move
+    remaining for each player. This test facilitates testing of scoring and end of round logic"""
+    round_choices, current_round = redis_end_of_round()
+    for key, value in round_choices.items():
+        RedisSetter.round_choices(1, key, value)
+
+    for key, value in current_round.items():
+        RedisSetter.current_round(1, key, value)

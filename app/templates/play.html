@@ -74,6 +74,14 @@
             {% endfor %}
         </div>
     </div>
+    <div id="on-table-wrapper">
+        <img class="tarok-card" id="card-on-table-1"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+        <img class="tarok-card" id="card-on-table-2"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+        <img class="tarok-card" id="card-on-table-3"
+             src="{{ url_for('static', filename='img/card-back-vertical.png') }}" alt="tarok card">
+    </div>
     <meta id="base-url-for-img" content="{{ url_for('static', filename='img/') }}">
     <meta id="current-user" content="{{ player }}">
     <meta id="player-to-choose" content="{{ player_to_choose }}">
@@ -83,6 +91,7 @@
     <meta id="whose-turn" content="{{ whose_turn }}">
     <meta id="main-player" content="{{ main_player }}">
     <meta id="game-type" content="{{ game_type }}">
+    <meta id="on-table" content="{{ on_table }}">
     <div id="round-options-popup" class="game-options">
         <div id="co-players-choice">
             {% for username, active in co_players.items() %}
@@ -135,5 +144,6 @@
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play_choose_game.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play_talon.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/play_round_flow.js') }}"></script>
 </body>
 {% endblock %}

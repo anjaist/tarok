@@ -1,4 +1,5 @@
 import os
+import logging
 
 from flask import Flask
 
@@ -12,6 +13,10 @@ def create_app():
     app.register_blueprint(bp)
 
     app.config.from_object(os.environ['APP_SETTINGS'])
+
+    # setting the level of socketio logs to ERROR to reduce spammy messages in flask server output
+    logger = logging.getLogger('werkzeug')
+    logger.setLevel(logging.ERROR)
 
     db.init_app(app)
     migrate.init_app(app, db)

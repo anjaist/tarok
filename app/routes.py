@@ -309,7 +309,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
 
 
 # TODO: gameplay loop:
-#  => 'choose game' window should only appear if the round is not in progress
 #  => end of round: redis should be reset (main_player in current round and every choice in round_choices)
 #  => end of round: game choices should be shown again (isCardChosen etc. should be reset in JS)
 #  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

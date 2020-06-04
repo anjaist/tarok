@@ -181,8 +181,22 @@ def get_players_choices(game_id: int) -> dict:
     return players_choice
 
 
+def check_if_round_in_progress(game_id: int) -> bool:
+    """if all players have 'chosen' in their options in redis it means
+    the page was reloaded and the game is in progress."""
+    players = get_all_players(game_id)
+    for player in players:
+        opt = redis_db.hget(f'{game_id}:round_choices', f'{player}_options').decode('utf-8')
+        if opt == 'chosen':
+            return False
+    return True
+
+
 def get_players_that_need_to_choose_game(game_id: int) -> Union[list, None]:
     """queries redis db and returns players that can still make a choice of game for round"""
+    if check_if_round_in_progress(game_id):
+        return None
+
     update_player_options(game_id)
 
     player_order = (redis_db.hget(f'{game_id}:round_choices', 'new_order')).decode('utf-8')

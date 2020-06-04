@@ -4,13 +4,13 @@ from typing import Union
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
 
-from app import redis_db
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players
 from app.game_utils import sort_player_cards, get_possible_card_plays
 from app.models import User
+from app.redis_helpers import RedisGetter, RedisSetter
 
 bp = Blueprint('routes', __name__)
 socketio = SocketIO()
@@ -116,17 +116,13 @@ def play():
     player_to_choose_opts = None
     if choose_order:
         player_to_choose = choose_order[0]
-        player_to_choose_opts = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose}_options')
-        player_to_choose_opts = player_to_choose_opts.decode('utf-8')
+        player_to_choose_opts = RedisGetter.round_choices(game_id, f'{player_to_choose}_options')
 
-    called = redis_db.hget(f'{game_id}:current_round', 'called').decode('utf-8')
-    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
-    main_player_in_redis = redis_db.hget(f'{game_id}:current_round', 'main_player')
-    main_player = None if not main_player_in_redis else main_player_in_redis.decode('utf-8')
-    game_type_in_redis = redis_db.hget(f'{game_id}:current_round', 'type')
-    game_type = None if not game_type_in_redis else game_type_in_redis.decode('utf-8')
-    cards_on_table_in_redis = redis_db.hget(f'{game_id}:current_round', 'on_table')
-    cards_on_table = '' if not cards_on_table_in_redis else cards_on_table_in_redis.decode('utf-8')
+    called = RedisGetter.current_round(game_id, 'called')
+    whose_turn = RedisGetter.current_round(game_id, 'whose_turn')
+    main_player = RedisGetter.current_round(game_id, 'main_player')
+    game_type = RedisGetter.current_round(game_id, 'type')
+    cards_on_table = RedisGetter.current_round(game_id, 'on_table')
 
     connect_handler()
     return render_template('play.html', player=user.username, co_players=co_players, round_state=dealt_cards,
@@ -162,8 +158,7 @@ def update_player_choosing():
     player_options = None
     if player_order:
         player_to_choose_game = player_order[0]
-        player_options = redis_db.hget(f'{game_id}:round_choices', f'{player_to_choose_game}_options')
-        player_options = player_options.decode('utf-8')
+        player_options = RedisGetter.round_choices(game_id, f'{player_to_choose_game}_options')
 
     co_players_choice = get_players_choices(game_id)
 
@@ -183,7 +178,7 @@ def update_user_choice(username: str, choice: str):
 
     # update redis with user's choice
     if choice:
-        redis_db.hset(f'{game_id}:round_choices', f'{username}_chosen', choice)
+        RedisSetter.round_choices(game_id, f'{username}_chosen', choice)
     update_player_choosing()
 
 
@@ -192,8 +187,8 @@ def update_round_state_at_beginning(game_id: str):
     """updates redis db with the state of the round at its beginning"""
     save_game_type(int(game_id))
 
-    game_type = redis_db.hget(f'{game_id}:current_round', 'type').decode('utf-8')
-    main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+    game_type = RedisGetter.current_round(game_id, 'type')
+    main_player = RedisGetter.current_round(game_id, 'main_player')
     data_to_send = {'game_type': game_type, 'main_player': main_player}
     print(f'[SENDING] new round information: {data_to_send}')
     socketio.emit('round begins', data_to_send)
@@ -206,7 +201,7 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
     A player's hand will always need to be updated twice, first with cards_to_add and then with cards_to_remove.
     To distinguish when the updating of the player's hand is finished, swap_finished is set to True."""
     swap_finished = False
-    cards_in_hand = redis_db.hget(f'{game_id}:current_round', f'{main_player}_cards').decode('utf-8')
+    cards_in_hand = RedisGetter.current_round(game_id, f'{main_player}_cards')
     cards_in_hand = cards_in_hand.split(',')
 
     if cards_to_add:
@@ -220,7 +215,7 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     # save player's new cards to redis
     value_for_redis = ','.join(str(card_name) for card_name in updated_hand)
-    redis_db.hset(f'{game_id}:current_round', f'{main_player}_cards', value_for_redis)
+    RedisSetter.current_round(game_id, f'{main_player}_cards', value_for_redis)
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
@@ -230,12 +225,12 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
     called = ','.join(call_options)
-    redis_db.hset(f'{game_id}:current_round', 'called', called)
+    RedisSetter.current_round(game_id, 'called', called)
 
-    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+    whose_turn = RedisGetter.current_round(game_id, 'whose_turn')
 
     # as this triggers the first round for the first player, all cards from their hand can be played
-    can_be_played = redis_db.hget(f'{game_id}:current_round', f'{whose_turn}_cards').decode('utf-8')
+    can_be_played = RedisGetter.current_round(game_id, f'{whose_turn}_cards')
     players_cards = can_be_played.split(',')
 
     data_to_send = {'called': called, 'whose_turn': whose_turn, 'can_be_played': players_cards,
@@ -259,7 +254,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
     """
     print(f'[RECEIVED] card played by {user_whose_card}: {card_played}')
 
-    whose_turn = redis_db.hget(f'{game_id}:current_round', 'whose_turn').decode('utf-8')
+    whose_turn = RedisGetter.current_round(game_id, 'whose_turn')
     cards_on_table = get_cards_on_table(game_id)
     pile_to_add_to = None
 
@@ -268,22 +263,21 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
         assert user_whose_card == whose_turn
 
         # add card_played to redis for the relevant user and remove it from their hand
-        redis_db.hset(f'{game_id}:current_round', f'{user_whose_card}_played', card_played)
+        RedisSetter.current_round(game_id, f'{user_whose_card}_played', card_played)
         remove_card_from_hand(game_id, user_whose_card, card_played)
 
         # if the card played is the third card on the table, determine who clears the table
         cards_on_table.append(card_played)
-        redis_db.hset(f'{game_id}:current_round', 'on_table', ','.join(cards_on_table))
+        RedisSetter.current_round(game_id, 'on_table', ','.join(cards_on_table))
         if len(cards_on_table) == 3:
             pile_to_add_to = determine_who_clears_table(game_id, cards_on_table)
 
             # add cleared cards to the correct user's (or user group's) pile
-            main_player = redis_db.hget(f'{game_id}:current_round', 'main_player').decode('utf-8')
+            main_player = RedisGetter.current_round(game_id, 'main_player')
             identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
-            current_pile = redis_db.hget(f'{game_id}:current_round', f'{identifier}_score_pile')
-            current_pile = "" if not current_pile else current_pile.decode('utf-8')
-            updated_pile = current_pile + ','.join(cards_on_table)
-            redis_db.hset(f'{game_id}:current_round', f'{identifier}_score_pile', updated_pile)
+            current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
+            updated_pile = current_pile + ',' + ','.join(cards_on_table)
+            RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)
 
             updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
         else:
@@ -298,7 +292,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
         players_cards = []
         can_be_played = []
     else:
-        players_cards = redis_db.hget(f'{game_id}:current_round', f'{updated_whose_turn}_cards').decode('utf-8')
+        players_cards = RedisGetter.current_round(game_id, f'{updated_whose_turn}_cards')
         players_cards = players_cards.split(',')
         can_be_played = get_possible_card_plays(cards_on_table, players_cards)
 
@@ -306,8 +300,3 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
                     'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played, 'players_hand': players_cards,
                     'on_table': cards_on_table}
     socketio.emit('gameplay for round', data_to_send)
-
-
-# TODO: gameplay loop:
-#  => end of round: game choices should be shown again (isCardChosen etc. should be reset in JS)
-#  => refactor redis getting: check if null, set to None or utf-8. Func by table name; key, value as params

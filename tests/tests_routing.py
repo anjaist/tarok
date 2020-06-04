@@ -1,6 +1,6 @@
-from app import redis_db
 from app.db_utils import encrypt_password, UniqueUserDataError
 from app.models import User
+from app.redis_helpers import RedisSetter
 
 
 def test_login_page(client, test_db, test_users):
@@ -57,7 +57,7 @@ def test_setup_end_of_round(client, test_users_with_game, redis_end_of_round):
     remaining for each player. This test facilitates testing of scoring and end of round logic"""
     round_choices, current_round = redis_end_of_round()
     for key, value in round_choices.items():
-        redis_db.hset('1:round_choices', key, value)
+        RedisSetter.round_choices(1, key, value)
 
     for key, value in current_round.items():
-        redis_db.hset('1:current_round', key, value)
+        RedisSetter.current_round(1, key, value)

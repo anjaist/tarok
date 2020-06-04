@@ -112,8 +112,8 @@ socket.on('gameplay for round', function(receivedData) {
     if (!isRoundFinished) {
         displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
         oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
-        displayOnTable(onTable);
     }
+    displayOnTable(onTable);
 })
 
 

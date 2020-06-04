@@ -437,7 +437,7 @@ def check_for_end_of_round(game_id: str) -> bool:
         # delete all keys for :choose_game apart from 'order'
         # todo: the entire entry should be deleted if game is finished
         keys = redis_db.hkeys(f'{game_id}:round_choices')
-        keys.remove('order')
+        keys.remove(bytes('order', 'utf-8'))
         redis_db.hdel(f'{game_id}:round_choices', *keys)
 
     return end_of_round

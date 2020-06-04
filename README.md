@@ -72,9 +72,9 @@ KEY name => game_id:current_round
   "talon_cards": "card1,card2,card3,{...}",
   "called": "",
   "on_table": "card1,card2,card3",
-  "{username1_played}: "card1",
-  "{username2_played}: "card2",
-  "{username3_played}: "card3",
+  "{username1_played}": "card1",
+  "{username2_played}": "card2",
+  "{username3_played}": "card3",
   "main_player_score_pile": "card1,card2,card3,{...}",
   "against_players_score_pile": "card1,card2,card3,{...}"
 }

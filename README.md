@@ -63,7 +63,7 @@ last_choice       | string ('false' or 'true'); indicates if the current choice 
 KEY name => game_id:current_round
 {
   "type": "pass/three/two",
-  "player_order": "{username1},{username2},{username3}",
+  "order": "{username1},{username2},{username3}",
   "main_player": "{username1}",
   "whose_turn": "{username2}",
   "{username1}_cards": "card1,card2,card3,{...}",
@@ -82,7 +82,7 @@ KEY name => game_id:current_round
 key                        | value                                                     | 
 -------------------------- | --------------------------------------------------------- | 
 type                       | type of game the `main_player` is playing
-player_order               | the order the players set down their cards. This order is fixed for the lifetime of the game (all rounds)
+order                      | the order the players set down their cards. This order is fixed for the lifetime of the game (all rounds)
 main_player                | player who is currently playing the game. If "klop/pass", this field is set to null
 whose_turn                 | player, whose turn to set down a card it is currently
 usernameX_cards            | saves usernameX's cards in current round in a sorted order (based on game sort logic, not python one)

@@ -241,7 +241,7 @@ def update_round_call_options(game_id: str, call_options: list):
 @socketio.on('gameplay for round')
 def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]):
     """
-    This method is called continuously by the JS side for the lifetime of the game.
+    This method is called continuously by the JS side for the lifetime of a round in a game.
     It needs to be called once every time a player plays a card.
 
     Once all players have played their card, the round has ended and the redis data is cleared for the game_id.

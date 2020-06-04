@@ -7,11 +7,10 @@ from sqlalchemy.exc import IntegrityError
 from app import redis_db
 from app.game_utils import POINTS_GAME_TYPE, TRANSLATION_GAME_TYPE, deal_new_round, determine_winning_card
 from app.models import User, db, Game
+from app.redis_helpers import RedisGetter, RedisSetter
 
 
 # ======== postgres ========
-from app.redis_helpers import RedisGetter, RedisSetter
-
 
 class UniqueUserDataError(Exception):
     """custom error class to be thrown when unique restraint in db is violated"""
@@ -139,9 +138,7 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
 # ======== redis ========
 
 def create_redis_entry_for_round_choices(game_id: int, players: list, new_game: bool = False):
-    """creates new entry in redis db with empty game choice and assigns players a random order. Example entry:
-    '12345:round_choices': {'user1': 'three', 'user2': 'pass', 'user3': 'two', 'order': [user1, user3, user2]}
-
+    """creates new entry in redis db with empty game choice and assigns players a random order.
      new_game=True should be set only when a new game (not a new round!) begins
      so that the order of the players is set (randomly).
      After that, the same order is kept throughout the game's lifetime (but cycled through)

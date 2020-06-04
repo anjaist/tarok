@@ -57,7 +57,10 @@ function displayNewCardOnTable(cardName) {
 */
 function oneTurn(playerName, canBePlayedCards, playersHand, onTable) {
 
+    // for non-current users, the handSize is one card smaller, as they may have already played a card.
+    // this variable exists to avoid spammy error messages in JS console for players that are not currently choosing
     let handSize = playerName == currentUser ? playersHand.length : playersHand.length - 1
+
     for (let i = 1; i <= handSize; i++) {
         (function(i) {
             let userCard = document.getElementById('user-card-' + i);
@@ -95,13 +98,14 @@ function oneTurn(playerName, canBePlayedCards, playersHand, onTable) {
         })(i);
     }
 }
+// on page reload, the information to display is asked of server side
 if (callConfirmed && !isRoundFinished) {
     console.log(`[SENDING] The page was reloaded. No card was played. Asking server side for data...`)
     socket.emit('gameplay for round', gameId, currentUser, null);
 }
 
 
-// loop for a whole round - breaks when every player has played their last card
+// one round - finishes when every player has played their last card
 socket.on('gameplay for round', function(receivedData) {
     whoseTurn = receivedData.whose_turn;
     isRoundFinished = receivedData.is_round_finished;

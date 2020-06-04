@@ -370,9 +370,9 @@ def get_dealt_cards(game_id: int, all_players: list) -> list:
     return dealt_cards
 
 
-def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
+def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict, reset: bool = False):
     """creates new entry in redis db to start a new round. Saves the order of players and the state of the dealt cards.
-    The redis key {game_id}:current_round should be deleted once the round is complete."""
+    The redis key {game_id}:current_round should be reset once the round is complete (reset=True)"""
     # save order of players
     order = redis_db.hget(f'{game_id}:round_choices', 'order').decode('utf-8')
 
@@ -389,6 +389,10 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict):
         redis_db.hset(f'{game_id}:current_round', f'{user}_cards', value_for_redis)
         if user != 'talon':
             redis_db.hset(f'{game_id}:current_round', f'{user}_played', '')
+
+    if reset:
+        redis_db.hdel(f'{game_id}:current_round', bytes('main_player', 'utf-8'))
+        redis_db.hdel(f'{game_id}:current_round', bytes('type', 'utf-8'))
 
 
 def save_game_type(game_id: int):
@@ -433,7 +437,7 @@ def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
 
 
 def check_for_end_of_round(game_id: str) -> bool:
-    """if all players have played all of their cards, the round is over and the redis entries are deleted or reset.
+    """if all players have played all of their cards, the round is over and the redis entries are reset.
     Return indicates whether the round is finished or not"""
     end_of_round = True
 
@@ -444,15 +448,13 @@ def check_for_end_of_round(game_id: str) -> bool:
             end_of_round = False
 
     if end_of_round:
-        print(f'Round is finished! Clearing redis for game {game_id}')
-        # delete the entire entry for :current_round
-        redis_db.delete(f'{game_id}:current_round')
+        print(f'Round is finished! Clearing redis for game {game_id}...')
 
-        # delete all keys for :choose_game apart from 'order'
+        create_redis_entry_for_round_choices(game_id, players_in_game)
+        dealt_cards = deal_new_round(players_in_game)
+        create_redis_entry_for_current_round(game_id, dealt_cards, reset=True)
+
         # todo: the entire entry should be deleted if game is finished
-        keys = redis_db.hkeys(f'{game_id}:round_choices')
-        keys.remove(bytes('order', 'utf-8'))
-        redis_db.hdel(f'{game_id}:round_choices', *keys)
 
     return end_of_round
 

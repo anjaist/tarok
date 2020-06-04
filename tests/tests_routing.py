@@ -52,7 +52,7 @@ def test_simple_users_setup(client, test_users_simple):
     assert True
 
 
-def test_setup_end_of_round(client, test_users_simple, redis_end_of_round):
+def test_setup_end_of_round(client, test_users_with_game, redis_end_of_round):
     """tests to be run in order to create a new game with a round played nearly to the end - with one more move
     remaining for each player. This test facilitates testing of scoring and end of round logic"""
     round_choices, current_round = redis_end_of_round()

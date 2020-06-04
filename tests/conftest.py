@@ -1,7 +1,7 @@
 import pytest
 
-from app.db_utils import insert_user_into_db
-from app.models import db
+from app.db_utils import insert_user_into_db, create_new_game
+from app.models import db, User
 from run import create_app
 
 
@@ -38,6 +38,15 @@ def create_simple_test_users():
         insert_user_into_db(user['username'], user['email'], user['password'])
 
     yield db
+
+
+@pytest.fixture(scope='session', name='test_users_with_game')
+def create_test_users_with_game(test_users_simple):
+    user1 = User.query.filter_by(username='anja').first()
+    user2 = User.query.filter_by(username='igralec').first()
+    user3 = User.query.filter_by(username='igralka').first()
+
+    create_new_game(user1, user2, user3)
 
 
 @pytest.fixture(scope='function', name='test_db')

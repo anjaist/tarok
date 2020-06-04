@@ -114,6 +114,11 @@ socket.on('gameplay for round', function(receivedData) {
         oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
     }
     displayOnTable(onTable);
+
+    if (isRoundFinished) {
+        console.log('[SENDING] start choosing new player options...')
+        socket.emit('player game options')
+    }
 })
 
 

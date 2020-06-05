@@ -1,4 +1,6 @@
-from app.game_utils import deal_new_round, sort_player_cards
+from random import shuffle
+
+from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile
 
 
 def test_deal_new_round():
@@ -42,3 +44,16 @@ def test_sort_player_cards():
                        'dd-jack-of-clubs', 'hh-of-clubs']
 
     assert sort_player_cards(player_cards) == expected_result
+
+
+def test_count_cards_in_pile():
+    """tests that cards in a pile are counted correctly"""
+    test_pile = ['aa-king-of-hearts', '2', 'hh-of-hearts', 'aa-king-of-clubs', 'ff-of-clubs', 'dd-jack-of-clubs',
+                 'gg-of-hearts', 'dd-jack-of-hearts', '4', 'dd-jack-of-diamonds', 'aa-king-of-diamonds',
+                 'bb-queen-of-diamonds', 'ff-of-hearts', '7', '11', 'bb-queen-of-hearts', '20', '22', '14',
+                 'aa-king-of-spades', '8', '15', 'hh-of-spades', '10', '18', 'ee-of-hearts', '12', '13', 'gg-of-spades',
+                 'ff-of-spades', '6', 'dd-jack-of-spades', 'ee-of-spades']
+
+    assert count_cards_in_pile(test_pile) == 41
+    shuffle(test_pile)
+    assert count_cards_in_pile(test_pile) == 41

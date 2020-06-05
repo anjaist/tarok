@@ -118,6 +118,11 @@ socket.on('gameplay for round', function(receivedData) {
         oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
     }
     displayOnTable(onTable);
+
+    if (isRoundFinished) {
+        console.log('The round is finished. Sending request for score calculation...');
+        socket.emit('calculate score');
+    }
 })
 
 

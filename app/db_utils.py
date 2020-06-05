@@ -435,24 +435,25 @@ def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
 def check_for_end_of_round(game_id: str) -> bool:
     """if all players have played all of their cards, the round is over and the redis entries are reset.
     Return indicates whether the round is finished or not"""
-    end_of_round = True
-
     players_in_game = get_all_players(int(game_id))
     for player in players_in_game:
         players_hand = RedisGetter.current_round(game_id, f'{player}_cards')
         if players_hand:
-            end_of_round = False
+            return False
 
-    if end_of_round:
-        print(f'Round is finished! Clearing redis for game {game_id}...')
+    return True
 
-        create_redis_entry_for_round_choices(game_id, players_in_game)
-        dealt_cards = deal_new_round(players_in_game)
-        create_redis_entry_for_current_round(game_id, dealt_cards, reset=True)
 
-        # todo: the entire entry should be deleted if game is finished
+def reset_redis_entries(game_id: Union[int, str]):
+    """reset redis entries related to game_id"""
+    players_in_game = get_all_players(game_id)
+    print(f'Round is finished! Clearing redis for game {game_id}...')
 
-    return end_of_round
+    create_redis_entry_for_round_choices(game_id, players_in_game)
+    dealt_cards = deal_new_round(players_in_game)
+    create_redis_entry_for_current_round(game_id, dealt_cards, reset=True)
+
+    # todo: the entire entry should be deleted if game is finished
 
 
 def remove_card_from_hand(game_id: str, player_name: str, played_card: str):

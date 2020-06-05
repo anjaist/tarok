@@ -5,6 +5,7 @@ SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'h
 TAROK_CARDS = [str(i) for i in range(1, 23)]
 
 POINTS_GAME_TYPE = {'one': 30, 'two': 20, 'three': 10, 'pass': 0}
+POINTS_CARD_TYPE = {'king': 5, 'queen': 4, 'caval': 3, 'jack': 2, '1': 5, '21': 5, '22': 5}
 TRANSLATION_GAME_TYPE = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
 
 
@@ -129,3 +130,59 @@ def determine_winning_card(cards_on_table: list) -> str:
     on_table_suit = get_card_suit(cards_on_table[0])
     cards_of_suit = get_cards_of_suit(on_table_suit, cards_on_table)
     return min(cards_of_suit)  # suit cards are named in reverse order where 'aa' is the king, 'bb' the queen etc.
+
+
+def count_cards_in_pile(cards_in_pile: list) -> int:
+    """counts the cards in pile, where the worth of the cards is as follows:
+         * king = 5
+         * queen = 4
+         * caval = 3
+         * jack = 2
+         * I, XXI, XXII = 5
+     Cards are counted three at a time. If three of the cards are worth > 1, 2 is deducted,
+     if only 2 of them are > 1, 1 is deducted. If all three cards are not worth anything, 1 point is added.
+     The reason for the points deduction is that this ensures the cards always add to the same amount,
+     no matter what order they are counted in."""
+
+    # extract "jack", "king", "queen" and "caval" names from relevant card names
+    renamed_cards_pile = []
+    for card in cards_in_pile:
+        if not card.isdigit():
+            renamed_cards_pile.append(card.split('-')[1])
+        else:
+            renamed_cards_pile.append(card)
+
+    # group cards by 3
+    grouped_cards = []
+    for i in range(0, len(renamed_cards_pile), 3):
+        grouped_cards.append(renamed_cards_pile[i:i+3])
+
+    # add the value of each group of 3 to count, minding if any points need to be deducted
+    count = 0
+    for card_group in grouped_cards:
+        cards_of_worth = 0
+        for card in card_group:
+            if card in POINTS_CARD_TYPE.keys():
+                count += POINTS_CARD_TYPE[card]
+                cards_of_worth += 1
+
+        if cards_of_worth == 3:
+            points_to_reduce = 2
+        elif cards_of_worth == 2:
+            points_to_reduce = 1
+        else:
+            points_to_reduce = 0
+
+            count -= points_to_reduce
+
+    return count
+
+
+def check_called():  # TODO
+    """either adds or reduces the value of called, depending on if the called cards (in correct order)
+    are in the user's pile"""
+
+
+def check_for_extras():  # TODO
+    """if trula, valat, kralji, or pagat ultimo were achieved, they are added to the score
+    even if they weren't called in advance but only at half value"""

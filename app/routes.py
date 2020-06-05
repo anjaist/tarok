@@ -7,7 +7,7 @@ from flask_socketio import SocketIO
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
-    remove_card_from_hand, update_order_of_players, add_to_score_pile
+    remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
 from app.game_utils import sort_player_cards, get_possible_card_plays
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
@@ -299,7 +299,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
     else:
         updated_whose_turn = whose_turn
 
-    # todo: scoring should be done (and saved to postgres) before redis is wiped
     is_round_finished = check_for_end_of_round(game_id)
 
     if is_round_finished:
@@ -314,3 +313,11 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
                     'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played, 'players_hand': players_cards,
                     'on_table': cards_on_table}
     socketio.emit('gameplay for round', data_to_send)
+
+
+@socketio.on('calculate score')
+def calculate_score(game_id: str):
+    """calculates score based on main_user's score pile, called and game_type"""
+    # todo: calculate score
+
+    reset_redis_entries(game_id)

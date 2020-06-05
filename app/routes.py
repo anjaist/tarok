@@ -7,7 +7,7 @@ from flask_socketio import SocketIO
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
-    remove_card_from_hand, update_order_of_players
+    remove_card_from_hand, update_order_of_players, add_to_score_pile
 from app.game_utils import sort_player_cards, get_possible_card_plays
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
@@ -198,17 +198,33 @@ def update_round_state_at_beginning(game_id: str):
 def update_players_hand(main_player: str, game_id: str, cards_to_add: list, cards_to_remove: list):
     """the chosen cards from talon are either added to or removed from the array of cards the player is already holding.
     The cards are sorted again and returned to the JS component.
+
     A player's hand will always need to be updated twice, first with cards_to_add and then with cards_to_remove.
+    cards_to_add correspond to cards that should be removed from 'talon' and added to the against players' pile.
+    cards_to_remove correspond to cards that should be removed from the user's hand and added to the main player's pile.
+
     To distinguish when the updating of the player's hand is finished, swap_finished is set to True."""
     swap_finished = False
     cards_in_hand = RedisGetter.current_round(game_id, f'{main_player}_cards')
     cards_in_hand = cards_in_hand.split(',')
 
     if cards_to_add:
+        # add chosen talon cards to main player's hand
         cards_in_hand.extend(cards_to_add)
 
+        # add remaining talon cards to 'against' players' score pile
+        original_talon = RedisGetter.current_round(game_id, 'talon_cards')
+        remaining_talon = [card for card in original_talon if card not in cards_to_add]
+        add_to_score_pile(game_id, 'against_players', remaining_talon)
+        RedisSetter.current_round(game_id, 'talon_cards', '')
+
     elif cards_to_remove:
+        # remove chosen cards from main player's hand
         cards_in_hand = [card for card in cards_in_hand if card not in cards_to_remove]
+
+        # add chosen cards to main player's score pile
+        add_to_score_pile(game_id, 'main_player', cards_to_remove)
+
         swap_finished = True
 
     updated_hand = sort_player_cards(cards_in_hand)
@@ -275,9 +291,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
             # add cleared cards to the correct user's (or user group's) pile
             main_player = RedisGetter.current_round(game_id, 'main_player')
             identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
-            current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
-            updated_pile = current_pile + ',' + ','.join(cards_on_table)
-            RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)
+            add_to_score_pile(game_id, identifier, cards_on_table)
 
             updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
         else:

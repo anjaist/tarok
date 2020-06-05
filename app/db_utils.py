@@ -496,3 +496,13 @@ def update_order_of_players(game_id: str, new_first_player: str = None) -> str:
     RedisSetter.current_round(game_id, 'whose_turn', new_order[0])
 
     return new_order[0]
+
+
+def add_to_score_pile(game_id: int, identifier: str, cards_to_add: list):
+    """add cards to a score pile. The identifier must be either 'main_player' or 'against_players'."""
+    if identifier not in ['main_player', 'against_players']:
+        raise RuntimeError(f'Unknown identifier: {identifier}. Should be either "main_player" or "against_players".')
+
+    current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
+    updated_pile = current_pile + ',' + ','.join(cards_to_add)
+    RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)

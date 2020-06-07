@@ -2,7 +2,8 @@ from random import shuffle
 
 import pytest
 
-from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile, get_called_calculation
+from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile, get_called_calculation, \
+    check_for_extras
 
 
 def test_deal_new_round():
@@ -75,7 +76,7 @@ def test_count_cards_in_pile():
                               'aa-king-of-hearts'], (['kralji']), [('kralji', 20)]),
                             (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', '22', 'ee-of-spades'],
                              (['kralji']), [('kralji', -20)]),
-                            (['1', '21', 'hh-of-hearts', '11', '10'], (['valat']), [('valat', -500)]),
+                            (['1', '21', 'hh-of-hearts', '11', '10'], (['valat']), [('valat', -500)])
 ])
 def test_points_for_called(test_pile, called, expected):
     """tests that points are added/deducted for called options"""
@@ -83,7 +84,22 @@ def test_points_for_called(test_pile, called, expected):
         assert get_called_calculation(test_pile, called) == expected
     else:
         result = get_called_calculation(test_pile, called)
-        if not result:
-            assert False
         for result_tuple in result:
             assert result_tuple in expected
+
+
+@pytest.mark.parametrize('test_pile, expected', [
+                            (['1', '21', 'hh-of-hearts', '22', '10'], [('trula', 10)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], [('pagat', 25)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', 'hh-of-spades', 'ee-of-spades'],
+                             [('pagat', 25)]),
+                            (['11', '21', 'hh-of-hearts', 'ee-of-diamonds', '22', 'hh-of-spades', 'ee-of-spades', '1'],
+                             [('pagat', 25), ('trula', 10)]),
+                            (['5', '6', 'aa-king-of-clubs', 'aa-king-of-diamonds', '1', '22', 'aa-king-of-spades',
+                              'aa-king-of-hearts'], [('kralji', 10)])
+])
+def test_points_extras(test_pile, expected):
+    """tests that points are added for extras even if they weren't called"""
+    result = check_for_extras(test_pile, ['nič'])
+    for result_tuple in result:
+        assert result_tuple in expected

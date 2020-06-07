@@ -1,6 +1,8 @@
 from random import shuffle
 
-from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile
+import pytest
+
+from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile, get_called_calculation
 
 
 def test_deal_new_round():
@@ -57,3 +59,31 @@ def test_count_cards_in_pile():
     assert count_cards_in_pile(test_pile) == 41
     shuffle(test_pile)
     assert count_cards_in_pile(test_pile) == 41
+
+
+@pytest.mark.parametrize('test_pile, called, expected', [
+                            (['1', '21', 'hh-of-hearts', '22', '10'], (['trula']), [('trula', 20)]),
+                            (['1', '21', 'hh-of-hearts', '11', '10'], (['trula']), [('trula', -20)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], (['pagat']), [('pagat', 50)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', 'hh-of-spades', 'ee-of-spades'],
+                             (['pagat']), [('pagat', 50)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', '22', 'ee-of-spades'],
+                             (['pagat']), [('pagat', -50)]),
+                            (['11', '21', 'hh-of-hearts', 'ee-of-diamonds', '22', 'hh-of-spades', 'ee-of-spades', '1'],
+                             (['pagat', 'trula']), [('pagat', 50), ('trula', 20)]),
+                            (['5', '6', 'aa-king-of-clubs', 'aa-king-of-diamonds', '1', '22', 'aa-king-of-spades',
+                              'aa-king-of-hearts'], (['kralji']), [('kralji', 20)]),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', '22', 'ee-of-spades'],
+                             (['kralji']), [('kralji', -20)]),
+                            (['1', '21', 'hh-of-hearts', '11', '10'], (['valat']), [('valat', -500)]),
+])
+def test_points_for_called(test_pile, called, expected):
+    """tests that points are added/deducted for called options"""
+    if len(called) == 1:
+        assert get_called_calculation(test_pile, called) == expected
+    else:
+        result = get_called_calculation(test_pile, called)
+        if not result:
+            assert False
+        for result_tuple in result:
+            assert result_tuple in expected

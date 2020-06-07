@@ -1,4 +1,5 @@
 from random import shuffle
+from typing import List
 
 SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
@@ -6,6 +7,7 @@ TAROK_CARDS = [str(i) for i in range(1, 23)]
 
 POINTS_GAME_TYPE = {'one': 30, 'two': 20, 'three': 10, 'pass': 0}
 POINTS_CARD_TYPE = {'king': 5, 'queen': 4, 'caval': 3, 'jack': 2, '1': 5, '21': 5, '22': 5}
+POINTS_CALLED = {'trula': 20, 'pagat': 50, 'kralji': 20, 'valat': 500, 'nič': 0}
 TRANSLATION_GAME_TYPE = {'three': 'tri', 'two': 'dve', 'one': 'ena', 'pass': 'naprej'}
 
 
@@ -132,6 +134,19 @@ def determine_winning_card(cards_on_table: list) -> str:
     return min(cards_of_suit)  # suit cards are named in reverse order where 'aa' is the king, 'bb' the queen etc.
 
 
+def simplify_names_in_pile(pile: list) -> list:
+    """simplifies the names of cards in a pile, where the names 'king', 'queen' etc. are extracted from the original
+    longer string. If a card is neither a tarok or a king, queen etc., the name will be changed to 'of'."""
+    renamed_pile = []
+    for card in pile:
+        if not card.isdigit():
+            renamed_pile.append(card.split('-')[1])
+        else:
+            renamed_pile.append(card)
+
+    return renamed_pile
+
+
 def count_cards_in_pile(cards_in_pile: list) -> int:
     """counts the cards in pile, where the worth of the cards is as follows:
          * king = 5
@@ -143,19 +158,12 @@ def count_cards_in_pile(cards_in_pile: list) -> int:
      if only 2 of them are > 1, 1 is deducted. If all three cards are not worth anything, 1 point is added.
      The reason for the points deduction is that this ensures the cards always add to the same amount,
      no matter what order they are counted in."""
-
-    # extract "jack", "king", "queen" and "caval" names from relevant card names
-    renamed_cards_pile = []
-    for card in cards_in_pile:
-        if not card.isdigit():
-            renamed_cards_pile.append(card.split('-')[1])
-        else:
-            renamed_cards_pile.append(card)
+    cards_in_pile = simplify_names_in_pile(cards_in_pile)
 
     # group cards by 3
     grouped_cards = []
-    for i in range(0, len(renamed_cards_pile), 3):
-        grouped_cards.append(renamed_cards_pile[i:i+3])
+    for i in range(0, len(cards_in_pile), 3):
+        grouped_cards.append(cards_in_pile[i:i+3])
 
     # add the value of each group of 3 to count, minding if any points need to be deducted
     count = 0
@@ -173,16 +181,69 @@ def count_cards_in_pile(cards_in_pile: list) -> int:
         else:
             points_to_reduce = 0
 
-            count -= points_to_reduce
+        count -= points_to_reduce
 
     return count
 
 
-def check_called():  # TODO
-    """either adds or reduces the value of called, depending on if the called cards (in correct order)
-    are in the user's pile"""
+def get_called_calculation(cards_in_pile: list, called: list) -> List[tuple]:
+    """returns a list of (called_option, value) tuples to be used for the calculation of the score for round, where
+    the value can be a positive or negative integer."""
+    called_calc = []
+
+    for called_option in called:
+        calculated_value = check_called_option(cards_in_pile, called_option)
+        called_calc.append((called_option, calculated_value))
+
+    return called_calc
+
+
+def check_called_option(cards_in_pile: list, called_option: str) -> int:
+    """returns the positive or negative value of called, depending on if the called cards (in correct order)
+    are in the user's pile. This method should be called for each individual option that was called"""
+    cards_in_pile = simplify_names_in_pile(cards_in_pile)
+
+    if called_option == 'valat':
+        negative_multiplier = +1 if check_for_valat(cards_in_pile) else -1
+    elif called_option == 'kralji':
+        negative_multiplier = +1 if check_for_all_kings(cards_in_pile) else -1
+    elif called_option == 'trula':
+        negative_multiplier = +1 if check_for_trula(cards_in_pile) else -1
+    elif called_option == 'pagat':
+        negative_multiplier = +1 if check_for_pagat_ultimo(cards_in_pile) else -1
+    else:
+        return 0
+
+    return negative_multiplier * POINTS_CALLED[called_option]
 
 
 def check_for_extras():  # TODO
     """if trula, valat, kralji, or pagat ultimo were achieved, they are added to the score
     even if they weren't called in advance but only at half value"""
+
+
+def check_for_valat(pile: list) -> bool:
+    """valat occurred if the user collected all of the cards (54 - leftover talon, which is min 3 and max 5)"""
+    return True if len(pile) >= 49 else False
+
+
+def check_for_all_kings(pile: list) -> bool:
+    """checks if all kings have been collected by a player in their pile"""
+    return True if pile.count('king') == 4 else False
+
+
+def check_for_trula(pile: list) -> bool:
+    """checks if all three of the trula cards (I, XXI and XXII) have been collected"""
+    return True if '1' in pile and '21' in pile and '22' in pile else False
+
+
+def check_for_pagat_ultimo(pile: list) -> bool:
+    """With the 'pagat' option, it is important that the '1' tarok was not only collected but was played last.
+    Furthermore, in order to be successful, the pagat must have been the only tarok card in the last mini round
+    (which means it is the strongest card)"""
+    # todo: verify pagat was played by main_user?
+
+    taroks_in_last_round = get_taroks_cards(pile[-3:])
+    if '1' not in taroks_in_last_round or len(taroks_in_last_round) > 1:
+        return False
+    return True

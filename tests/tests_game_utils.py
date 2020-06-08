@@ -103,3 +103,18 @@ def test_points_extras(test_pile, expected):
     result = check_for_extras(test_pile, against_pile=['2', '3', '4'], called=['nič'])
     for entry in result:
         assert entry in expected
+
+
+def test_against_players_pagat_ultimo():
+    """tests that 25 points are deducted when the co-players have achieved pagat ultimo.
+    Pagat ultimo is only valid, if pagat is the only tarok in that round"""
+    main_pile = ['hh-of-hearts', '2', '3','bb-queen-of-diamonds', 'aa-king-of-diamonds', 'hh-of-diamonds']
+    against_pile = ['4', '5', '6', '1', 'aa-king-of-hearts', 'ee-of-hearts']
+
+    result_extras1 = check_for_extras(main_pile, against_pile, ['trula'])
+    assert result_extras1['pagat'] == -25
+
+    against_pile.pop(-1)
+    against_pile.append('20')
+    result_extras2 = check_for_extras(main_pile, against_pile, ['trula'])
+    assert 'pagat' not in result_extras2.keys()

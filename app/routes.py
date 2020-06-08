@@ -336,7 +336,6 @@ def calculate_score(game_id: str):
 
 
 # TODO:
-#  => if pagat was played by player, it will be in their pile, no other way of getting it there
 #  => calculate final game score: with game type, the 35 points line and everything else added up
 #  => score calculation info window:
 #       * show counted and game type

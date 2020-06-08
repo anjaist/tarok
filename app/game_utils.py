@@ -1,5 +1,4 @@
 from random import shuffle
-from typing import List
 
 SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
@@ -186,14 +185,14 @@ def count_cards_in_pile(cards_in_pile: list) -> int:
     return count
 
 
-def get_called_calculation(cards_in_pile: list, called: list) -> List[tuple]:
-    """returns a list of (called_option, value) tuples to be used for the calculation of the score for round, where
-    the value can be a positive or negative integer."""
-    called_calc = []
+def get_called_calculation(cards_in_pile: list, called: list) -> dict:
+    """Finds out if the called options have been achieved. Returns a positive value for each option successfully
+    obtained, and a negative value for not collected called items"""
+    called_calc = {}
 
     for called_option in called:
         calculated_value = check_called_option(cards_in_pile, called_option)
-        called_calc.append((called_option, calculated_value))
+        called_calc[called_option] = calculated_value
 
     return called_calc
 
@@ -217,17 +216,17 @@ def check_called_option(cards_in_pile: list, called_option: str) -> int:
     return negative_multiplier * POINTS_CALLED[called_option]
 
 
-def check_for_extras(cards_in_pile: list, called: list) -> List[tuple]:
+def check_for_extras(cards_in_pile: list, called: list) -> dict:
     """if trula, valat, kralji, or pagat ultimo were achieved, they are added to the score
     even if they weren't called in advance but only at half value"""
     options_to_check = ['valat', 'kralji', 'trula', 'pagat']
-    extras_calc = []
+    extras_calc = {}
 
     for option in options_to_check:
         if option not in called:
             calculated_value = check_called_option(cards_in_pile, option)
             if calculated_value > 0:  # if value is positive, it means the option was successfully achieved/collected
-                extras_calc.append((option, calculated_value / 2))
+                extras_calc[option] = int(calculated_value / 2)
 
     return extras_calc
 
@@ -249,10 +248,9 @@ def check_for_trula(pile: list) -> bool:
 
 def check_for_pagat_ultimo(pile: list) -> bool:
     """With the 'pagat' option, it is important that the '1' tarok was not only collected but was played last.
-    Furthermore, in order to be successful, the pagat must have been the only tarok card in the last mini round
-    (which means it is the strongest card)"""
-    # todo: verify pagat was played by main_user?
-
+    If 'pagat' is in the main user's pile, it means they played it. If it is in the against users' pile,
+    'pagat' must be the only tarok played that round to get + points, otherwise 'pagat ultimo' has failed
+    (points deducted for against users)"""
     taroks_in_last_round = get_taroks_cards(pile[-3:])
     if '1' not in taroks_in_last_round or len(taroks_in_last_round) > 1:
         return False

@@ -8,7 +8,8 @@ from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataErro
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
-from app.game_utils import sort_player_cards, get_possible_card_plays
+from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
+    check_for_extras
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
 
@@ -318,6 +319,30 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
 @socketio.on('calculate score')
 def calculate_score(game_id: str):
     """calculates score based on main_user's score pile, called and game_type"""
-    # todo: calculate score
+    card_pile = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
+    called = RedisGetter.current_round(game_id, 'called').split(',')
+
+    counted_cards = count_cards_in_pile(card_pile)
+    print(f'--> counted cards: {counted_cards}')
+
+    called_calculation = get_called_calculation(card_pile, called)
+    print(f'--> called calc: {called_calculation}')
+
+    extras_calculation = check_for_extras(card_pile, called)
+    print(f'--> extras calc: {extras_calculation}')
 
     reset_redis_entries(game_id)
+
+
+# TODO:
+#  => check against players' pile to see if they've achieved something (and count as - to game)
+#  => if pagat was played by player, it will be in their pile, no other way of getting it there
+#  => calculate final game score: with game type, the 35 points line and everything else added up
+#  => score calculation info window:
+#       * show counted and game type
+#       * show called calculation
+#       * show extras (+/-) calculation
+#       * show final calculation
+#  => add score to user's postgres entry
+#  => current score state should be shown somewhere on screen - for all users
+#  => back of cards should be displayed as score pile (with number of cards? or just names?)

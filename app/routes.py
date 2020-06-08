@@ -319,23 +319,23 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
 @socketio.on('calculate score')
 def calculate_score(game_id: str):
     """calculates score based on main_user's score pile, called and game_type"""
-    card_pile = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
+    card_pile_main = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
+    card_pile_against = RedisGetter.current_round(game_id, 'against_players_score_pile').split(',')
     called = RedisGetter.current_round(game_id, 'called').split(',')
 
-    counted_cards = count_cards_in_pile(card_pile)
+    counted_cards = count_cards_in_pile(card_pile_main)
     print(f'--> counted cards: {counted_cards}')
 
-    called_calculation = get_called_calculation(card_pile, called)
+    called_calculation = get_called_calculation(card_pile_main, called)
     print(f'--> called calc: {called_calculation}')
 
-    extras_calculation = check_for_extras(card_pile, called)
+    extras_calculation = check_for_extras(card_pile_main, card_pile_against, called)
     print(f'--> extras calc: {extras_calculation}')
 
     reset_redis_entries(game_id)
 
 
 # TODO:
-#  => check against players' pile to see if they've achieved something (and count as - to game)
 #  => if pagat was played by player, it will be in their pile, no other way of getting it there
 #  => calculate final game score: with game type, the 35 points line and everything else added up
 #  => score calculation info window:

@@ -216,17 +216,26 @@ def check_called_option(cards_in_pile: list, called_option: str) -> int:
     return negative_multiplier * POINTS_CALLED[called_option]
 
 
-def check_for_extras(cards_in_pile: list, called: list) -> dict:
+def check_for_extras(main_player_pile: list, against_pile: list, called: list) -> dict:
     """if trula, valat, kralji, or pagat ultimo were achieved, they are added to the score
-    even if they weren't called in advance but only at half value"""
+    even if they weren't called in advance but only at half value.
+
+    If any of those were achieved by the co-players (who play together against the main player),
+    those points are deducted (at half value)"""
     options_to_check = ['valat', 'kralji', 'trula', 'pagat']
     extras_calc = {}
 
     for option in options_to_check:
         if option not in called:
-            calculated_value = check_called_option(cards_in_pile, option)
+            # check main player's pile
+            calculated_value = check_called_option(main_player_pile, option)
             if calculated_value > 0:  # if value is positive, it means the option was successfully achieved/collected
                 extras_calc[option] = int(calculated_value / 2)
+
+            # check against players' pile
+            to_be_deducted = check_called_option(against_pile, option)
+            if to_be_deducted > 0:  # if value is positive, it means the option was successfully achieved/collected
+                extras_calc[option] = int(-to_be_deducted / 2)
 
     return extras_calc
 

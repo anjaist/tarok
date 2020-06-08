@@ -63,20 +63,20 @@ def test_count_cards_in_pile():
 
 
 @pytest.mark.parametrize('test_pile, called, expected', [
-                            (['1', '21', 'hh-of-hearts', '22', '10'], (['trula']), [('trula', 20)]),
-                            (['1', '21', 'hh-of-hearts', '11', '10'], (['trula']), [('trula', -20)]),
-                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], (['pagat']), [('pagat', 50)]),
+                            (['1', '21', 'hh-of-hearts', '22', '10'], ['trula'], {'trula': 20}),
+                            (['1', '21', 'hh-of-hearts', '11', '10'], ['trula'], {'trula': -20}),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], ['pagat'], {'pagat': 50}),
                             (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', 'hh-of-spades', 'ee-of-spades'],
-                             (['pagat']), [('pagat', 50)]),
+                             ['pagat'], {'pagat': 50}),
                             (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', '22', 'ee-of-spades'],
-                             (['pagat']), [('pagat', -50)]),
+                             ['pagat'], {'pagat': -50}),
                             (['11', '21', 'hh-of-hearts', 'ee-of-diamonds', '22', 'hh-of-spades', 'ee-of-spades', '1'],
-                             (['pagat', 'trula']), [('pagat', 50), ('trula', 20)]),
+                             ['pagat', 'trula'], {'pagat': 50, 'trula': 20}),
                             (['5', '6', 'aa-king-of-clubs', 'aa-king-of-diamonds', '1', '22', 'aa-king-of-spades',
-                              'aa-king-of-hearts'], (['kralji']), [('kralji', 20)]),
+                              'aa-king-of-hearts'], ['kralji'], {'kralji': 20}),
                             (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', '22', 'ee-of-spades'],
-                             (['kralji']), [('kralji', -20)]),
-                            (['1', '21', 'hh-of-hearts', '11', '10'], (['valat']), [('valat', -500)])
+                             ['kralji'], {'kralji': -20}),
+                            (['1', '21', 'hh-of-hearts', '11', '10'], ['valat'], {'valat': -500})
 ])
 def test_points_for_called(test_pile, called, expected):
     """tests that points are added/deducted for called options"""
@@ -84,22 +84,22 @@ def test_points_for_called(test_pile, called, expected):
         assert get_called_calculation(test_pile, called) == expected
     else:
         result = get_called_calculation(test_pile, called)
-        for result_tuple in result:
-            assert result_tuple in expected
+        for entry in result:
+            assert entry in expected
 
 
 @pytest.mark.parametrize('test_pile, expected', [
-                            (['1', '21', 'hh-of-hearts', '22', '10'], [('trula', 10)]),
-                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], [('pagat', 25)]),
+                            (['1', '21', 'hh-of-hearts', '22', '10'], {'trula': 10}),
+                            (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1'], {'pagat': 25}),
                             (['5', '6', 'hh-of-hearts', 'bb-queen-of-diamonds', '1', 'hh-of-spades', 'ee-of-spades'],
-                             [('pagat', 25)]),
+                             {'pagat': 25}),
                             (['11', '21', 'hh-of-hearts', 'ee-of-diamonds', '22', 'hh-of-spades', 'ee-of-spades', '1'],
-                             [('pagat', 25), ('trula', 10)]),
+                             {'pagat': 25, 'trula': 10}),
                             (['5', '6', 'aa-king-of-clubs', 'aa-king-of-diamonds', '1', '22', 'aa-king-of-spades',
-                              'aa-king-of-hearts'], [('kralji', 10)])
+                              'aa-king-of-hearts'], {'kralji': 10})
 ])
 def test_points_extras(test_pile, expected):
     """tests that points are added for extras even if they weren't called"""
-    result = check_for_extras(test_pile, ['nič'])
-    for result_tuple in result:
-        assert result_tuple in expected
+    result = check_for_extras(test_pile, against_pile=['2', '3', '4'], called=['nič'])
+    for entry in result:
+        assert entry in expected

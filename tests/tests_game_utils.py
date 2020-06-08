@@ -3,7 +3,7 @@ from random import shuffle
 import pytest
 
 from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile, get_called_calculation, \
-    check_for_extras
+    calculate_extras
 
 
 def test_deal_new_round():
@@ -100,7 +100,7 @@ def test_points_for_called(test_pile, called, expected):
 ])
 def test_points_extras(test_pile, expected):
     """tests that points are added for extras even if they weren't called"""
-    result = check_for_extras(test_pile, against_pile=['2', '3', '4'], called=['nič'])
+    result = calculate_extras(test_pile, against_pile=['2', '3', '4'], called=['nič'])
     for entry in result:
         assert entry in expected
 
@@ -111,10 +111,16 @@ def test_against_players_pagat_ultimo():
     main_pile = ['hh-of-hearts', '2', '3','bb-queen-of-diamonds', 'aa-king-of-diamonds', 'hh-of-diamonds']
     against_pile = ['4', '5', '6', '1', 'aa-king-of-hearts', 'ee-of-hearts']
 
-    result_extras1 = check_for_extras(main_pile, against_pile, ['trula'])
+    result_extras1 = calculate_extras(main_pile, against_pile, ['trula'])
     assert result_extras1['pagat'] == -25
 
     against_pile.pop(-1)
     against_pile.append('20')
-    result_extras2 = check_for_extras(main_pile, against_pile, ['trula'])
+    result_extras2 = calculate_extras(main_pile, against_pile, ['trula'])
     assert 'pagat' not in result_extras2.keys()
+
+
+def test_game_points_calculation():
+    """tests that the calculation of the final score """
+
+    # TODO

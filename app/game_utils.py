@@ -1,5 +1,7 @@
 from random import shuffle
 
+from app.card_pile import CardPile
+
 SUITS = ['hearts', 'spades', 'diamonds', 'clubs']
 SUIT_CARDS = ['aa-king', 'bb-queen', 'cc-caval', 'dd-jack', 'ee', 'ff', 'gg', 'hh']
 TAROK_CARDS = [str(i) for i in range(1, 23)]
@@ -56,31 +58,10 @@ def sort_player_cards(unsorted_cards: list) -> list:
     return sorted_cards
 
 
-def is_card_tarok(card: str) -> bool:
-    """determines if a card is a tarok"""
-    return card.isdigit()
-
-
-def get_taroks_cards(list_of_cards: list) -> list:
-    """returns only tarok cards found in list_of_cards"""
-    return [card for card in list_of_cards if is_card_tarok(card)]
-
-
-def get_card_suit(card: str) -> str:
-    """returns the suit of a card in hand"""
-    if is_card_tarok(card):
-        raise RuntimeError("Can't extract the suit of a tarok card.")
-    return card.split('-')[-1]
-
-
-def get_cards_of_suit(suit: str, cards_in_hand: list) -> list:
-    """returns all cards in cards_in_hand that are of the suit specified"""
-    return [card for card in cards_in_hand if suit in card]
-
-
 def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
     """returns a list of cards that can be played based on what is already on the table"""
-    taroks_in_hand = get_taroks_cards(cards_in_hand)
+    card_pile_in_hand = CardPile(cards_in_hand)
+    taroks_in_hand = card_pile_in_hand.get_tarok_cards()
 
     # any card can be played if no card is already on the table
     # or if there are three cards on the table (this means the round has to be reset)
@@ -93,15 +74,15 @@ def get_possible_card_plays(cards_on_table: list, cards_in_hand: list) -> list:
             return [1]
 
     # if the card on the table is a tarok, a tarok must be played
-    if is_card_tarok(cards_on_table[0]):
+    if CardPile.is_card_tarok(cards_on_table[0]):
         if not taroks_in_hand:  # if there is no tarok in hand, any card can be played
             return cards_in_hand
         return taroks_in_hand
 
-    on_table_suit = get_card_suit(cards_on_table[0])
+    on_table_suit = CardPile.get_card_suit(cards_on_table[0])
 
     # a card of the same suit must be played
-    cards_of_suit = get_cards_of_suit(on_table_suit, cards_in_hand)
+    cards_of_suit = card_pile_in_hand.get_cards_of_suit(on_table_suit)
 
     # if there is no cards of the same suit in hand, a tarok must be played
     if not cards_of_suit:
@@ -122,28 +103,16 @@ def determine_winning_card(cards_on_table: list) -> str:
         return '1'
 
     # if there is a tarok in the mix, the highest tarok takes the round
-    taroks_on_table = get_taroks_cards(cards_on_table)
+    on_table_pile = CardPile(cards_on_table)
+    taroks_on_table = on_table_pile.get_tarok_cards()
     if taroks_on_table:
         taroks_as_ints = [int(card) for card in taroks_on_table]
         return str(max(taroks_as_ints))
 
     # if the first card is a suit, the highest of that suit takes the table
-    on_table_suit = get_card_suit(cards_on_table[0])
-    cards_of_suit = get_cards_of_suit(on_table_suit, cards_on_table)
+    on_table_suit = CardPile.get_card_suit(cards_on_table[0])
+    cards_of_suit = on_table_pile.get_cards_of_suit(on_table_suit)
     return min(cards_of_suit)  # suit cards are named in reverse order where 'aa' is the king, 'bb' the queen etc.
-
-
-def simplify_names_in_pile(pile: list) -> list:
-    """simplifies the names of cards in a pile, where the names 'king', 'queen' etc. are extracted from the original
-    longer string. If a card is neither a tarok or a king, queen etc., the name will be changed to 'of'."""
-    renamed_pile = []
-    for card in pile:
-        if not card.isdigit():
-            renamed_pile.append(card.split('-')[1])
-        else:
-            renamed_pile.append(card)
-
-    return renamed_pile
 
 
 def count_cards_in_pile(cards_in_pile: list) -> int:
@@ -157,7 +126,7 @@ def count_cards_in_pile(cards_in_pile: list) -> int:
      if only 2 of them are > 1, 1 is deducted. If all three cards are not worth anything, 1 point is added.
      The reason for the points deduction is that this ensures the cards always add to the same amount,
      no matter what order they are counted in."""
-    cards_in_pile = simplify_names_in_pile(cards_in_pile)
+    cards_in_pile = CardPile.simplify_names(cards_in_pile)
 
     # group cards by 3
     grouped_cards = []
@@ -200,23 +169,23 @@ def get_called_calculation(cards_in_pile: list, called: list) -> dict:
 def check_called_option(cards_in_pile: list, called_option: str) -> int:
     """returns the positive or negative value of called, depending on if the called cards (in correct order)
     are in the user's pile. This method should be called for each individual option that was called"""
-    cards_in_pile = simplify_names_in_pile(cards_in_pile)
+    card_pile = CardPile(cards_in_pile)
 
     if called_option == 'valat':
-        negative_multiplier = +1 if check_for_valat(cards_in_pile) else -1
+        negative_multiplier = +1 if card_pile.is_valat else -1
     elif called_option == 'kralji':
-        negative_multiplier = +1 if check_for_all_kings(cards_in_pile) else -1
+        negative_multiplier = +1 if card_pile.is_all_kings else -1
     elif called_option == 'trula':
-        negative_multiplier = +1 if check_for_trula(cards_in_pile) else -1
+        negative_multiplier = +1 if card_pile.is_trula else -1
     elif called_option == 'pagat':
-        negative_multiplier = +1 if check_for_pagat_ultimo(cards_in_pile) else -1
+        negative_multiplier = +1 if card_pile.is_pagat_ultimo else -1
     else:
         return 0
 
     return negative_multiplier * POINTS_CALLED[called_option]
 
 
-def check_for_extras(main_player_pile: list, against_pile: list, called: list) -> dict:
+def calculate_extras(main_player_pile: list, against_pile: list, called: list) -> dict:
     """if trula, valat, kralji, or pagat ultimo were achieved, they are added to the score
     even if they weren't called in advance but only at half value.
 
@@ -240,27 +209,20 @@ def check_for_extras(main_player_pile: list, against_pile: list, called: list) -
     return extras_calc
 
 
-def check_for_valat(pile: list) -> bool:
-    """valat occurred if the user collected all of the cards (54 - leftover talon, which is min 3 and max 5)"""
-    return True if len(pile) >= 49 else False
+def calculate_game_points(counted_cards: int, game_type: str) -> int:
+    """If the counted cards are > 36, the round is won (+ points), otherwise it is lost (- points).
+    The value of game_type is added to (if won) or deducted from (if lost) the round points.
+    The difference between the actual score and 36 is rounded to the nearest 5
+    and the difference is added/deducted accordingly."""
+
+    # TODO
 
 
-def check_for_all_kings(pile: list) -> bool:
-    """checks if all kings have been collected by a player in their pile"""
-    return True if pile.count('king') == 4 else False
+def calculate_final_score(pile: list, against_pile: list, called: list, game_type: str) -> int:
+    """Combines all calculations for round and returns the final score"""
+    counted_cards = count_cards_in_pile(pile)
+    game_points = calculate_game_points(counted_cards, game_type)
+    called_calculation = get_called_calculation(pile, called)
+    extras_calculation = calculate_extras(pile, against_pile, called)
 
-
-def check_for_trula(pile: list) -> bool:
-    """checks if all three of the trula cards (I, XXI and XXII) have been collected"""
-    return True if '1' in pile and '21' in pile and '22' in pile else False
-
-
-def check_for_pagat_ultimo(pile: list) -> bool:
-    """With the 'pagat' option, it is important that the '1' tarok was not only collected but was played last.
-    If 'pagat' is in the main user's pile, it means they played it. If it is in the against users' pile,
-    'pagat' must be the only tarok played that round to get + points, otherwise 'pagat ultimo' has failed
-    (points deducted for against users)"""
-    taroks_in_last_round = get_taroks_cards(pile[-3:])
-    if '1' not in taroks_in_last_round or len(taroks_in_last_round) > 1:
-        return False
-    return True
+    return game_points + sum(called_calculation.values()) + sum(extras_calculation.values())

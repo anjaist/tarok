@@ -9,7 +9,7 @@ from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataErro
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
 from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
-    check_for_extras
+    calculate_extras
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
 
@@ -329,7 +329,7 @@ def calculate_score(game_id: str):
     called_calculation = get_called_calculation(card_pile_main, called)
     print(f'--> called calc: {called_calculation}')
 
-    extras_calculation = check_for_extras(card_pile_main, card_pile_against, called)
+    extras_calculation = calculate_extras(card_pile_main, card_pile_against, called)
     print(f'--> extras calc: {extras_calculation}')
 
     reset_redis_entries(game_id)

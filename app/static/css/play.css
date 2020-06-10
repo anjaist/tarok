@@ -201,7 +201,7 @@
     margin-bottom: 2px;
 }
 
-#info-game-wrapper hr {
+.game-options hr {
     width: 100%;
     margin: 4px 0px;
     border-color: black;
@@ -234,4 +234,20 @@
     top: -31vh;
     transform: rotate(300deg);
     display: none;
+}
+
+#info-calculation {
+    top: 8vh;
+}
+
+#info-calculation h2 {
+    margin-bottom: 30px;
+}
+
+.points-name {
+    color: #747474;
+}
+
+.points-number {
+    margin-bottom: 0px;
 }

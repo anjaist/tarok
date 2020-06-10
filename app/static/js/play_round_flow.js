@@ -138,3 +138,24 @@ socket.on('round call options', function(receivedData) {
     displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
     oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
 })
+
+
+function showScoreCalculation(countedCards, calledCalculation, extrasCalculation, finalCalculation) {
+    document.getElementById('points-count').innerText = countedCards;
+}
+
+
+// receive a message once the score for a round has been calculated
+socket.on('calculate score', function(receivedData) {
+    // hide round info window and cards on table (from last round)
+    document.getElementById('info-game-wrapper').style.display = 'none';
+    hideOnTable();
+
+    // show calculation info window
+    // TODO
+    countedCards = receivedData.counted_cards;
+    calledCalculation = receivedData.called_calculation;
+    extrasCalculation = receivedData.extras_calculation;
+    finalCalculation = receivedData.final_calculation;
+    showScoreCalculation(countedCards, calledCalculation, extrasCalculation, finalCalculation);
+})

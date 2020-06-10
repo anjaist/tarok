@@ -325,16 +325,13 @@ def calculate_score(game_id: str):
     game_type = RedisGetter.current_round(game_id, 'type')
 
     counted_cards = count_cards_in_pile(card_pile_main)
-    print(f'--> counted cards: {counted_cards}')
-
     called_calculation = get_called_calculation(card_pile_main, called)
-    print(f'--> called calc: {called_calculation}')
-
     extras_calculation = calculate_extras(card_pile_main, card_pile_against, called)
-    print(f'--> extras calc: {extras_calculation}')
-
     final_calculation = calculate_final_score(card_pile_main, card_pile_against, called, game_type)
-    print(f'--> FINAL calc: {final_calculation}')
+
+    data_to_send = {'counted_cards': counted_cards, 'called_calculation': called_calculation,
+                    'extras_calculation': extras_calculation, 'final_calculation': final_calculation}
+    socketio.emit('calculate score', data_to_send)
 
     reset_redis_entries(game_id)
 

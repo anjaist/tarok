@@ -9,7 +9,7 @@ from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataErro
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
 from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
-    calculate_extras
+    calculate_extras, calculate_final_score
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
 
@@ -322,6 +322,7 @@ def calculate_score(game_id: str):
     card_pile_main = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
     card_pile_against = RedisGetter.current_round(game_id, 'against_players_score_pile').split(',')
     called = RedisGetter.current_round(game_id, 'called').split(',')
+    game_type = RedisGetter.current_round(game_id, 'type')
 
     counted_cards = count_cards_in_pile(card_pile_main)
     print(f'--> counted cards: {counted_cards}')
@@ -332,11 +333,13 @@ def calculate_score(game_id: str):
     extras_calculation = calculate_extras(card_pile_main, card_pile_against, called)
     print(f'--> extras calc: {extras_calculation}')
 
+    final_calculation = calculate_final_score(card_pile_main, card_pile_against, called, game_type)
+    print(f'--> FINAL calc: {final_calculation}')
+
     reset_redis_entries(game_id)
 
 
 # TODO:
-#  => calculate final game score: with game type, the 35 points line and everything else added up
 #  => score calculation info window:
 #       * show counted and game type
 #       * show called calculation

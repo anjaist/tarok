@@ -126,12 +126,10 @@ def count_cards_in_pile(cards_in_pile: list) -> int:
      if only 2 of them are > 1, 1 is deducted. If all three cards are not worth anything, 1 point is added.
      The reason for the points deduction is that this ensures the cards always add to the same amount,
      no matter what order they are counted in."""
-    cards_in_pile = CardPile.simplify_names(cards_in_pile)
 
     # group cards by 3
-    grouped_cards = []
-    for i in range(0, len(cards_in_pile), 3):
-        grouped_cards.append(cards_in_pile[i:i+3])
+    card_pile = CardPile(cards_in_pile)
+    grouped_cards = card_pile.group_by_three()
 
     # add the value of each group of 3 to count, minding if any points need to be deducted
     count = 0
@@ -213,9 +211,13 @@ def calculate_game_points(counted_cards: int, game_type: str) -> int:
     """If the counted cards are > 36, the round is won (+ points), otherwise it is lost (- points).
     The value of game_type is added to (if won) or deducted from (if lost) the round points.
     The difference between the actual score and 36 is rounded to the nearest 5
-    and the difference is added/deducted accordingly."""
-
-    # TODO
+    and the difference is added/deducted accordingly.
+    TODO: If the counted cards are exactly 35: if there are extra cards that don't contribute to the score,
+       the game should still be won.
+    """
+    negative_multiplier = -1 if counted_cards < 36 else +1
+    game_points = CardPile.round_to_five(counted_cards) - 35
+    return game_points + POINTS_GAME_TYPE[game_type] * negative_multiplier
 
 
 def calculate_final_score(pile: list, against_pile: list, called: list, game_type: str) -> int:

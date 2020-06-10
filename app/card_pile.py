@@ -44,6 +44,14 @@ class CardPile:
 
         return renamed_pile
 
+    def group_by_three(self) -> list:
+        """Because cards are counted three at a time, this method can be used to group cards within the pile by three.
+        Returns a list of lists, each sublist containing 3 elements, with the last one containing 1, 2 or 3."""
+        grouped_cards = []
+        for i in range(0, len(self.cards), 3):
+            grouped_cards.append(self.cards[i:i + 3])
+        return grouped_cards
+
     @staticmethod
     def is_card_tarok(card: str) -> bool:
         """determines if a card is a tarok"""
@@ -65,3 +73,7 @@ class CardPile:
     def get_cards_of_suit(self, suit: str) -> list:
         """returns all cards in cards_in_hand that are of the suit specified"""
         return [card for card in self.cards if suit in card]
+
+    @staticmethod
+    def round_to_five(number):
+        return 5 * round(number/5)

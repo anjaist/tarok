@@ -3,7 +3,7 @@ from random import shuffle
 import pytest
 
 from app.game_utils import deal_new_round, sort_player_cards, count_cards_in_pile, get_called_calculation, \
-    calculate_extras
+    calculate_extras, calculate_game_points
 
 
 def test_deal_new_round():
@@ -120,7 +120,10 @@ def test_against_players_pagat_ultimo():
     assert 'pagat' not in result_extras2.keys()
 
 
-def test_game_points_calculation():
-    """tests that the calculation of the final score """
-
-    # TODO
+@pytest.mark.parametrize('counted_cards, game_type, expected_score', [
+                            (42, "two", 25), (29, "three", -15), (36, "one", 30), (35, "two", -20)
+])
+def test_game_points_calculation(counted_cards, game_type, expected_score):
+    """tests that the points for a game are calculated as expected based on if the count of cards
+    and the game type that was played"""
+    assert calculate_game_points(counted_cards, game_type) == expected_score

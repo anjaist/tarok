@@ -4,12 +4,13 @@ from typing import Union
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
 
+from app.card_pile import CardPile
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
     remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
 from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
-    calculate_extras, calculate_final_score
+    calculate_extras, calculate_final_score, POINTS_GAME_TYPE
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
 
@@ -328,20 +329,20 @@ def calculate_score(game_id: str):
     called_calculation = get_called_calculation(card_pile_main, called)
     extras_calculation = calculate_extras(card_pile_main, card_pile_against, called)
     final_calculation = calculate_final_score(card_pile_main, card_pile_against, called, game_type)
+    points_difference = CardPile.round_to_five(counted_cards) - 35
 
     data_to_send = {'counted_cards': counted_cards, 'called_calculation': called_calculation,
-                    'extras_calculation': extras_calculation, 'final_calculation': final_calculation}
+                    'extras_calculation': extras_calculation, 'final_calculation': final_calculation,
+                    'game_worth': POINTS_GAME_TYPE[game_type], 'points_difference': points_difference}
     socketio.emit('calculate score', data_to_send)
 
     reset_redis_entries(game_id)
 
 
 # TODO:
-#  => score calculation info window:
-#       * show counted and game type
-#       * show called calculation
-#       * show extras (+/-) calculation
-#       * show final calculation
+#  => make score window responsive (for smaller screen)
+#  => add 'begin new round' button (that all user have to press)
+#  => wait a few seconds before revealing score?
 #  => add score to user's postgres entry
 #  => current score state should be shown somewhere on screen - for all users
 #  => back of cards should be displayed as score pile (with number of cards? or just names?)

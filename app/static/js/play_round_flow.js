@@ -140,8 +140,39 @@ socket.on('round call options', function(receivedData) {
 })
 
 
-function showScoreCalculation(countedCards, calledCalculation, extrasCalculation, finalCalculation) {
+// display a breakdown of how the final score was calculated for the round
+function showScoreCalculation(receivedScoreData) {
+    let countedCards = receivedScoreData.counted_cards;
+    let calledCalculation = receivedScoreData.called_calculation;
+    let extrasCalculation = receivedScoreData.extras_calculation;
+    let finalCalculation = receivedScoreData.final_calculation;
+    let gameWorth = receivedScoreData.game_worth;
+    let pointsDifference= receivedScoreData.points_difference;
+
+    document.getElementById('info-calculation').style.display = 'flex';
+    document.getElementById('points-main-player').innerText = mainPlayer;
     document.getElementById('points-count').innerText = countedCards;
+    document.getElementById('points-total').innerText = finalCalculation;
+    document.getElementById('points-game-type').innerText = gameWorth;
+    document.getElementById('points-difference').innerText = pointsDifference;
+
+    // display score value for each called element
+    calledScore = document.getElementById('points-called');
+    for (let key in calledCalculation) {
+        let htmlToInsert = `<p class="points-number">${key}: ${calledCalculation[key]}</p>`
+        if (!calledScore.innerHTML.includes(htmlToInsert)) {
+            calledScore.insertAdjacentHTML('beforeend', htmlToInsert);
+        }
+    }
+
+    // display score value for each extra element
+    extraScore = document.getElementById('points-extra');
+    for (let key in extrasCalculation) {
+        let htmlToInsert = `<p class="points-number">${key}: ${extrasCalculation[key]}</p>`
+        if (!extraScore.innerHTML.includes(htmlToInsert)) {
+            extraScore.insertAdjacentHTML('beforeend', htmlToInsert);
+        }
+    }
 }
 
 
@@ -152,10 +183,5 @@ socket.on('calculate score', function(receivedData) {
     hideOnTable();
 
     // show calculation info window
-    // TODO
-    countedCards = receivedData.counted_cards;
-    calledCalculation = receivedData.called_calculation;
-    extrasCalculation = receivedData.extras_calculation;
-    finalCalculation = receivedData.final_calculation;
-    showScoreCalculation(countedCards, calledCalculation, extrasCalculation, finalCalculation);
+    showScoreCalculation(receivedData);
 })

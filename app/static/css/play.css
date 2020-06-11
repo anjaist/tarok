@@ -238,6 +238,7 @@
 
 #info-calculation {
     top: 8vh;
+    display: none;
 }
 
 #info-calculation h2 {

@@ -60,11 +60,11 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
 
     player_usernames = [player.username for player in [player1, player2, player3]]
     create_redis_entry_for_round_choices(game.id, player_usernames, new_game=True)
-    update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
+    set_new_game_for_user_table(game.id, [player1, player2, player3, player4])
 
 
-def update_user_with_new_game_info(game_id: int, users: list):
-    """updates current_game, current_score and current_duplication_tokens columns for each user in users"""
+def set_new_game_for_user_table(game_id: int, users: list):
+    """sets current_game, current_score and current_duplication_tokens columns for each user in users"""
     for user in users:
         if not user:
             continue
@@ -133,6 +133,13 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
         create_new_game(co_player1, co_player2, user)
 
     return error
+
+
+def update_score_for_user(username: str, score_for_round: int):
+    """updates the user's current_score with the added score_for_round value (can be negative)"""
+    user = User.query.filter_by(username=username).first()
+    user.current_score += score_for_round
+    db.session.commit()
 
 
 # ======== redis ========

@@ -121,7 +121,7 @@ socket.on('gameplay for round', function(receivedData) {
 
     if (isRoundFinished) {
         console.log('The round is finished. Sending request for score calculation...');
-        socket.emit('calculate score', gameId);
+        socket.emit('calculate score', gameId, currentUser);
     }
 })
 

@@ -13,6 +13,13 @@ body {
     position: relative;
 }
 
+
+@media (max-height: 420px) {
+    .body-wrapper {
+        overflow: scroll;
+    }
+}
+
 h1 {
     font-family: 'Oswald', sans-serif;
     letter-spacing: 3px;

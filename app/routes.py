@@ -8,7 +8,7 @@ from app.card_pile import CardPile
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
-    remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries
+    remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries, update_score_for_user
 from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
     calculate_extras, calculate_final_score, POINTS_GAME_TYPE
 from app.models import User
@@ -318,7 +318,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
 
 
 @socketio.on('calculate score')
-def calculate_score(game_id: str):
+def calculate_score(game_id: str, current_user: str):
     """calculates score based on main_user's score pile, called and game_type"""
     card_pile_main = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
     card_pile_against = RedisGetter.current_round(game_id, 'against_players_score_pile').split(',')
@@ -336,13 +336,14 @@ def calculate_score(game_id: str):
                     'game_worth': POINTS_GAME_TYPE[game_type], 'points_difference': points_difference}
     socketio.emit('calculate score', data_to_send)
 
+    main_player = RedisGetter.current_round(game_id, 'main_player')
+    if main_player == current_user:
+        update_score_for_user(main_player, final_calculation)
     reset_redis_entries(game_id)
 
 
 # TODO:
-#  => make score window responsive (for smaller screen)
 #  => add 'begin new round' button (that all user have to press)
 #  => wait a few seconds before revealing score?
-#  => add score to user's postgres entry
 #  => current score state should be shown somewhere on screen - for all users
 #  => back of cards should be displayed as score pile (with number of cards? or just names?)

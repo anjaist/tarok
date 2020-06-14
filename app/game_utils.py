@@ -211,10 +211,7 @@ def calculate_game_points(counted_cards: int, game_type: str) -> int:
     """If the counted cards are > 36, the round is won (+ points), otherwise it is lost (- points).
     The value of game_type is added to (if won) or deducted from (if lost) the round points.
     The difference between the actual score and 36 is rounded to the nearest 5
-    and the difference is added/deducted accordingly.
-    TODO: If the counted cards are exactly 35: if there are extra cards that don't contribute to the score,
-       the game should still be won.
-    """
+    and the difference is added/deducted accordingly."""
     negative_multiplier = -1 if counted_cards < 36 else +1
     game_points = CardPile.round_to_five(counted_cards) - 35
     return game_points + POINTS_GAME_TYPE[game_type] * negative_multiplier

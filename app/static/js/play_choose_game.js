@@ -14,8 +14,8 @@ let currentlyChoosingPlayer = document.getElementById('player-to-choose').conten
 let currentlyChoosingPlayerOptions = document.getElementById('player-to-choose-opts').content;
 currentlyChoosingPlayerOptions = currentlyChoosingPlayerOptions.split(',');
 let coPlayersChoiceDiv = document.getElementById('co-players-choice');
+let scoreWindow = document.getElementById('info-calculation');
 
-let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
 let isTalonShown = false;
 
 
@@ -94,6 +94,7 @@ function revealTalon() {
 
 // show who is currently choosing their round options
 function showCurrentlyChoosing() {
+    let noChoosingPlayer = currentlyChoosingPlayer == null || currentlyChoosingPlayer == 'None';
     if (noChoosingPlayer || currentlyChoosingPlayerOptions.includes('chosen')) {
         roundOptionsPopup.style.display = 'none';
         isChoosingGameDiv.style.display = 'none';
@@ -107,11 +108,13 @@ function showCurrentlyChoosing() {
 
     } else if (currentlyChoosingPlayer == currentUser) {
         // show the game options to player, whose turn it is currently to choose
+        if (scoreWindow.style.display == 'none') roundOptionsPopup.style.display = 'flex';
         chooseGameDiv.style.display = 'block';
         isChoosingGameDiv.style.display = 'none';
 
     } else {
         // if another player is choosing, hide the game options and show that another player is choosing
+        if (scoreWindow.style.display == 'none') roundOptionsPopup.style.display = 'flex';
         chooseGameDiv.style.display = 'none';
         isChoosingGameDiv.style.display = 'block';
         isChoosingGameDiv.innerHTML = `<h3>${currentlyChoosingPlayer} izbira igro</h3>`

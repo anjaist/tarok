@@ -149,7 +149,7 @@ function showScoreCalculation(receivedScoreData) {
     let gameWorth = receivedScoreData.game_worth;
     let pointsDifference= receivedScoreData.points_difference;
 
-    document.getElementById('info-calculation').style.display = 'flex';
+    scoreWindow.style.display = 'flex';
     document.getElementById('points-main-player').innerText = mainPlayer;
     document.getElementById('points-count').innerText = countedCards;
     document.getElementById('points-total').innerText = finalCalculation;
@@ -173,6 +173,15 @@ function showScoreCalculation(receivedScoreData) {
             extraScore.insertAdjacentHTML('beforeend', htmlToInsert);
         }
     }
+
+    // listen for click on 'continue' button
+    let continueButton = document.getElementById('new-round-btn');
+    continueButton.addEventListener('click', function() {
+        // hide the score window and request to see updated player game options
+        scoreWindow.style.display = 'none';
+        socket.emit('player game options');
+        socket.emit('get hand of player', gameId, currentUser);
+    })
 }
 
 
@@ -184,4 +193,12 @@ socket.on('calculate score', function(receivedData) {
 
     // show calculation info window
     showScoreCalculation(receivedData);
+})
+
+
+// receive the player's new cards
+socket.on('get hand of player', function(receivedData) {
+    let playersHand = receivedData.players_hand;
+    let playerName = receivedData.player_name;
+    if (scoreWindow.style.display == 'none' && playerName == currentUser) displayUpdatedHand(playersHand);
 })

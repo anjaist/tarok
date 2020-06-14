@@ -395,8 +395,8 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict, reset:
             RedisSetter.current_round(game_id, f'{user}_played', '')
 
     if reset:
-        redis_db.hdel(f'{game_id}:current_round', bytes('main_player', 'utf-8'))
-        redis_db.hdel(f'{game_id}:current_round', bytes('type', 'utf-8'))
+        redis_db.hdel(f'{game_id}:current_round', 'main_player')
+        redis_db.hdel(f'{game_id}:current_round', 'type')
 
 
 def save_game_type(game_id: int):

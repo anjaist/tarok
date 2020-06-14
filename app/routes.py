@@ -239,6 +239,14 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
     socketio.emit('update players hand', data_to_send)
 
 
+@socketio.on('get hand of player')
+def get_players_hand(game_id: str, player_name: str):
+    """retrieves the players hand from redis"""
+    players_hand = RedisGetter.current_round(game_id, f'{player_name}_cards').split(',')
+    data_to_send = {'players_hand': players_hand, 'player_name': player_name}
+    socketio.emit('get hand of player', data_to_send)
+
+
 @socketio.on('round call options')
 def update_round_call_options(game_id: str, call_options: list):
     """adds call options to the corresponding entry in redisdb"""
@@ -343,7 +351,7 @@ def calculate_score(game_id: str, current_user: str):
 
 
 # TODO:
-#  => add 'begin new round' button (that all user have to press)
+#  => show talon cards (bg first/flipped) in new round; check calling workflow for 2nd round etc.
 #  => wait a few seconds before revealing score?
 #  => current score state should be shown somewhere on screen - for all users
 #  => back of cards should be displayed as score pile (with number of cards? or just names?)

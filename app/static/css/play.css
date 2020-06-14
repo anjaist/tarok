@@ -239,14 +239,21 @@
 #info-calculation {
     top: 8vh;
     display: none;
+    max-width: 250px;
+    left: calc(50vw - 125px);
 }
 
 #info-calculation h2 {
     margin-bottom: 30px;
 }
 
+#info-calculation hr {
+    margin: 4px 0px 7px 0px;
+}
+
 .points-name {
     color: #747474;
+    font-size: 13px;
 }
 
 .points-number {

@@ -65,7 +65,7 @@
         <div id="talon-front-cards" class="cards-wrapper-talon">
             {% for card in round_state['talon'] %}
                 {% set talon_card_bg_id = 'talon-card-bg-' ~ loop.index %}
-                {% set talon_card_img_id = 'talon-card-img-' ~ loop.index %}
+                {% set talon_card_img_id = 'talon-card-' ~ loop.index %}
                 {% set img_path = 'img/' ~ card ~ '.png' %}
                 <div class="card-cont" id="{{ talon_card_bg_id }}">
                     <img class="tarok-card" id="{{ talon_card_img_id }}" src="{{ url_for('static', filename=img_path) }}"

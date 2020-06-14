@@ -243,7 +243,8 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 def get_players_hand(game_id: str, player_name: str):
     """retrieves the players hand from redis"""
     players_hand = RedisGetter.current_round(game_id, f'{player_name}_cards').split(',')
-    data_to_send = {'players_hand': players_hand, 'player_name': player_name}
+    talon_cards = RedisGetter.current_round(game_id, 'talon_cards').split(',')
+    data_to_send = {'players_hand': players_hand, 'player_name': player_name, 'talon_cards': talon_cards}
     socketio.emit('get hand of player', data_to_send)
 
 
@@ -351,7 +352,7 @@ def calculate_score(game_id: str, current_user: str):
 
 
 # TODO:
-#  => show talon cards (bg first/flipped) in new round; check calling workflow for 2nd round etc.
+#  => fix: 2nd round cards that can be played are not correct
 #  => wait a few seconds before revealing score?
 #  => current score state should be shown somewhere on screen - for all users
 #  => back of cards should be displayed as score pile (with number of cards? or just names?)

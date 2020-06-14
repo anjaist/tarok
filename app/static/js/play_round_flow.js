@@ -122,6 +122,14 @@ socket.on('gameplay for round', function(receivedData) {
     if (isRoundFinished) {
         console.log('The round is finished. Sending request for score calculation...');
         socket.emit('calculate score', gameId, currentUser);
+
+        // reset confirmation options
+        talonConfirmed = false;
+        talonChosen = [];
+        userCardsConfirmed = false;
+        userCardsChosen = [];
+        callConfirmed = false;
+        calledSelectedOptions = [];
     }
 })
 
@@ -200,5 +208,11 @@ socket.on('calculate score', function(receivedData) {
 socket.on('get hand of player', function(receivedData) {
     let playersHand = receivedData.players_hand;
     let playerName = receivedData.player_name;
-    if (scoreWindow.style.display == 'none' && playerName == currentUser) displayUpdatedHand(playersHand);
+    let talonCards = receivedData.talon_cards;
+    if (scoreWindow.style.display == 'none' && playerName == currentUser) {
+        displayUpdatedHand(playersHand);
+        displayUpdatedTalon(talonCards);
+        talonFront.style.display = 'none';
+        talonBack.style.display = 'flex';
+    }
 })

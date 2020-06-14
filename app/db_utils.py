@@ -391,8 +391,7 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict, reset:
     for user, value in dealt_cards.items():
         value_for_redis = ','.join(str(card_name) for card_name in value)
         RedisSetter.current_round(game_id, f'{user}_cards', value_for_redis)
-        if user != 'talon':
-            RedisSetter.current_round(game_id, f'{user}_played', '')
+        RedisSetter.current_round(game_id, f'{user}_played', '')
 
     if reset:
         redis_db.hdel(f'{game_id}:current_round', 'main_player')

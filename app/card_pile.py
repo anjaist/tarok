@@ -3,7 +3,8 @@
 
 class CardPile:
     def __init__(self, card_pile: list):
-        self.cards = self.simplify_names(card_pile)
+        self.cards = card_pile
+        self.cards_simplified = self.simplify_names(card_pile)
 
     @property
     def is_valat(self) -> bool:
@@ -48,8 +49,8 @@ class CardPile:
         """Because cards are counted three at a time, this method can be used to group cards within the pile by three.
         Returns a list of lists, each sublist containing 3 elements, with the last one containing 1, 2 or 3."""
         grouped_cards = []
-        for i in range(0, len(self.cards), 3):
-            grouped_cards.append(self.cards[i:i + 3])
+        for i in range(0, len(self.cards_simplified), 3):
+            grouped_cards.append(self.cards_simplified[i:i + 3])
         return grouped_cards
 
     @staticmethod

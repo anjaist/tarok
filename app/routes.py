@@ -352,7 +352,5 @@ def calculate_score(game_id: str, current_user: str):
 
 
 # TODO:
-#  => fix: 2nd round cards that can be played are not correct
-#  => wait a few seconds before revealing score?
 #  => current score state should be shown somewhere on screen - for all users
 #  => back of cards should be displayed as score pile (with number of cards? or just names?)

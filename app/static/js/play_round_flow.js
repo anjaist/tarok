@@ -118,6 +118,19 @@ socket.on('gameplay for round', function(receivedData) {
         oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
     }
     displayOnTable(onTable);
+
+    if (isRoundFinished) {
+        console.log('The round is finished. Sending request for score calculation...');
+        socket.emit('calculate score', gameId, currentUser);
+
+        // reset confirmation options
+        talonConfirmed = false;
+        talonChosen = [];
+        userCardsConfirmed = false;
+        userCardsChosen = [];
+        callConfirmed = false;
+        calledSelectedOptions = [];
+    }
 })
 
 
@@ -132,4 +145,74 @@ socket.on('round call options', function(receivedData) {
     callConfirmed = true;
     displayInfo(mainPlayer, gameType, calledSelectedOptions, whoseTurn);
     oneTurn(whoseTurn, canBePlayedCards, playersHand, onTable);
+})
+
+
+// display a breakdown of how the final score was calculated for the round
+function showScoreCalculation(receivedScoreData) {
+    let countedCards = receivedScoreData.counted_cards;
+    let calledCalculation = receivedScoreData.called_calculation;
+    let extrasCalculation = receivedScoreData.extras_calculation;
+    let finalCalculation = receivedScoreData.final_calculation;
+    let gameWorth = receivedScoreData.game_worth;
+    let pointsDifference= receivedScoreData.points_difference;
+
+    scoreWindow.style.display = 'flex';
+    document.getElementById('points-main-player').innerText = mainPlayer;
+    document.getElementById('points-count').innerText = countedCards;
+    document.getElementById('points-total').innerText = finalCalculation;
+    document.getElementById('points-game-type').innerText = gameWorth;
+    document.getElementById('points-difference').innerText = pointsDifference;
+
+    // display score value for each called element
+    calledScore = document.getElementById('points-called');
+    for (let key in calledCalculation) {
+        let htmlToInsert = `<p class="points-number">${key}: ${calledCalculation[key]}</p>`
+        if (!calledScore.innerHTML.includes(htmlToInsert)) {
+            calledScore.insertAdjacentHTML('beforeend', htmlToInsert);
+        }
+    }
+
+    // display score value for each extra element
+    extraScore = document.getElementById('points-extra');
+    for (let key in extrasCalculation) {
+        let htmlToInsert = `<p class="points-number">${key}: ${extrasCalculation[key]}</p>`
+        if (!extraScore.innerHTML.includes(htmlToInsert)) {
+            extraScore.insertAdjacentHTML('beforeend', htmlToInsert);
+        }
+    }
+
+    // listen for click on 'continue' button
+    let continueButton = document.getElementById('new-round-btn');
+    continueButton.addEventListener('click', function() {
+        // hide the score window and request to see updated player game options
+        scoreWindow.style.display = 'none';
+        socket.emit('player game options');
+        socket.emit('get hand of player', gameId, currentUser);
+    })
+}
+
+
+// receive a message once the score for a round has been calculated
+socket.on('calculate score', function(receivedData) {
+    // hide round info window and cards on table (from last round)
+    document.getElementById('info-game-wrapper').style.display = 'none';
+    hideOnTable();
+
+    // show calculation info window
+    showScoreCalculation(receivedData);
+})
+
+
+// receive the player's new cards
+socket.on('get hand of player', function(receivedData) {
+    let playersHand = receivedData.players_hand;
+    let playerName = receivedData.player_name;
+    let talonCards = receivedData.talon_cards;
+    if (scoreWindow.style.display == 'none' && playerName == currentUser) {
+        displayUpdatedHand(playersHand);
+        displayUpdatedTalon(talonCards);
+        talonFront.style.display = 'none';
+        talonBack.style.display = 'flex';
+    }
 })

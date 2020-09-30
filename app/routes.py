@@ -4,11 +4,13 @@ from typing import Union
 from flask import url_for, session, redirect, request, render_template, Blueprint
 from flask_socketio import SocketIO
 
+from app.card_pile import CardPile
 from app.db_utils import insert_user_into_db, password_valid, UniqueUserDataError, update_user_in_game, \
     get_co_players, check_validity_of_chosen_players, get_players_that_need_to_choose_game, get_players_choices, \
     save_game_type, get_dealt_cards, get_cards_on_table, determine_who_clears_table, check_for_end_of_round, \
-    remove_card_from_hand, update_order_of_players
-from app.game_utils import sort_player_cards, get_possible_card_plays
+    remove_card_from_hand, update_order_of_players, add_to_score_pile, reset_redis_entries, update_score_for_user
+from app.game_utils import sort_player_cards, get_possible_card_plays, count_cards_in_pile, get_called_calculation, \
+    calculate_extras, calculate_final_score, POINTS_GAME_TYPE
 from app.models import User
 from app.redis_helpers import RedisGetter, RedisSetter
 
@@ -198,17 +200,33 @@ def update_round_state_at_beginning(game_id: str):
 def update_players_hand(main_player: str, game_id: str, cards_to_add: list, cards_to_remove: list):
     """the chosen cards from talon are either added to or removed from the array of cards the player is already holding.
     The cards are sorted again and returned to the JS component.
+
     A player's hand will always need to be updated twice, first with cards_to_add and then with cards_to_remove.
+    cards_to_add correspond to cards that should be removed from 'talon' and added to the against players' pile.
+    cards_to_remove correspond to cards that should be removed from the user's hand and added to the main player's pile.
+
     To distinguish when the updating of the player's hand is finished, swap_finished is set to True."""
     swap_finished = False
     cards_in_hand = RedisGetter.current_round(game_id, f'{main_player}_cards')
     cards_in_hand = cards_in_hand.split(',')
 
     if cards_to_add:
+        # add chosen talon cards to main player's hand
         cards_in_hand.extend(cards_to_add)
 
+        # add remaining talon cards to 'against' players' score pile
+        original_talon = RedisGetter.current_round(game_id, 'talon_cards')
+        remaining_talon = [card for card in original_talon if card not in cards_to_add]
+        add_to_score_pile(game_id, 'against_players', remaining_talon)
+        RedisSetter.current_round(game_id, 'talon_cards', '')
+
     elif cards_to_remove:
+        # remove chosen cards from main player's hand
         cards_in_hand = [card for card in cards_in_hand if card not in cards_to_remove]
+
+        # add chosen cards to main player's score pile
+        add_to_score_pile(game_id, 'main_player', cards_to_remove)
+
         swap_finished = True
 
     updated_hand = sort_player_cards(cards_in_hand)
@@ -219,6 +237,15 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
     data_to_send = {'updated_hand': updated_hand, 'main_player': main_player, 'swap_finished': swap_finished}
     socketio.emit('update players hand', data_to_send)
+
+
+@socketio.on('get hand of player')
+def get_players_hand(game_id: str, player_name: str):
+    """retrieves the players hand from redis"""
+    players_hand = RedisGetter.current_round(game_id, f'{player_name}_cards').split(',')
+    talon_cards = RedisGetter.current_round(game_id, 'talon_cards').split(',')
+    data_to_send = {'players_hand': players_hand, 'player_name': player_name, 'talon_cards': talon_cards}
+    socketio.emit('get hand of player', data_to_send)
 
 
 @socketio.on('round call options')
@@ -275,9 +302,7 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
             # add cleared cards to the correct user's (or user group's) pile
             main_player = RedisGetter.current_round(game_id, 'main_player')
             identifier = 'main_player' if pile_to_add_to == main_player else 'against_players'
-            current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
-            updated_pile = current_pile + ',' + ','.join(cards_on_table)
-            RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)
+            add_to_score_pile(game_id, identifier, cards_on_table)
 
             updated_whose_turn = update_order_of_players(game_id, new_first_player=pile_to_add_to)
         else:
@@ -285,7 +310,6 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
     else:
         updated_whose_turn = whose_turn
 
-    # todo: scoring should be done (and saved to postgres) before redis is wiped
     is_round_finished = check_for_end_of_round(game_id)
 
     if is_round_finished:
@@ -300,3 +324,33 @@ def play_round(game_id: str, user_whose_card: str, card_played: Union[str, None]
                     'pile_to_add_to': pile_to_add_to, 'can_be_played': can_be_played, 'players_hand': players_cards,
                     'on_table': cards_on_table}
     socketio.emit('gameplay for round', data_to_send)
+
+
+@socketio.on('calculate score')
+def calculate_score(game_id: str, current_user: str):
+    """calculates score based on main_user's score pile, called and game_type"""
+    card_pile_main = RedisGetter.current_round(game_id, 'main_player_score_pile').split(',')
+    card_pile_against = RedisGetter.current_round(game_id, 'against_players_score_pile').split(',')
+    called = RedisGetter.current_round(game_id, 'called').split(',')
+    game_type = RedisGetter.current_round(game_id, 'type')
+
+    counted_cards = count_cards_in_pile(card_pile_main)
+    called_calculation = get_called_calculation(card_pile_main, called)
+    extras_calculation = calculate_extras(card_pile_main, card_pile_against, called)
+    final_calculation = calculate_final_score(card_pile_main, card_pile_against, called, game_type)
+    points_difference = CardPile.round_to_five(counted_cards) - 35
+
+    data_to_send = {'counted_cards': counted_cards, 'called_calculation': called_calculation,
+                    'extras_calculation': extras_calculation, 'final_calculation': final_calculation,
+                    'game_worth': POINTS_GAME_TYPE[game_type], 'points_difference': points_difference}
+    socketio.emit('calculate score', data_to_send)
+
+    main_player = RedisGetter.current_round(game_id, 'main_player')
+    if main_player == current_user:
+        update_score_for_user(main_player, final_calculation)
+    reset_redis_entries(game_id)
+
+
+# TODO:
+#  => current score state should be shown somewhere on screen - for all users
+#  => back of cards should be displayed as score pile (with number of cards? or just names?)

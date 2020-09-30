@@ -3,7 +3,8 @@ This app is currently a work in progress.
 
 ## Contents
 * [Game Flow](#game-flow)
-* [RedisDB](#redisdb)
+* [Postgres DB](#postgres-db)
+* [Redis DB](#redis-db)
 
 
 ### Game Flow
@@ -32,7 +33,41 @@ and `-` points if they aren't successful).
 7. The round begins
 
 
-### RedisDB
+### Postgres DB
+
+Postgres is used to hold longer-lasting and less frequently changing data about users and games.
+
+**Users table**
+
+field name                 | value type | description
+-------------------------- | ---------- | --------------------------------------------
+id                         | integer    | primary key, assigned by the db
+email                      | string     | user's email address; should be unique
+password                   | string     | user's password
+username                   | string     | user's chosen username; should be unique
+current_score              | integer    | user's current score; to be updated at the end of each round when score is calculated
+current_duplication_tokens | integer    | user's duplication tokens; to be updated whenever a token is used (removed) or added
+current_game               | integer    | the id of the game the user is in; a user can only be in one game at one time
+in_game                    | boolean    | specifies whether the user has an active game
+deleted                    | boolean    | a true value deletes/deactivates the user
+
+
+**Games table**
+
+field name | value type | description
+---------- | ---------- | --------------------------------------------
+id         | integer    | primary key, assigned by the db
+player1    | string     | username of a player involved (order is not important)
+player2    | string     | username of a player involved (order is not important)
+player3    | string     | username of a player involved (order is not important)
+player4    | integer    | username of a player involved (order is not important); null for 3-player games
+active     | integer    | a true value hides/deactivates the game so that user can join another game
+deleted    | integer    | a true value deletes/deactivates the game
+
+
+### Redis DB
+
+Redis is used to store temporary and frequently changing data on games currently in progress.
 
 **Round Choices**
 ```

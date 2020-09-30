@@ -60,11 +60,11 @@ def create_new_game(player1: User, player2: User, player3: User, player4=None):
 
     player_usernames = [player.username for player in [player1, player2, player3]]
     create_redis_entry_for_round_choices(game.id, player_usernames, new_game=True)
-    update_user_with_new_game_info(game.id, [player1, player2, player3, player4])
+    set_new_game_for_user_table(game.id, [player1, player2, player3, player4])
 
 
-def update_user_with_new_game_info(game_id: int, users: list):
-    """updates current_game, current_score and current_duplication_tokens columns for each user in users"""
+def set_new_game_for_user_table(game_id: int, users: list):
+    """sets current_game, current_score and current_duplication_tokens columns for each user in users"""
     for user in users:
         if not user:
             continue
@@ -133,6 +133,13 @@ def check_validity_of_chosen_players(user: User, username1: str, username2: str)
         create_new_game(co_player1, co_player2, user)
 
     return error
+
+
+def update_score_for_user(username: str, score_for_round: int):
+    """updates the user's current_score with the added score_for_round value (can be negative)"""
+    user = User.query.filter_by(username=username).first()
+    user.current_score += score_for_round
+    db.session.commit()
 
 
 # ======== redis ========
@@ -384,12 +391,11 @@ def create_redis_entry_for_current_round(game_id: int, dealt_cards: dict, reset:
     for user, value in dealt_cards.items():
         value_for_redis = ','.join(str(card_name) for card_name in value)
         RedisSetter.current_round(game_id, f'{user}_cards', value_for_redis)
-        if user != 'talon':
-            RedisSetter.current_round(game_id, f'{user}_played', '')
+        RedisSetter.current_round(game_id, f'{user}_played', '')
 
     if reset:
-        redis_db.hdel(f'{game_id}:current_round', bytes('main_player', 'utf-8'))
-        redis_db.hdel(f'{game_id}:current_round', bytes('type', 'utf-8'))
+        redis_db.hdel(f'{game_id}:current_round', 'main_player')
+        redis_db.hdel(f'{game_id}:current_round', 'type')
 
 
 def save_game_type(game_id: int):
@@ -435,24 +441,25 @@ def determine_who_clears_table(game_id: str, cards_on_table: list) -> str:
 def check_for_end_of_round(game_id: str) -> bool:
     """if all players have played all of their cards, the round is over and the redis entries are reset.
     Return indicates whether the round is finished or not"""
-    end_of_round = True
-
     players_in_game = get_all_players(int(game_id))
     for player in players_in_game:
         players_hand = RedisGetter.current_round(game_id, f'{player}_cards')
         if players_hand:
-            end_of_round = False
+            return False
 
-    if end_of_round:
-        print(f'Round is finished! Clearing redis for game {game_id}...')
+    return True
 
-        create_redis_entry_for_round_choices(game_id, players_in_game)
-        dealt_cards = deal_new_round(players_in_game)
-        create_redis_entry_for_current_round(game_id, dealt_cards, reset=True)
 
-        # todo: the entire entry should be deleted if game is finished
+def reset_redis_entries(game_id: Union[int, str]):
+    """reset redis entries related to game_id"""
+    players_in_game = get_all_players(game_id)
+    print(f'Round is finished! Clearing redis for game {game_id}...')
 
-    return end_of_round
+    create_redis_entry_for_round_choices(game_id, players_in_game)
+    dealt_cards = deal_new_round(players_in_game)
+    create_redis_entry_for_current_round(game_id, dealt_cards, reset=True)
+
+    # todo: the entire entry should be deleted if game is finished
 
 
 def remove_card_from_hand(game_id: str, player_name: str, played_card: str):
@@ -496,3 +503,13 @@ def update_order_of_players(game_id: str, new_first_player: str = None) -> str:
     RedisSetter.current_round(game_id, 'whose_turn', new_order[0])
 
     return new_order[0]
+
+
+def add_to_score_pile(game_id: int, identifier: str, cards_to_add: list):
+    """add cards to a score pile. The identifier must be either 'main_player' or 'against_players'."""
+    if identifier not in ['main_player', 'against_players']:
+        raise RuntimeError(f'Unknown identifier: {identifier}. Should be either "main_player" or "against_players".')
+
+    current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
+    updated_pile = current_pile + ',' + ','.join(cards_to_add)
+    RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)

@@ -65,7 +65,7 @@
         <div id="talon-front-cards" class="cards-wrapper-talon">
             {% for card in round_state['talon'] %}
                 {% set talon_card_bg_id = 'talon-card-bg-' ~ loop.index %}
-                {% set talon_card_img_id = 'talon-card-img-' ~ loop.index %}
+                {% set talon_card_img_id = 'talon-card-' ~ loop.index %}
                 {% set img_path = 'img/' ~ card ~ '.png' %}
                 <div class="card-cont" id="{{ talon_card_bg_id }}">
                     <img class="tarok-card" id="{{ talon_card_img_id }}" src="{{ url_for('static', filename=img_path) }}"
@@ -140,6 +140,25 @@
         <p id="info-called"></p>
         <hr>
         <p id="info-whose-turn"></p>
+    </div>
+    <div class="game-options" id="info-calculation">
+        <h2 id="points-main-player"></h2>
+        <p class="points-number" id="points-count"></p>
+        <p class="points-name">seštevek</p>
+        <p class="points-number" id="points-difference"></p>
+        <p class="points-name">razlika</p>
+        <p class="points-number" id="points-game-type"></p>
+        <p class="points-name">igra</p>
+        <div id="points-called"></div>
+        <p class="points-name">napovedano</p>
+        <div id="points-extra"></div>
+        <p class="points-name">ekstra</p>
+        <hr>
+        <p class="points-number" id="points-total"></p>
+        <p class="points-name">skupaj</p>
+        <button type=submit name="submit-button" id="new-round-btn" class="btn btn-dark">
+            Nadaljuj
+        </button>
     </div>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/play_choose_game.js') }}"></script>

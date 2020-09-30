@@ -1,3 +1,5 @@
+"""This module contains models to be used in postgres db"""
+
 import datetime
 
 from flask_migrate import Migrate
@@ -53,7 +55,6 @@ class User(BaseModel):
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     username = db.Column(db.String, unique=True, nullable=False)
-    # todo: keep the current_x information in redis instead? (key={game_id}:{username})
     current_score = db.Column(db.Integer, nullable=True)
     current_duplication_tokens = db.Column(db.Integer, nullable=True)
     current_game = db.Column(db.Integer, db.ForeignKey(Game.id), nullable=True)

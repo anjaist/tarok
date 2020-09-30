@@ -75,7 +75,7 @@ function chooseTalonCards(listenerCard, listenerCardBg, card2=false, card2bg=fal
     else {
         // remove ALL yellow highlights if unchoosing
         for (let i = 1; i <= 6; i++) {
-            let talonCard = document.getElementById('talon-card-img-' + i);
+            let talonCard = document.getElementById('talon-card-' + i);
             let talonCardBg = document.getElementById('talon-card-bg-' + i);
 
             removeHighlightCard(talonCard, talonCardBg, true);
@@ -122,7 +122,7 @@ function displayTalonOptions(playerName) {
             // look for a user's mouse movements over talon cards
             for (let i = 1; i <= 6; i++) {
                 (function(i) {
-                    let talonCard = document.getElementById('talon-card-img-' + i);
+                    let talonCard = document.getElementById('talon-card-' + i);
                     let talonCardBg = document.getElementById('talon-card-bg-' + i);
 
                     talonCard.onmouseover = function() {
@@ -148,9 +148,9 @@ function displayTalonOptions(playerName) {
             for (let i = 1; i <= 6; i++) {
                 (function(i) {
                     // define main card (clicked on or mouseovered) and its associated card
-                    let talonCard = document.getElementById('talon-card-img-' + i);
+                    let talonCard = document.getElementById('talon-card-' + i);
                     let talonCardBg = document.getElementById('talon-card-bg-' + i);
-                    let pairedCard = document.getElementById('talon-card-img-' + talonCardPairs[i]);
+                    let pairedCard = document.getElementById('talon-card-' + talonCardPairs[i]);
                     let pairedCardBg = document.getElementById('talon-card-bg-' + talonCardPairs[i]);
 
                     // look for a user's mouse movements over talon cards
@@ -178,11 +178,11 @@ function displayTalonOptions(playerName) {
             for (let i = 1; i <= 6; i++) {
                 (function(i) {
                     // define main card (clicked on or mouseovered) and its two associated cards
-                    let talonCard = document.getElementById('talon-card-img-' + i);
+                    let talonCard = document.getElementById('talon-card-' + i);
                     let talonCardBg = document.getElementById('talon-card-bg-' + i);
-                    let pairedCard1 = document.getElementById('talon-card-img-' + talonCardPairs[i][0]);
+                    let pairedCard1 = document.getElementById('talon-card-' + talonCardPairs[i][0]);
                     let pairedCard1Bg = document.getElementById('talon-card-bg-' + talonCardPairs[i][0]);
-                    let pairedCard2 = document.getElementById('talon-card-img-' + talonCardPairs[i][1]);
+                    let pairedCard2 = document.getElementById('talon-card-' + talonCardPairs[i][1]);
                     let pairedCard2Bg = document.getElementById('talon-card-bg-' + talonCardPairs[i][1]);
 
                     // look for a user's mouse movements over talon cards
@@ -212,6 +212,7 @@ let talonInfoDiv = document.getElementById('talon-info');
 // display an info message about talon. The message is different for the main player
 function displayTalonInfoMessage(mainPlayer) {
     if (currentUser == mainPlayer) {
+        confirmButton.style.display = 'block';
         if (!talonConfirmed) {
             message = 'Izberi karte iz talona';
         } else {
@@ -282,26 +283,39 @@ function displayCardsToSwap(mainPlayer) {
 }
 
 
-// re-render the main player's hand to show the additions from talon
-function displayUpdatedHand(updatedHand) {
-    let cardsWrapper = document.getElementById('cards-wrapper-bottom');
+// re-render cards in a container
+function displayCards(cardList, cardsWrapper, idName) {
     cardsWrapper.innerHTML = null;
 
-    for (let [i, card] of updatedHand.entries()) {
+    for (let [i, card] of cardList.entries()) {
 
         // create the container/bg element for each card
         let cardContainer = document.createElement('div');
         cardContainer.classList.add('card-cont');
-        cardContainer.id = `user-card-bg-${i+1}`;
+        cardContainer.id = `${idName}-card-bg-${i+1}`;
         cardsWrapper.appendChild(cardContainer);
 
         // create the img tag for each card
         let imgTag = document.createElement('img');
         imgTag.classList.add('tarok-card');
-        imgTag.id = `user-card-${i+1}`;
+        imgTag.id = `${idName}-card-${i+1}`;
         imgTag.src = baseUrlImg + card + '.png';
         cardContainer.appendChild(imgTag);
     }
+}
+
+
+// re-render the main player's hand to show the additions from talon
+function displayUpdatedHand(updatedHand) {
+    let cardsWrapper = document.getElementById('cards-wrapper-bottom');
+    displayCards(updatedHand, cardsWrapper, 'user')
+}
+
+
+// display the updated talon cards for a new round
+function displayUpdatedTalon(talonCards) {
+    let cardsWrapper = document.getElementById('talon-front-cards');
+    displayCards(talonCards, cardsWrapper, 'talon')
 }
 
 

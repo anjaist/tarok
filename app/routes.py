@@ -216,6 +216,7 @@ def update_players_hand(main_player: str, game_id: str, cards_to_add: list, card
 
         # add remaining talon cards to 'against' players' score pile
         original_talon = RedisGetter.current_round(game_id, 'talon_cards')
+        original_talon = original_talon.split(',')
         remaining_talon = [card for card in original_talon if card not in cards_to_add]
         add_to_score_pile(game_id, 'against_players', remaining_talon)
         RedisSetter.current_round(game_id, 'talon_cards', '')

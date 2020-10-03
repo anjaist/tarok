@@ -3,6 +3,7 @@ This app is currently a work in progress.
 
 ## Contents
 * [Game Flow](#game-flow)
+* [Run Game](#run-game)
 * [Postgres DB](#postgres-db)
 * [Redis DB](#redis-db)
 
@@ -31,6 +32,27 @@ and `-` points if they aren't successful).
     - `valat` (the player collects all cards)
     - `nothing called`
 7. The round begins
+
+
+### Run Game
+To run the game locally, you need to set the following variables:
+```.env
+export APP_SETTINGS=config.DevelopmentConfig
+export DATABASE_URL=postgresql+psycopg2://usr:pw@localhost/tarok_dev
+export FLASK_APP=run.py
+export SECRET_KEY=xxxxxxxxxx
+```
+
+Run the game by running the flash app and the redis server
+```
+flask run
+```
+```
+redis-server
+```
+
+To clean your db and set up 3 users in postgres, run the `test_simple_users_setup` test.
+To bring your game to the state of last card for each player before end of round, run the `test_setup_end_of_round` test. 
 
 
 ### Postgres DB

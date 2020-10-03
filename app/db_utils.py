@@ -511,5 +511,9 @@ def add_to_score_pile(game_id: int, identifier: str, cards_to_add: list):
         raise RuntimeError(f'Unknown identifier: {identifier}. Should be either "main_player" or "against_players".')
 
     current_pile = RedisGetter.current_round(game_id, f'{identifier}_score_pile')
-    updated_pile = current_pile + ',' + ','.join(cards_to_add)
+    cards_to_add = ','.join(cards_to_add)
+    if current_pile:
+        updated_pile = current_pile + ',' + cards_to_add
+    else:
+        updated_pile = cards_to_add
     RedisSetter.current_round(game_id, f'{identifier}_score_pile', updated_pile)

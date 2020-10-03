@@ -38,7 +38,7 @@ class CardPile:
         longer string. If a card is neither a tarok or a king, queen etc., the name will be changed to 'of'."""
         renamed_pile = []
         for card in pile:
-            if not card.isdigit():
+            if card and not card.isdigit():
                 renamed_pile.append(card.split('-')[1])
             else:
                 renamed_pile.append(card)

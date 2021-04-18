@@ -17,7 +17,7 @@ def init_redis():
     while True:
         try:
             if is_in_production:
-                redis_db = redis.from_url(os.environ.get('REDIS_URL'))
+                redis_db = redis.from_url(os.environ.get('HEROKU_REDIS_IVORY_URL'))
                 host = 'heroku'
             else:
                 host = config[os.environ['APP_SETTINGS']].REDIS_HOST

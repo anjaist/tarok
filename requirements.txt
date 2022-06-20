@@ -1,4 +1,4 @@
-eventlet==0.17.4
+eventlet==0.31.0
 Flask==1.1.1
 Flask-Migrate==2.5.2
 Flask-socketio==4.2.1
